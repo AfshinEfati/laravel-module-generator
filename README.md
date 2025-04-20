@@ -146,4 +146,4 @@ php artisan vendor:publish --tag=module-base
 
 ## ✨ نویسنده
 
-ساخته شده با ❤️ توسط [افشین افتی](https://github.com/efati)
+ساخته شده با ❤️ توسط [افشین ](https://github.com/AfshinEfati)
