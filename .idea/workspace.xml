@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="" />
+    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/Commands/MakeModuleCommand.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Commands/MakeModuleCommand.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -79,7 +81,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1745148198808</updated>
-      <workItem from="1745148217944" duration="1700000" />
+      <workItem from="1745148217944" duration="2012000" />
     </task>
     <servers />
   </component>
