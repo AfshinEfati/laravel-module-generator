@@ -1,0 +1,22 @@
+{
+    "name": "efati/laravel-module-generator",
+    "description": "Laravel Module Generator with Repository/Service pattern",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Efati\\ModuleGenerator\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^11.0"
+    }
+}
