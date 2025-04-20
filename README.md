@@ -15,7 +15,7 @@ composer require efati/laravel-module-generator --dev
 (Optional) To publish base classes:
 
 ```bash
-php artisan vendor:publish --tag=module-base
+php artisan vendor:publish --tag=module-generator
 ```
 
 ---
@@ -48,6 +48,7 @@ Use `vendor:publish` to copy these reusable classes:
 - `BaseRepositoryInterface`
 - `BaseService`
 - `BaseServiceInterface`
+- `config/module-generator`
 
 These provide common logic for reuse across all modules.
 
@@ -75,75 +76,3 @@ php artisan make:module Flight
 
 Made with ❤️ by [Afshin](https://github.com/AfshinEfati)
 
----
-
-## 🇮🇷 راهنمای فارسی
-
-پکیج `Laravel Module Generator` برای ساخت سریع و تمیز ماژول‌های لاراولی طراحی شده که کاملاً سازگار با پروژه‌های API محور هست.
-
----
-
-## ⚙️ نصب پکیج
-
-```bash
-composer require efati/laravel-module-generator --dev
-```
-
-برای انتشار فایل‌های پایه:
-
-```bash
-php artisan vendor:publish --tag=module-base
-```
-
----
-
-## 🛠 استفاده
-
-مثال:
-
-```bash
-php artisan make:module Company
-```
-
-موارد زیر ساخته خواهند شد:
-
-- `CompanyRepository` و `Interface`
-- `CompanyService` و `Interface`
-- `CompanyDTO` با فیلدهای خودکار از مدل
-- `CompanyServiceProvider`
-- `CompanyTest`
-
-📌 مدل `Company` باید از قبل ساخته شده باشه و `fillable` داشته باشه.
-
----
-
-## 📦 کلاس‌های پایه (Base)
-
-با اجرای:
-
-```bash
-php artisan vendor:publish --tag=module-base
-```
-
-فایل‌های پایه‌ای زیر ایجاد می‌شن:
-
-- `BaseRepository`  
-- `BaseRepositoryInterface`  
-- `BaseService`  
-- `BaseServiceInterface`  
-
-برای جلوگیری از تکرار و رعایت اصول SOLID در لایه‌ها.
-
----
-
-## 🧠 نکات نهایی
-
-- فقط برای پروژه‌های API محور
-- بدون وابستگی به UI
-- مناسب برای پروژه‌های ماژولار و تجاری
-
----
-
-## ✨ نویسنده
-
-ساخته شده با ❤️ توسط [افشین ](https://github.com/AfshinEfati)
