@@ -1,0 +1,25 @@
+
+# Ignore PHPStorm / JetBrains project files
+.idea/
+*.iml
+
+# Ignore VSCode project files
+.vscode/
+.history/
+
+# Ignore MacOS system files
+.DS_Store
+
+# Ignore system generated files
+Thumbs.db
+ehthumbs.db
+
+# Ignore node modules (if frontend exists)
+node_modules/
+
+# Ignore vendor (if composer dependencies shouldn't be committed)
+vendor/
+
+# Ignore environment files
+.env
+.env.*
