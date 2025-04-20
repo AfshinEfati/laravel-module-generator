@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ModuleGeneratorServiceProvider.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/ModuleGeneratorServiceProvider.php" afterDir="false" />
-    </list>
+    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,6 +61,7 @@
       <recent name="\\wsl.localhost\Ubuntu\home\afshin\project\laravel-module-generator\src\Commands" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="\\wsl.localhost\Ubuntu\home\afshin\project\laravel-module-generator\src" />
       <recent name="\\wsl.localhost\Ubuntu\home\afshin\project\laravel-module-generator\src\Stubs" />
       <recent name="\\wsl.localhost\Ubuntu\home\afshin\project\laravel-module-generator\src\Commands" />
     </key>
@@ -84,7 +81,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1745148198808</updated>
-      <workItem from="1745148217944" duration="3240000" />
+      <workItem from="1745148217944" duration="3592000" />
     </task>
     <servers />
   </component>
