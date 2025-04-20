@@ -10,7 +10,7 @@ class ControllerGenerator
     public static function generate(string $name, ?string $subfolder = null, bool $api = false): void
     {
         $baseNamespace = config('module-generator.base_namespace', 'App');
-        $basePath = config('module-generator.paths.controller_base', 'Http/Controllers');
+        $basePath = config('module-generator.paths.controller', 'Http/Controllers');
         $fullPath = $basePath . ($subfolder ? '/' . $subfolder : '');
 
         $controllerPath = app_path($fullPath);
@@ -18,31 +18,63 @@ class ControllerGenerator
 
         $namespace = $baseNamespace . '\\' . str_replace('/', '\\', $fullPath);
         $className = Str::studly($name) . 'Controller';
+        $modelName = Str::studly($name);
+        $serviceName = $modelName . 'Service';
+        $varModel = Str::camel($name);
 
         $content = "<?php
 
 namespace {$namespace};
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\\Http\\Request;
+use App\\Http\\Controllers\\Controller;
+use App\\Services\\{$serviceName};
+use App\\Models\\{$modelName};
 
 class {$className} extends Controller
 {
+    public function __construct(public {$serviceName} \${$varModel}Service)
+    {
+        // Middleware can be applied here if needed
+    }
 ";
 
         if ($api) {
-            $content .= "    public function index() {}
-    public function store(Request \$request) {}
-    public function show(\$id) {}
-    public function update(Request \$request, \$id) {}
-    public function destroy(\$id) {}
-";
+            $content .= "
+    public function index()
+    {
+        //
+    }
+
+    public function store(Request \$request)
+    {
+        //
+    }
+
+    public function show({$modelName} \${$varModel})
+    {
+        //
+    }
+
+    public function update(Request \$request, {$modelName} \${$varModel})
+    {
+        //
+    }
+
+    public function destroy({$modelName} \${$varModel})
+    {
+        //
+    }";
         } else {
-            $content .= "    public function handle(Request \$request) {}
-";
+            $content .= "
+    public function handle(Request \$request)
+    {
+        //
+    }";
         }
 
-        $content .= "}
+        $content .= "
+}
 ";
 
         File::put("{$controllerPath}/{$className}.php", $content);
