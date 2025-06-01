@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class ControllerGenerator
 {
-    public static function generate(string $name, ?string $subfolder = null, bool $api = false): void
+    public static function generate(string $name, ?string $subfolder = null, bool $api = false, bool $withFormRequests = false): void
     {
         $baseNamespace = config('module-generator.base_namespace', 'App');
         $basePath = config('module-generator.paths.controller', 'Http/Controllers');
@@ -21,15 +21,29 @@ class ControllerGenerator
         $modelName = Str::studly($name);
         $serviceName = $modelName . 'Service';
         $varModel = Str::camel($name);
+        $dtoName = $modelName . 'DTO';
+
+        $storeRequest = "Store{$modelName}Request";
+        $updateRequest = "Update{$modelName}Request";
+
+        $useRequests = $withFormRequests ? "
+use {$baseNamespace}\\Http\\Requests\\{$storeRequest};
+use {$baseNamespace}\\Http\\Requests\\{$updateRequest};" : "";
+
+        $useDTO = "use {$baseNamespace}\\DTOs\\{$dtoName};";
+
+        $typeStore = $withFormRequests ? $storeRequest : 'Request';
+        $typeUpdate = $withFormRequests ? $updateRequest : 'Request';
 
         $content = "<?php
 
 namespace {$namespace};
 
 use Illuminate\\Http\\Request;
-use {base_namespace}\\Http\\Controllers\\Controller;
-use {base_namespace}\\Services\\{$serviceName};
-use {base_namespace}\\Models\\{$modelName};
+use {$baseNamespace}\\Http\\Controllers\\Controller;
+use {$baseNamespace}\\Services\\{$serviceName};
+use {$baseNamespace}\\Models\\{$modelName};
+{$useDTO}{$useRequests}
 
 class {$className} extends Controller
 {
@@ -46,8 +60,9 @@ class {$className} extends Controller
         //
     }
 
-    public function store(Request \$request)
+    public function store({$typeStore} \$request)
     {
+        \$dto = {$dtoName}::fromRequest(\$request);
         //
     }
 
@@ -56,8 +71,9 @@ class {$className} extends Controller
         //
     }
 
-    public function update(Request \$request, {$modelName} \${$varModel})
+    public function update({$typeUpdate} \$request, {$modelName} \${$varModel})
     {
+        \$dto = {$dtoName}::fromRequest(\$request);
         //
     }
 

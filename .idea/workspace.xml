@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/ControllerGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ControllerGenerator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/DTOGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/DTOGenerator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/ProviderGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ProviderGenerator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/RepositoryGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/RepositoryGenerator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/ServiceGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ServiceGenerator.php" afterDir="false" />
-    </list>
+    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -91,7 +84,7 @@
       <option name="presentableId" value="Default" />
       <updated>1745148198808</updated>
       <workItem from="1745148217944" duration="6266000" />
-      <workItem from="1748763005638" duration="3865000" />
+      <workItem from="1748763005638" duration="4157000" />
     </task>
     <servers />
   </component>
