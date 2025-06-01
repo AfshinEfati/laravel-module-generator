@@ -16,10 +16,10 @@ class ServiceGenerator
 
         File::put("{$servicePath}/{$name}Service.php", "<?php
 
-namespace App\\Services;
+namespace {base_namespace}\\Services;;
 
-use App\\Services\\Base\\BaseService;
-use App\\Services\\Contracts\\{$name}ServiceInterface;
+use {base_namespace}\\Services\\Base\\BaseService;;
+use {base_namespace}\\Services\\Contracts\\{$name}ServiceInterface;;
 
 class {$name}Service extends BaseService implements {$name}ServiceInterface
 {
@@ -29,9 +29,9 @@ class {$name}Service extends BaseService implements {$name}ServiceInterface
 
         File::put("{$contractPath}/{$name}ServiceInterface.php", "<?php
 
-namespace App\\Services\\Contracts;
+namespace {base_namespace}\\Services\\Contracts;;
 
-use App\\Services\\Base\\BaseServiceInterface;
+use {base_namespace}\\Services\\Base\\BaseServiceInterface;;
 
 interface {$name}ServiceInterface extends BaseServiceInterface
 {

@@ -35,7 +35,7 @@ class DTOGenerator
 
         File::put("{$dtoPath}/{$name}DTO.php", "<?php
 
-namespace App\\DTOs;
+namespace {base_namespace}\\DTOs;;
 
 use Illuminate\Http\Request;
 

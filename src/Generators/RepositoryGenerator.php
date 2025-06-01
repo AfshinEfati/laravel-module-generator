@@ -16,11 +16,11 @@ class RepositoryGenerator
 
         File::put("{$repoPath}/{$name}Repository.php", "<?php
 
-namespace App\\Repositories\\Eloquent;
+namespace {base_namespace}\\Repositories\\Eloquent;;
 
-use App\\Models\\{$name};
-use App\\Repositories\\Base\\BaseRepository;
-use App\\Repositories\\Contracts\\{$name}RepositoryInterface;
+use {base_namespace}\\Models\\{$name};;
+use {base_namespace}\\Repositories\\Base\\BaseRepository;;
+use {base_namespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;;
 
 class {$name}Repository extends BaseRepository implements {$name}RepositoryInterface
 {
@@ -33,9 +33,9 @@ class {$name}Repository extends BaseRepository implements {$name}RepositoryInter
 
         File::put("{$contractPath}/{$name}RepositoryInterface.php", "<?php
 
-namespace App\\Repositories\\Contracts;
+namespace {base_namespace}\\Repositories\\Contracts;;
 
-use App\\Repositories\\Base\\BaseRepositoryInterface;
+use {base_namespace}\\Repositories\\Base\\BaseRepositoryInterface;;
 
 interface {$name}RepositoryInterface extends BaseRepositoryInterface
 {

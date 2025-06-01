@@ -13,12 +13,12 @@ class ProviderGenerator
 
         $content = "<?php
 
-namespace App\\Providers;
+namespace {base_namespace}\\Providers;;
 
 use Illuminate\\Support\\ServiceProvider;
-use App\\Repositories\\Contracts\\{$name}RepositoryInterface;
-use App\\Repositories\\Eloquent\\{$name}Repository;
-use App\\Services\\{$name}Service;
+use {base_namespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;;
+use {base_namespace}\\Repositories\\Eloquent\\{$name}Repository;;
+use {base_namespace}\\Services\\{$name}Service;;
 
 class {$name}ServiceProvider extends ServiceProvider
 {
@@ -42,7 +42,7 @@ class {$name}ServiceProvider extends ServiceProvider
         if (File::exists($bootstrapFile)) {
             $current = File::get($bootstrapFile);
 
-            $providerUse = "use App\\Providers\\{$name}ServiceProvider;";
+use {base_namespace}\\Providers\\{$name}ServiceProvider;";;
             $providerRegister = "{$name}ServiceProvider::class,";
 
             if (!str_contains($current, $providerUse)) {
