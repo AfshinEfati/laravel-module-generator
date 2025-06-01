@@ -3,7 +3,6 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class RepositoryGenerator
 {
@@ -19,9 +18,16 @@ class RepositoryGenerator
 
 namespace App\\Repositories\\Eloquent;
 
-class {$name}Repository implements \\App\\Repositories\\Contracts\\{$name}RepositoryInterface
+use App\\Models\\{$name};
+use App\\Repositories\\Base\\BaseRepository;
+use App\\Repositories\\Contracts\\{$name}RepositoryInterface;
+
+class {$name}Repository extends BaseRepository implements {$name}RepositoryInterface
 {
-    //
+    public function __construct({$name} \$model)
+    {
+        parent::__construct(\$model);
+    }
 }
 ");
 
@@ -29,7 +35,9 @@ class {$name}Repository implements \\App\\Repositories\\Contracts\\{$name}Reposi
 
 namespace App\\Repositories\\Contracts;
 
-interface {$name}RepositoryInterface
+use App\\Repositories\\Base\\BaseRepositoryInterface;
+
+interface {$name}RepositoryInterface extends BaseRepositoryInterface
 {
     //
 }

@@ -18,7 +18,10 @@ class ServiceGenerator
 
 namespace App\\Services;
 
-class {$name}Service implements \\App\\Services\\Contracts\\{$name}ServiceInterface
+use App\\Services\\Base\\BaseService;
+use App\\Services\\Contracts\\{$name}ServiceInterface;
+
+class {$name}Service extends BaseService implements {$name}ServiceInterface
 {
     //
 }
@@ -28,7 +31,9 @@ class {$name}Service implements \\App\\Services\\Contracts\\{$name}ServiceInterf
 
 namespace App\\Services\\Contracts;
 
-interface {$name}ServiceInterface
+use App\\Services\\Base\\BaseServiceInterface;
+
+interface {$name}ServiceInterface extends BaseServiceInterface
 {
     //
 }

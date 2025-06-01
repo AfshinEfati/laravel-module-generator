@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="" />
+    <list default="true" id="fa65ad00-8cb4-49da-a49f-6169e48a23a4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Generators/DTOGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/DTOGenerator.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Generators/ServiceGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ServiceGenerator.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -31,7 +35,6 @@
     &quot;accountId&quot;: &quot;e4ee3622-f39e-4d52-b6d1-34501fd230c4&quot;
   }
 }</component>
-  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="C:\xampp\php\php.exe" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -44,14 +47,16 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "//wsl.localhost/Ubuntu/home/afshin/project/laravel-module-generator/src/Generators",
+    "last_opened_file_path": "//wsl.localhost/Ubuntu/home/afshin/projects/laravel-module-generator",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.customizations",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -70,8 +75,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-PS-251.23774.436" />
-        <option value="bundled-php-predefined-a98d8de5180a-aaeaa8632555-com.jetbrains.php.sharedIndexes-PS-251.23774.436" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PS-251.25410.148" />
+        <option value="bundled-php-predefined-a98d8de5180a-c5828cf854d9-com.jetbrains.php.sharedIndexes-PS-251.25410.148" />
       </set>
     </attachedChunks>
   </component>
@@ -83,6 +88,7 @@
       <option name="presentableId" value="Default" />
       <updated>1745148198808</updated>
       <workItem from="1745148217944" duration="6266000" />
+      <workItem from="1748763005638" duration="851000" />
     </task>
     <servers />
   </component>
