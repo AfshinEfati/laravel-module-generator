@@ -21,29 +21,34 @@ class DTOGenerator
 
         $properties = '';
         $constructorParams = '';
-        $constructorBody = '';
+        $signature = '';
         $requestMap = '';
+        $args = [];
 
         foreach ($fields as $field) {
             $properties .= "    public mixed \$$field;\n";
+            $signature .= "mixed \$$field, ";
             $constructorParams .= "        \$this->$field = \$$field;\n";
-            $requestMap .= "            \$$field = \$request->$field;\n";
+            $requestMap .= "        \$$field = \$request->$field;\n";
+            $args[] = "\$$field";
         }
 
-        $constructorSignature = implode(', ', array_map(fn($f) => "public mixed \$$f", $fields));
-        $args = implode(', ', array_map(fn($f) => "\$$f", $fields));
+        $signature = rtrim($signature, ', ');
+        $argsLine = implode(', ', $args);
+
+        $baseNamespace = config('module-generator.base_namespace');
 
         File::put("{$dtoPath}/{$name}DTO.php", "<?php
 
-namespace {base_namespace}\\DTOs;;
+namespace {$baseNamespace}\\DTOs;
 
-use Illuminate\Http\Request;
+use Illuminate\\Http\\Request;
 
 class {$name}DTO
 {
 {$properties}
 
-    public function __construct({$constructorSignature})
+    public function __construct({$signature})
     {
 {$constructorParams}
     }
@@ -52,7 +57,7 @@ class {$name}DTO
     {
 {$requestMap}
 
-        return new self({$args});
+        return new self({$argsLine});
     }
 }
 ");

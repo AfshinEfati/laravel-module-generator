@@ -14,12 +14,14 @@ class ServiceGenerator
         File::ensureDirectoryExists($servicePath);
         File::ensureDirectoryExists($contractPath);
 
+        $baseNamespace = config('module-generator.base_namespace');
+
         File::put("{$servicePath}/{$name}Service.php", "<?php
 
-namespace {base_namespace}\\Services;;
+namespace {$baseNamespace}\\Services;
 
-use {base_namespace}\\Services\\Base\\BaseService;;
-use {base_namespace}\\Services\\Contracts\\{$name}ServiceInterface;;
+use {$baseNamespace}\\Services\\BaseService;
+use {$baseNamespace}\\Services\\Contracts\\{$name}ServiceInterface;
 
 class {$name}Service extends BaseService implements {$name}ServiceInterface
 {
@@ -29,9 +31,9 @@ class {$name}Service extends BaseService implements {$name}ServiceInterface
 
         File::put("{$contractPath}/{$name}ServiceInterface.php", "<?php
 
-namespace {base_namespace}\\Services\\Contracts;;
+namespace {$baseNamespace}\\Services\\Contracts;
 
-use {base_namespace}\\Services\\Base\\BaseServiceInterface;;
+use {$baseNamespace}\\Services\\Contracts\\BaseServiceInterface;
 
 interface {$name}ServiceInterface extends BaseServiceInterface
 {

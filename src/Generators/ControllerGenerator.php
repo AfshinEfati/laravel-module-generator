@@ -27,9 +27,9 @@ class ControllerGenerator
 namespace {$namespace};
 
 use Illuminate\\Http\\Request;
-use {base_namespace}\\Http\\Controllers\\Controller;;
-use {base_namespace}\\Services\\{$serviceName};;
-use {base_namespace}\\Models\\{$modelName};;
+use {base_namespace}\\Http\\Controllers\\Controller;
+use {base_namespace}\\Services\\{$serviceName};
+use {base_namespace}\\Models\\{$modelName};
 
 class {$className} extends Controller
 {

@@ -14,13 +14,15 @@ class RepositoryGenerator
         File::ensureDirectoryExists($repoPath);
         File::ensureDirectoryExists($contractPath);
 
+        $baseNamespace = config('module-generator.base_namespace');
+
         File::put("{$repoPath}/{$name}Repository.php", "<?php
 
-namespace {base_namespace}\\Repositories\\Eloquent;;
+namespace {$baseNamespace}\\Repositories\\Eloquent;
 
-use {base_namespace}\\Models\\{$name};;
-use {base_namespace}\\Repositories\\Base\\BaseRepository;;
-use {base_namespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;;
+use {$baseNamespace}\\Models\\{$name};
+use {$baseNamespace}\\Repositories\\Eloquent\\BaseRepository;
+use {$baseNamespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;
 
 class {$name}Repository extends BaseRepository implements {$name}RepositoryInterface
 {
@@ -33,9 +35,9 @@ class {$name}Repository extends BaseRepository implements {$name}RepositoryInter
 
         File::put("{$contractPath}/{$name}RepositoryInterface.php", "<?php
 
-namespace {base_namespace}\\Repositories\\Contracts;;
+namespace {$baseNamespace}\\Repositories\\Contracts;
 
-use {base_namespace}\\Repositories\\Base\\BaseRepositoryInterface;;
+use {$baseNamespace}\\Repositories\\Contracts\\BaseRepositoryInterface;
 
 interface {$name}RepositoryInterface extends BaseRepositoryInterface
 {

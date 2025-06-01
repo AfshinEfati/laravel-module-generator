@@ -11,14 +11,16 @@ class ProviderGenerator
         $providerPath = app_path(config('module-generator.paths.provider'));
         File::ensureDirectoryExists($providerPath);
 
+        $baseNamespace = config('module-generator.base_namespace');
+
         $content = "<?php
 
-namespace {base_namespace}\\Providers;;
+namespace {$baseNamespace}\\Providers;
 
 use Illuminate\\Support\\ServiceProvider;
-use {base_namespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;;
-use {base_namespace}\\Repositories\\Eloquent\\{$name}Repository;;
-use {base_namespace}\\Services\\{$name}Service;;
+use {$baseNamespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;
+use {$baseNamespace}\\Repositories\\Eloquent\\{$name}Repository;
+use {$baseNamespace}\\Services\\{$name}Service;
 
 class {$name}ServiceProvider extends ServiceProvider
 {
@@ -37,12 +39,11 @@ class {$name}ServiceProvider extends ServiceProvider
 
         File::put("{$providerPath}/{$name}ServiceProvider.php", $content);
 
-        // Append provider to bootstrap/providers.php
         $bootstrapFile = base_path('bootstrap/providers.php');
         if (File::exists($bootstrapFile)) {
             $current = File::get($bootstrapFile);
 
-use {base_namespace}\\Providers\\{$name}ServiceProvider;";;
+            $providerUse = "use {$baseNamespace}\\Providers\\{$name}ServiceProvider;";
             $providerRegister = "{$name}ServiceProvider::class,";
 
             if (!str_contains($current, $providerUse)) {

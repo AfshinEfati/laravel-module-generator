@@ -8,11 +8,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Generators/ControllerGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ControllerGenerator.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Generators/DTOGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/DTOGenerator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/FormRequestGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/FormRequestGenerator.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Generators/ProviderGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ProviderGenerator.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Generators/RepositoryGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/RepositoryGenerator.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Generators/ServiceGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/ServiceGenerator.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Generators/TestGenerator.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generators/TestGenerator.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +91,7 @@
       <option name="presentableId" value="Default" />
       <updated>1745148198808</updated>
       <workItem from="1745148217944" duration="6266000" />
-      <workItem from="1748763005638" duration="2154000" />
+      <workItem from="1748763005638" duration="3865000" />
     </task>
     <servers />
   </component>
