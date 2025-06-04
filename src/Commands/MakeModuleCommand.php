@@ -11,14 +11,15 @@ use Efati\ModuleGenerator\Generators\ProviderGenerator;
 use Efati\ModuleGenerator\Generators\TestGenerator;
 use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
+use Efati\ModuleGenerator\Generators\ResourceGenerator;
 
 class MakeModuleCommand extends Command
 {
     protected $signature = <<<SIGNATURE
 make:module {name}
-            {--with-controller= : Optional subfolder for controller}
+            {--controller= : Generate controller (optional subfolder like Admin)}
             {--api : Generate an API Resource Controller}
-            {--with-form-requests : Generate Store/Update FormRequests}
+            {--requests : Generate Store/Update FormRequests}
 SIGNATURE;
 
     protected $description = 'Generate Repository, Service, Interfaces, DTO, Provider, Test, Controller and FormRequest for a module';
@@ -27,17 +28,24 @@ SIGNATURE;
     {
         $name = Str::studly($this->argument('name'));
 
+        // Core module generation
         RepositoryGenerator::generate($name);
         ServiceGenerator::generate($name);
         DTOGenerator::generate($name);
         ProviderGenerator::generate($name);
         TestGenerator::generate($name);
+        ResourceGenerator::generate($name);
 
-        if ($this->option('with-controller') !== null) {
-            ControllerGenerator::generate($name, $this->option('with-controller'), $this->option('api'));
+        // Controller generation
+        $controllerOption = $this->option('controller');
+        $controllerNamespace = is_string($controllerOption) ? $controllerOption : null;
+
+        if ($controllerOption !== null) {
+            ControllerGenerator::generate($name, $controllerNamespace, $this->option('api'), $this->option('requests'));
         }
 
-        if ($this->option('with-form-requests')) {
+        // FormRequest generation
+        if ($this->option('requests')) {
             FormRequestGenerator::generate($name);
         }
 

@@ -1,135 +1,125 @@
 # Laravel Module Generator
 
-A clean and extensible Laravel module generator designed for API-based projects.
-
-Generates Repository, Service, Interfaces, DTOs, Tests, Service Providers, Controllers, and Form Requests based on best practices.
+A modular generator package for Laravel, designed to quickly scaffold models, repositories, services, DTOs, controllers, requests, and resources using simple CLI commands.
 
 ---
 
 ## 📦 Installation
 
-```bash
+```
 composer require efati/laravel-module-generator --dev
 ```
 
-(Optional) To publish base classes and config:
+Then publish required base classes:
 
-```bash
-php artisan vendor:publish --tag=module-generator
 ```
+php artisan module:publish
+```
+
+This will publish:
+- `BaseRepository`, `BaseRepositoryInterface`
+- `BaseService`, `BaseServiceInterface`
+- `App\Helpers\StatusHelper`
 
 ---
 
 ## 🚀 Usage
 
-```bash
-php artisan make:module Company
 ```
-
-This will generate:
-
-- `Repositories/Eloquent/CompanyRepository.php`
-- `Repositories/Contracts/CompanyRepositoryInterface.php`
-- `Services/CompanyService.php`
-- `Services/Contracts/CompanyServiceInterface.php`
-- `DTOs/CompanyDTO.php` (auto-filled from model)
-- `Providers/CompanyServiceProvider.php`
-- `Tests/Feature/CompanyTest.php`
-
-> You must have a model named `Company` before running the command.
-
----
-
-## ⚙️ Options
-
-### 1. `--with-controller=Subfolder`
-
-Generates a controller in a subdirectory inside the configured base path (e.g., `Api/V1/Subfolder`).
-
-- Uses the base path from config:  
-  `controller` => `Http/Controllers/Api/V1`
-
-**Example:**
-
-```bash
-php artisan make:module Flight --with-controller=Admin
-```
-
-Output:
-
-```
-app/Http/Controllers/Api/V1/Admin/FlightController.php
+php artisan make:module ModelName [--requests] [--controller=Subfolder] [--api] [--force]
 ```
 
 ---
 
-### 2. `--api`
+## 🧱 Examples
 
-Generates an API resource controller instead of a basic one.
+### Create only base components (Model, Repository, Service, DTO):
 
-**Example:**
-
-```bash
-php artisan make:module Flight --with-controller=Admin --api
+```
+php artisan make:module Product
 ```
 
-Creates methods:
+This creates:
+- `app/Models/Product.php`
+- `app/Repositories/ProductRepository.php`
+- `app/Repositories/Interfaces/ProductRepositoryInterface.php`
+- `app/Services/ProductService.php`
+- `app/Services/Interfaces/ProductServiceInterface.php`
+- `app/DTO/ProductDTO.php`
 
-- `index()`
-- `store(Request $request)`
-- `show(Flight $flight)`
-- `update(Request $request, Flight $flight)`
-- `destroy(Flight $flight)`
+---
 
-Also injects service in the constructor:
+### Create with Form Requests:
 
-```php
-public function __construct(public FlightService $flightService) {}
+```
+php artisan make:module Product --requests
+```
+
+This adds:
+- `app/Http/Requests/Product/StoreProductRequest.php`
+- `app/Http/Requests/Product/UpdateProductRequest.php`
+
+With rule auto-generation based on model fields.
+
+---
+
+### Create with API Controller:
+
+```
+php artisan make:module Product --controller=Admin --api --requests
+```
+
+This adds:
+- `app/Http/Controllers/Api/V1/Admin/ProductController.php`
+
+The controller will include:
+- Type-hinted `StoreProductRequest` and `UpdateProductRequest`
+- Service-based logic
+- Resource response using `StatusHelper`
+- Auto-loading model relations for `show` method
+- Returns wrapped `ProductResource`
+
+---
+
+### Generated Resource:
+
+Auto-created by default:
+
+- `app/Http/Resources/ProductResource.php`
+
+With support for:
+- Date formatting via `StatusHelper::formatDates()`
+- Boolean status via `StatusHelper::getStatus()`
+- Eloquent relationships using `whenLoaded()` and nested Resources
+
+---
+
+## ✅ Dependencies
+
+This package publishes a helper class `App\Helpers\StatusHelper` which handles:
+- Boolean status formatting
+- Date/time formatting (incl. Persian date)
+- Common API responses (success/error)
+
+---
+
+## 🔄 Overriding Published Files
+
+You can publish/update helper files using:
+
+```
+php artisan module:publish --force
 ```
 
 ---
 
-### 3. `--with-form-requests`
+## 💡 Coming Soon
 
-Generates `Store` and `Update` FormRequest classes.
-
-**Example:**
-
-```bash
-php artisan make:module Flight --with-form-requests
-```
-
-Output:
-
-```
-app/Http/Requests/Flight/StoreFlightRequest.php
-app/Http/Requests/Flight/UpdateFlightRequest.php
-```
+- Blade views
+- Events/Observers
+- Tests & factories
+- GitHub Action integration
 
 ---
 
-## 📂 Base Classes
-
-Use `vendor:publish` to copy these reusable classes:
-
-- `BaseRepository`
-- `BaseRepositoryInterface`
-- `BaseService`
-- `BaseServiceInterface`
-- `config/module-generator.php`
-
-These provide common logic for reuse across all modules and allow customizing path/structure.
-
----
-
-## 🧪 Requirements
-
-- Laravel 11+
-- PHP 8.1+
-- Model must exist and define `$fillable` for DTO generation
-
----
-
-## 🧑‍💻 Author
-
-Made with ❤️ by [Afshin](https://github.com/AfshinEfati)
+Made with ❤️ by [efati](https://github.com/AfshinEfati)
