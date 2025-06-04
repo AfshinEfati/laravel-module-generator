@@ -13,7 +13,7 @@ composer require efati/laravel-module-generator --dev
 Then publish required base classes:
 
 ```
-php artisan module:publish
+php artisan vendor:publish --tag=module-generator
 ```
 
 This will publish:
