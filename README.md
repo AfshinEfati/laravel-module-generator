@@ -1,125 +1,116 @@
 # Laravel Module Generator
 
-A modular generator package for Laravel, designed to quickly scaffold models, repositories, services, DTOs, controllers, requests, and resources using simple CLI commands.
+A Laravel package to generate fully structured modules (Model, Repository, Service, Interface, DTO, Controller, Form Requests, and Tests) with a single Artisan command.
+
+## Features
+
+- Generate **Model**, **Repository**, **Service**, **Interface**, **DTO**, **Controller**, **Form Requests**, and **Tests** in one command
+- Supports **API Resource** controllers
+- Dynamic namespace and path configuration via `config/module-generator.php`
+- Automatic binding of Repository and Service in Service Providers
+- Generates CRUD Feature Tests with both success and failure scenarios
+- Respects your existing `.env` database configuration for tests (no forced SQLite)
+- Ability to override stubs
+- Compatible with Laravel 10+ and Laravel 11
 
 ---
 
-## 📦 Installation
+## Installation
 
-```
-composer require efati/laravel-module-generator --dev
-```
-
-Then publish required base classes:
-
-```
-php artisan vendor:publish --tag=module-generator
-```
-
-This will publish:
-- `BaseRepository`, `BaseRepositoryInterface`
-- `BaseService`, `BaseServiceInterface`
-- `App\Helpers\StatusHelper`
-
----
-
-## 🚀 Usage
-
-```
-php artisan make:module ModelName [--requests] [--controller=Subfolder] [--api] [--force]
+```bash
+composer require efati/laravel-module-generator
 ```
 
 ---
 
-## 🧱 Examples
+## Configuration
 
-### Create only base components (Model, Repository, Service, DTO):
+Publish the configuration file:
 
+```bash
+php artisan vendor:publish --tag=module-generator-config
 ```
-php artisan make:module Product
-```
 
-This creates:
-- `app/Models/Product.php`
-- `app/Repositories/ProductRepository.php`
-- `app/Repositories/Interfaces/ProductRepositoryInterface.php`
-- `app/Services/ProductService.php`
-- `app/Services/Interfaces/ProductServiceInterface.php`
-- `app/DTO/ProductDTO.php`
+This will create `config/module-generator.php` where you can adjust:
+
+- **Namespace paths** for models, repositories, services, controllers, DTOs, and tests
+- **Default controller path** (e.g., `App\Http\Controllers\Api\V1`)
+- **Enable/Disable** generation of tests, form requests, DTOs, etc.
 
 ---
 
-### Create with Form Requests:
+## Usage
 
+### Create a module
+
+```bash
+php artisan make:module ModelName [options]
 ```
-php artisan make:module Product --requests
-```
 
-This adds:
-- `app/Http/Requests/Product/StoreProductRequest.php`
-- `app/Http/Requests/Product/UpdateProductRequest.php`
+### Options
 
-With rule auto-generation based on model fields.
+| Option                | Description |
+|-----------------------|-------------|
+| `--api`               | Generate an API Resource controller |
+| `--controller=Subdir` | Place controller in a specific subfolder |
+| `--requests`          | Generate Form Requests |
+| `--tests`             | Generate CRUD Feature Tests |
+| `--dto`               | Generate DTO class for the module |
+| `--force`             | Overwrite existing files |
 
 ---
 
-### Create with API Controller:
+### Example
 
-```
-php artisan make:module Product --controller=Admin --api --requests
-```
-
-This adds:
-- `app/Http/Controllers/Api/V1/Admin/ProductController.php`
-
-The controller will include:
-- Type-hinted `StoreProductRequest` and `UpdateProductRequest`
-- Service-based logic
-- Resource response using `StatusHelper`
-- Auto-loading model relations for `show` method
-- Returns wrapped `ProductResource`
-
----
-
-### Generated Resource:
-
-Auto-created by default:
-
-- `app/Http/Resources/ProductResource.php`
-
-With support for:
-- Date formatting via `StatusHelper::formatDates()`
-- Boolean status via `StatusHelper::getStatus()`
-- Eloquent relationships using `whenLoaded()` and nested Resources
-
----
-
-## ✅ Dependencies
-
-This package publishes a helper class `App\Helpers\StatusHelper` which handles:
-- Boolean status formatting
-- Date/time formatting (incl. Persian date)
-- Common API responses (success/error)
-
----
-
-## 🔄 Overriding Published Files
-
-You can publish/update helper files using:
-
-```
-php artisan module:publish --force
+```bash
+php artisan make:module Product --api --requests --controller=Admin --tests --dto
 ```
 
+This will generate:
+
+- **Model**: `app/Models/Product.php`
+- **Repository**: `app/Repositories/ProductRepository.php`
+- **Repository Interface**: `app/Repositories/Interfaces/ProductRepositoryInterface.php`
+- **Service**: `app/Services/ProductService.php`
+- **Service Interface**: `app/Services/Interfaces/ProductServiceInterface.php`
+- **DTO**: `app/DTOs/ProductDTO.php`
+- **Controller**: `app/Http/Controllers/Api/V1/Admin/ProductController.php`
+- **Form Requests**: `app/Http/Requests/Product/StoreRequest.php` & `UpdateRequest.php`
+- **Feature Tests**: `tests/Feature/ProductTest.php`
+
 ---
 
-## 💡 Coming Soon
+## Test Generation
 
-- Blade views
-- Events/Observers
-- Tests & factories
-- GitHub Action integration
+When using `--tests`, the package will:
+
+- Use the database connection defined in `.env`
+- Run CRUD operations with **valid data** and **invalid data** scenarios
+- Test for `404 Not Found` when accessing non-existent records
+- Test validation errors from Form Requests
+- Test successful creation, update, and deletion
 
 ---
 
-Made with ❤️ by [efati](https://github.com/AfshinEfati)
+## Version History
+
+### **v5.2**
+- Added **full CRUD Feature Tests** with success & failure cases
+- Removed forced SQLite in tests (uses `.env` database settings)
+- Fixed **Form Requests** generation bug
+- Improved DTO integration in Controllers & Services
+
+### v5.1
+- Bug fixes for Form Requests generation
+- Improved path handling in configuration
+
+### v5.0
+- Major refactor for Laravel 11 support
+- Dynamic namespace handling
+- Service & Repository auto-binding
+
+---
+
+## License
+
+MIT
