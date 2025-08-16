@@ -6,60 +6,87 @@ use Illuminate\Support\Facades\File;
 
 class DTOGenerator
 {
-    public static function generate(string $name): void
+    public static function generate(string $name, string $baseNamespace = 'App'): void
     {
-        $dtoPath = app_path(config('module-generator.paths.dto'));
+        $paths = config('module-generator.paths', []);
+        $dtoRel = $paths['dto'] ?? ($paths['dtos'] ?? 'DTOs');
+
+        $dtoPath = app_path($dtoRel);
         File::ensureDirectoryExists($dtoPath);
 
-        $modelClass = "App\\Models\\{$name}";
-        if (!class_exists($modelClass)) {
-            throw new \Exception("Model class {$modelClass} does not exist.");
+        $className = "{$name}DTO";
+        $filePath  = $dtoPath . "/{$className}.php";
+
+        $modelFqcn = "{$baseNamespace}\\Models\\{$name}";
+        $fillable  = self::getFillable($modelFqcn);
+
+        $content   = self::build($className, $baseNamespace, $fillable);
+
+        File::put($filePath, $content);
+    }
+
+    private static function getFillable(string $modelFqcn): array
+    {
+        if (!class_exists($modelFqcn)) {
+            return [];
+        }
+        $model = new $modelFqcn();
+        return method_exists($model, 'getFillable') ? $model->getFillable() : [];
+    }
+
+    private static function build(string $className, string $baseNamespace, array $fillable): string
+    {
+        $ns = "{$baseNamespace}\\DTOs";
+
+        $props = [];
+        $ctor  = [];
+        $asg   = [];
+        foreach ($fillable as $f) {
+            $props[] = "    public mixed \${$f};";
+            $ctor[]  = "        mixed \${$f} = null";
+            $asg[]   = "        \$this->{$f} = \${$f};";
         }
 
-        $model = new $modelClass();
-        $fields = $model->getFillable();
+        $ctorSig = implode(",\n", $ctor);
+        $asgBody = implode("\n", $asg);
 
-        $properties = '';
-        $constructorParams = '';
-        $signature = '';
-        $requestMap = '';
-        $args = [];
-
-        foreach ($fields as $field) {
-            $properties .= "    public mixed \$$field;\n";
-            $signature .= "mixed \$$field, ";
-            $constructorParams .= "        \$this->$field = \$$field;\n";
-            $requestMap .= "        \$$field = \$request->$field;\n";
-            $args[] = "\$$field";
+        $fromReq = [];
+        foreach ($fillable as $f) {
+            $fromReq[] = "            \$dto->{$f} = \$request->input('{$f}');";
         }
+        $fromReqBody = implode("\n", $fromReq);
 
-        $signature = rtrim($signature, ', ');
-        $argsLine = implode(', ', $args);
+        $toArray = empty($fillable) ? '' : implode("\n", array_map(fn($f) => "        if (\$this->{$f} !== null) { \$out['{$f}'] = \$this->{$f}; }", $fillable));
 
-        $baseNamespace = config('module-generator.base_namespace');
+        return "<?php
 
-        File::put("{$dtoPath}/{$name}DTO.php", "<?php
-
-namespace {$baseNamespace}\\DTOs;
+namespace {$ns};
 
 use Illuminate\\Http\\Request;
 
-class {$name}DTO
+class {$className}
 {
-{$properties}
-
-    public function __construct({$signature})
-    {
-{$constructorParams}
+" . (empty($props) ? '' : implode("\n", $props) . "\n") . "
+    public function __construct(
+{$ctorSig}
+    ) {
+{$asgBody}
     }
 
     public static function fromRequest(Request \$request): self
     {
-{$requestMap}
+        \$dto = new self();
+{$fromReqBody}
+        return \$dto;
+    }
 
-        return new self({$argsLine});
+    public function toArray(): array
+    {
+        \$out = [];
+{$toArray}
+        return \$out;
     }
 }
-");
+";
     }
 }

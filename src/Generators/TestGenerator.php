@@ -8,10 +8,10 @@ class TestGenerator
 {
     public static function generate(string $name): void
     {
-        $testPath = base_path(config('module-generator.paths.test'));
+        $testPath = base_path(config('module-generator.tests.feature'));
         File::ensureDirectoryExists($testPath);
 
-        File::put("{$testPath}/{$name}Test.php", "<?php
+        $content = "<?php
 
 namespace Tests\\Feature;
 
@@ -25,6 +25,7 @@ class {$name}Test extends TestCase
         \$this->assertTrue(true);
     }
 }
-");
+";
+        File::put($testPath . "/{$name}Test.php", $content);
     }
 }

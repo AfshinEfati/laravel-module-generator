@@ -4,104 +4,104 @@ namespace Efati\ModuleGenerator\Generators;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use ReflectionClass;
-use Illuminate\Database\Eloquent\Model;
 
 class ResourceGenerator
 {
-    public static function generate(string $name): void
+    public static function generate(string $name, string $baseNamespace = 'App'): void
     {
-        $baseNamespace = config('module-generator.base_namespace', 'App');
-        $resourcePath = app_path('Http/Resources');
+        $paths = config('module-generator.paths', []);
+        $resourceRel = $paths['resource'] ?? ($paths['resources'] ?? 'Http/Resources');
+
+        $resourcePath = app_path($resourceRel);
         File::ensureDirectoryExists($resourcePath);
 
-        $modelName = Str::studly($name);
-        $modelClass = "{$baseNamespace}\\Models\\{$modelName}";
-        $resourceClass = "{$modelName}Resource";
-        $filename = "{$resourcePath}/{$resourceClass}.php";
+        $className = "{$name}Resource";
+        $filePath  = $resourcePath . "/{$className}.php";
 
-        // Base use statements
+        $modelFqcn  = "{$baseNamespace}\\Models\\{$name}";
+        $helperFqcn = "{$baseNamespace}\\Helpers\\StatusHelper";
+
+        $fillable   = self::getFillable($modelFqcn);
+        $relations  = self::detectRelations($modelFqcn);
+
+        $content    = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations);
+
+        File::put($filePath, $content);
+    }
+
+    private static function getFillable(string $modelFqcn): array
+    {
+        if (!class_exists($modelFqcn)) return [];
+        $m = new $modelFqcn();
+        return method_exists($m, 'getFillable') ? $m->getFillable() : [];
+    }
+
+    private static function detectRelations(string $modelFqcn): array
+    {
+        if (!class_exists($modelFqcn)) return [];
+        $m = new $modelFqcn();
+        $rels = [];
+
+        foreach (get_class_methods($m) as $method) {
+            if (in_array($method, ['boot', 'booted'])) continue;
+            try {
+                $ret = $m->$method();
+                if (is_object($ret) && method_exists($ret, 'getRelated')) {
+                    $rels[$method] = get_class($ret->getRelated());
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+        return $rels;
+    }
+
+    private static function build(string $className, string $baseNamespace, string $helperFqcn, array $fillable, array $relations): string
+    {
+        $ns = "{$baseNamespace}\\Http\\Resources";
         $uses = [
-            'use Illuminate\Http\Request;',
-            'use Illuminate\Http\Resources\Json\JsonResource;',
-            'use App\Helpers\StatusHelper;',
-            "use {$modelClass};",
+            'Illuminate\\Http\\Resources\\Json\\JsonResource',
+            $helperFqcn,
         ];
+        $usesBlock = 'use ' . implode(";\nuse ", array_unique($uses)) . ';';
 
-        $fields = [];
-        $relations = [];
-
-        if (class_exists($modelClass)) {
-            /** @var Model $model */
-            $model = new $modelClass();
-
-            // Get fillable fields
-            $fillable = method_exists($model, 'getFillable') ? $model->getFillable() : [];
-
-            foreach ($fillable as $field) {
-                if (Str::endsWith($field, ['_at'])) {
-                    $fields[$field] = "StatusHelper::formatDates(\$this->{$field})";
-                } elseif (Str::startsWith($field, ['is_', 'has_'])) {
-                    $fields[$field] = "StatusHelper::getStatus(\$this->{$field})";
-                } else {
-                    $fields[$field] = "\$this->{$field}";
-                }
-            }
-
-            // Analyze relationships using reflection
-            $reflection = new ReflectionClass($model);
-            foreach ($reflection->getMethods() as $method) {
-                if ($method->class !== $modelClass) continue;
-
-                if ($method->getNumberOfParameters() === 0) {
-                    try {
-                        $return = $method->invoke($model);
-                        $relationClass = get_class($return);
-
-                        if (in_array(class_basename($relationClass), ['BelongsTo', 'HasOne'])) {
-                            $relationName = $method->getName();
-                            $relatedModel = class_basename($return->getRelated());
-                            $relatedResource = "{$relatedModel}Resource";
-                            $fields[$relationName] = "new {$relatedResource}(\$this->whenLoaded('{$relationName}'))";
-                            $uses[] = "use {$baseNamespace}\\Http\\Resources\\{$relatedResource};";
-                        }
-                    } catch (\Throwable $e) {
-                        // Silent fail for unsupported methods
-                    }
-                }
+        $body = [];
+        foreach ($fillable as $field) {
+            if (Str::endsWith($field, ['_at'])) {
+                $body[] = "            '{$field}' => StatusHelper::formatDates(\$this->{$field}),";
+            } elseif (Str::startsWith($field, ['is_', 'has_'])) {
+                $body[] = "            '{$field}' => StatusHelper::getStatus((bool) \$this->{$field}),";
+            } else {
+                $body[] = "            '{$field}' => \$this->{$field},";
             }
         }
 
-        // Convert field array to output string
-        $arrayLines = [];
-        foreach ($fields as $key => $value) {
-            $arrayLines[] = "            '{$key}' => {$value},";
+        foreach ($relations as $rel => $relatedFqcn) {
+            $relatedModel = class_exists($relatedFqcn) ? class_basename($relatedFqcn) : 'Related';
+            $relatedResourceFqcn = "{$baseNamespace}\\Http\\Resources\\{$relatedModel}Resource";
+            $body[] =
+"            '{$rel}' => class_exists('{$relatedResourceFqcn}')
+                ? new \\{$relatedResourceFqcn}(\$this->whenLoaded('{$rel}'))
+                : \$this->whenLoaded('{$rel}'),";
         }
-        $arrayString = implode("\n", $arrayLines);
 
-        // Compile all use statements
-        $useBlock = implode("\n", array_unique($uses));
+        $bodyBlock = implode("\n", $body);
 
-        // Final content
-        $content = <<<PHP
-<?php
+        return "<?php
 
-namespace {$baseNamespace}\Http\Resources;
+namespace {$ns};
 
-{$useBlock}
+{$usesBlock}
 
-/** @mixin {$modelName} */
-class {$resourceClass} extends JsonResource
+class {$className} extends JsonResource
 {
-    public function toArray(Request \$request): array
+    public function toArray(\$request): array
     {
         return [
-{$arrayString}
+{$bodyBlock}
         ];
     }
 }
-PHP;
-
-        File::put($filename, $content);
+";
     }
 }

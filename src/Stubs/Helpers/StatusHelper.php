@@ -4,123 +4,106 @@ namespace App\Helpers;
 
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 class StatusHelper
 {
-    public static function getStatus(bool $status): array
-    {
-        return $status ? [
-            'name' => 'active',
-            'fa_name' => 'فعال',
-            'code' => 1
-        ] : [
-            'name' => 'inActive',
-            'fa_name' => 'غیرفعال',
-            'code' => 0
-        ];
-    }
-
-    public static function successResponse($data, $message, int $code = 200): JsonResponse
+    public static function successResponse(mixed $data = null, string $message = 'success', int $code = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'data' => $data,
-            'message' => $message
+            'message' => $message,
+            'data'    => $data,
         ], $code);
     }
 
-    public static function errorResponse(string $message, int $code): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'data' => [],
-            'message' => $message
-        ], $code);
-    }
-
-    public static function unauthorizedResponse(array $array, string $message): JsonResponse
+    public static function errorResponse(string $message = 'error', int $code = 400, mixed $errors = null): JsonResponse
     {
         return response()->json([
             'success' => false,
             'message' => $message,
-            'data' => $array
-        ], Response::HTTP_UNAUTHORIZED);
-    }
-
-    public static function forbiddenResponse(array $array, string $message): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'message' => $message,
-            'data' => $array
-        ], 403);
-    }
-
-    public static function notFoundResponse($data, string $message, int $code = 404): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'data' => $data,
-            'message' => $message
+            'errors'  => $errors,
         ], $code);
     }
 
-    public static function formatDates(Carbon|string|null $date): array
+    public static function unauthorized(string $message = 'unauthorized'): JsonResponse
     {
-        if (!$date) return [];
+        return self::errorResponse($message, 401);
+    }
 
-        $date = Carbon::parse($date);
+    public static function forbidden(string $message = 'forbidden'): JsonResponse
+    {
+        return self::errorResponse($message, 403);
+    }
+
+    public static function notFound(string $message = 'not found'): JsonResponse
+    {
+        return self::errorResponse($message, 404);
+    }
+
+    /**
+     * Format date fields into a consistent structure.
+     * Falls back gracefully if 'verta()' is not available.
+     */
+    public static function formatDates(?string $datetime): ?array
+    {
+        if (!$datetime) {
+            return null;
+        }
+
+        try {
+            $carbon = $datetime instanceof Carbon ? $datetime : Carbon::parse($datetime);
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $iso = $carbon->toIso8601String();
+        $date = $carbon->toDateString();
+        $time = $carbon->toTimeString();
+
+        // Fallback when 'verta' is not installed
+        $fa_date = $date;
+        try {
+            if (function_exists('verta')) {
+                $fa_date = verta($carbon)->format('Y-m-d'); // customize if needed
+            }
+        } catch (\Throwable $e) {
+            // keep fallback
+        }
+
         return [
-            'date' => $date->format('Y-m-d'),
-            'time' => $date->format('H:i:s'),
-            'fa_date' => verta($date)->format('Y-m-d'),
-            'iso' => $date->toIso8601String(),
+            'date'    => $date,
+            'time'    => $time,
+            'fa_date' => $fa_date,
+            'iso'     => $iso,
         ];
     }
 
-    public static function getCabinType(string $cabinType): array
+    /**
+     * Return normalized status object for booleans.
+     */
+    public static function getStatus(bool $value): array
     {
-        $cabinType = strtolower($cabinType);
-        $cabinTypes = [
-            'economy' => [
-                'name' => 'economy',
-                'fa_name' => 'اکونومی',
-                'code' => 'Y',
-                'number' => 1
-            ],
-            'premium economy' => [
-                'name' => 'premium economy',
-                'fa_name' => 'پریمیوم اکونومی',
-                'code' => 'S',
-                'number' => 2
-            ],
-            'business' => [
-                'name' => 'business',
-                'fa_name' => 'بیزینس',
-                'code' => 'C',
-                'number' => 3
-            ],
-            'premium business' => [
-                'name' => 'premium business',
-                'fa_name' => 'پریمیوم بیزینس',
-                'code' => 'J',
-                'number' => 4
-            ],
-            'first class' => [
-                'name' => 'first class',
-                'fa_name' => 'فرست کلس',
-                'code' => 'F',
-                'number' => 5
-            ],
-            'premium first class' => [
-                'name' => 'premium first class',
-                'fa_name' => 'پریمیوم فرست کلس',
-                'code' => 'P',
-                'number' => 6
-            ],
+        return [
+            'name'    => $value ? 'active' : 'inactive',
+            'fa_name' => $value ? 'فعال' : 'غیرفعال',
+            'code'    => $value ? 1 : 0,
+        ];
+    }
+
+    /**
+     * Domain example: cabin type mapping.
+     */
+    public static function getCabinType(?string $type): ?array
+    {
+        if (!$type) return null;
+
+        $map = [
+            'Y' => ['name' => 'economy', 'fa_name' => 'اکونومی', 'code' => 'Y'],
+            'W' => ['name' => 'premium_economy', 'fa_name' => 'اکونومی پریمیوم', 'code' => 'W'],
+            'C' => ['name' => 'business', 'fa_name' => 'بیزینس', 'code' => 'C'],
+            'F' => ['name' => 'first', 'fa_name' => 'فرست', 'code' => 'F'],
         ];
 
-        return $cabinTypes[$cabinType] ?? $cabinTypes['economy'];
+        return $map[$type] ?? ['name' => strtolower($type), 'fa_name' => $type, 'code' => $type];
     }
 }

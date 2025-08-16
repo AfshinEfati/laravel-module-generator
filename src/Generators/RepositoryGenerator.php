@@ -6,43 +6,85 @@ use Illuminate\Support\Facades\File;
 
 class RepositoryGenerator
 {
-    public static function generate(string $name): void
+    public static function generate(string $name, string $baseNamespace = 'App'): void
     {
-        $repoPath = app_path(config('module-generator.paths.repository'));
-        $contractPath = app_path(config('module-generator.paths.repository_contract'));
+        $paths = config('module-generator.paths', []);
 
-        File::ensureDirectoryExists($repoPath);
+        // Support both 'repository' and 'repositories' keys + safe defaults
+        $repoPaths     = $paths['repository']  ?? ($paths['repositories']  ?? []);
+        $eloquentRel   = is_array($repoPaths) ? ($repoPaths['eloquent']  ?? 'Repositories/Eloquent')  : 'Repositories/Eloquent';
+        $contractsRel  = is_array($repoPaths) ? ($repoPaths['contracts'] ?? 'Repositories/Contracts') : 'Repositories/Contracts';
+
+        $eloquentPath = app_path($eloquentRel);
+        $contractPath = app_path($contractsRel);
+        File::ensureDirectoryExists($eloquentPath);
         File::ensureDirectoryExists($contractPath);
 
-        $baseNamespace = config('module-generator.base_namespace');
+        $modelFqcn = $baseNamespace . '\\Models\\' . $name;
 
-        File::put("{$repoPath}/{$name}Repository.php", "<?php
-
-namespace {$baseNamespace}\\Repositories\\Eloquent;
-
-use {$baseNamespace}\\Models\\{$name};
-use {$baseNamespace}\\Repositories\\Eloquent\\BaseRepository;
-use {$baseNamespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;
-
-class {$name}Repository extends BaseRepository implements {$name}RepositoryInterface
-{
-    public function __construct({$name} \$model)
-    {
-        parent::__construct(\$model);
-    }
-}
-");
-
-        File::put("{$contractPath}/{$name}RepositoryInterface.php", "<?php
+        // Contract
+        $contract = "<?php
 
 namespace {$baseNamespace}\\Repositories\\Contracts;
 
-use {$baseNamespace}\\Repositories\\Contracts\\BaseRepositoryInterface;
+use Illuminate\\Database\\Eloquent\\Model;
 
-interface {$name}RepositoryInterface extends BaseRepositoryInterface
+interface {$name}RepositoryInterface
 {
-    //
+    public function getAll();
+    public function find(int \$id): ?Model;
+    public function store(array \$data): Model;
+    public function update(int \$id, array \$data): bool;
+    public function delete(int \$id): bool;
 }
-");
+";
+        File::put($contractPath . "/{$name}RepositoryInterface.php", $contract);
+
+        // Concrete
+        $concrete = "<?php
+
+namespace {$baseNamespace}\\Repositories\\Eloquent;
+
+use {$baseNamespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;
+use {$baseNamespace}\\Repositories\\Eloquent\\BaseRepository;
+use {$modelFqcn};
+use Illuminate\\Database\\Eloquent\\Model;
+
+class {$name}Repository extends BaseRepository implements {$name}RepositoryInterface
+{
+    public function __construct(public {$name} \$model)
+    {
+        parent::__construct(\$this->model);
+    }
+
+    public function getAll()
+    {
+        return \$this->model->query()->latest()->get();
+    }
+
+    public function find(int \$id): ?Model
+    {
+        return \$this->model->find(\$id);
+    }
+
+    public function store(array \$data): Model
+    {
+        return \$this->model->create(\$data);
+    }
+
+    public function update(int \$id, array \$data): bool
+    {
+        \$item = \$this->find(\$id);
+        return \$item ? \$item->update(\$data) : false;
+    }
+
+    public function delete(int \$id): bool
+    {
+        \$item = \$this->find(\$id);
+        return \$item ? (bool) \$item->delete() : false;
+    }
+}
+";
+        File::put($eloquentPath . "/{$name}Repository.php", $concrete);
     }
 }

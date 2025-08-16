@@ -23,3 +23,9 @@ vendor/
 # Ignore environment files
 .env
 .env.*
+
+*_Zone.Identifier*
+*.Zone.Identifier
+# OS junk
+.DS_Store
+Thumbs.db

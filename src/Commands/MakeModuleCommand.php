@@ -15,40 +15,110 @@ use Efati\ModuleGenerator\Generators\ResourceGenerator;
 
 class MakeModuleCommand extends Command
 {
-    protected $signature = <<<SIGNATURE
-make:module {name}
-            {--controller= : Generate controller (optional subfolder like Admin)}
-            {--api : Generate an API Resource Controller}
-            {--requests : Generate Store/Update FormRequests}
-SIGNATURE;
+    protected $signature = 'make:module
+                            {name : The model/module base name (e.g. Product)}
+                            {--controller= : Optional controller subfolder (e.g. Admin)}
+                            {--api : Mark generated controller for API style (passed to generator)}
+                            {--requests : Generate FormRequests (Store/Update)}
+                            {--no-controller : Do not generate controller}
+                            {--no-resource : Do not generate API Resource}
+                            {--no-dto : Do not generate DTO}
+                            {--no-test : Do not generate feature test}
+                            {--no-provider : Do not generate provider}';
 
-    protected $description = 'Generate Repository, Service, Interfaces, DTO, Provider, Test, Controller and FormRequest for a module';
+    protected $description = 'Generate Repository, Service, DTO, Provider, Resource, Controller and (optionally) FormRequests for a module';
 
-    public function handle(): void
+    public function handle(): int
     {
-        $name = Str::studly($this->argument('name'));
+        $name          = Str::studly($this->argument('name'));
+        $defaults      = (array) config('module-generator.defaults', []);
+        $baseNamespace = (string) config('module-generator.base_namespace', 'App');
 
-        // Core module generation
-        RepositoryGenerator::generate($name);
-        ServiceGenerator::generate($name);
-        DTOGenerator::generate($name);
-        ProviderGenerator::generate($name);
-        TestGenerator::generate($name);
-        ResourceGenerator::generate($name);
+        $controllerSub = $this->option('controller');
+        $isApi         = (bool) $this->option('api');
 
-        // Controller generation
-        $controllerOption = $this->option('controller');
-        $controllerNamespace = is_string($controllerOption) ? $controllerOption : null;
-
-        if ($controllerOption !== null) {
-            ControllerGenerator::generate($name, $controllerNamespace, $this->option('api'), $this->option('requests'));
+        // ---- Toggle resolution (fix) ----
+        $withController = (bool) ($defaults['with_controller'] ?? true);
+        if ($this->option('no-controller')) {
+            $withController = false;
+        }
+        // Force controller on if user asked for a controller subfolder explicitly
+        if (is_string($controllerSub) && $controllerSub !== '') {
+            $withController = true;
         }
 
-        // FormRequest generation
-        if ($this->option('requests')) {
-            FormRequestGenerator::generate($name);
+        $withRequests = $this->option('requests');
+        if ($withRequests === null) {
+            $withRequests = (bool) ($defaults['with_form_requests'] ?? false);
+        } else {
+            $withRequests = (bool) $withRequests;
+        }
+
+        $withUnitTest = (bool) ($defaults['with_unit_test'] ?? true);
+        if ($this->option('no-test')) {
+            $withUnitTest = false;
+        }
+
+        $withResource = (bool) ($defaults['with_resource'] ?? true);
+        if ($this->option('no-resource')) {
+            $withResource = false;
+        }
+
+        $withDTO = (bool) ($defaults['with_dto'] ?? true);
+        if ($this->option('no-dto')) {
+            $withDTO = false;
+        }
+
+        $withProvider = (bool) ($defaults['with_provider'] ?? true);
+        if ($this->option('no-provider')) {
+            $withProvider = false;
+        }
+        // ---- end toggles ----
+
+        // Always: Repository + Service
+        RepositoryGenerator::generate($name, $baseNamespace);
+        ServiceGenerator::generate($name, $baseNamespace);
+
+        if ($withDTO) {
+            DTOGenerator::generate($name, $baseNamespace);
+        }
+
+        if ($withResource) {
+            ResourceGenerator::generate($name, $baseNamespace);
+        }
+
+        if ($withProvider) {
+            ProviderGenerator::generateAndRegister($name, $baseNamespace);
+        }
+
+        if ($withController) {
+            ControllerGenerator::generate(
+                name: $name,
+                baseNamespace: $baseNamespace,
+                controllerSubfolder: is_string($controllerSub) ? $controllerSub : null,
+                isApi: $isApi,
+                withRequests: (bool) $withRequests
+            );
+            $this->info("• Controller generated.");
+        } else {
+            $this->line("• Controller skipped (use --controller=Subfolder or remove --no-controller).");
+        }
+
+        if ($withRequests) {
+            FormRequestGenerator::generate($name, $baseNamespace);
+            $this->info("• FormRequests generated.");
+        } else {
+            $this->line("• FormRequests skipped (use --requests to include).");
+        }
+
+        if ($withUnitTest) {
+            TestGenerator::generate($name);
+            $this->info("• Feature test skeleton generated.");
+        } else {
+            $this->line("• Tests skipped.");
         }
 
         $this->info("✅ Module {$name} generated successfully.");
+        return self::SUCCESS;
     }
 }

@@ -3,157 +3,140 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
-use ReflectionClass;
 
 class ControllerGenerator
 {
-    public static function generate(string $name, ?string $subfolder = null, bool $api = false, bool $withRequests = false): void
-    {
-        $baseNamespace = config('module-generator.base_namespace', 'App');
-        $basePath = config('module-generator.paths.controller', 'Http/Controllers');
-        $formRequestPath = config('module-generator.paths.form_request', 'Http/Requests');
+    public static function generate(
+        string $name,
+        string $baseNamespace = 'App',
+        ?string $controllerSubfolder = null,
+        bool $isApi = false,
+        bool $withRequests = false
+    ): void {
+        $paths = config('module-generator.paths', []);
 
-        $fullPath = $basePath . ($subfolder ? '/' . $subfolder : '');
-        $controllerPath = app_path($fullPath);
+        $controllerRel  = $paths['controller'] ?? ($paths['controllers'] ?? 'Http/Controllers/Api/V1');
+        $controllerPath = app_path($controllerRel . ($controllerSubfolder ? '/' . trim($controllerSubfolder, '/\\') : ''));
         File::ensureDirectoryExists($controllerPath);
 
-        $namespace = $baseNamespace . '\\' . str_replace('/', '\\', $fullPath);
-        $className = Str::studly($name) . 'Controller';
-        $modelName = Str::studly($name);
-        $serviceName = $modelName . 'Service';
-        $varModel = Str::camel($name);
-        $modelClass = "{$baseNamespace}\\Models\\{$modelName}";
+        $modelFqcn     = "{$baseNamespace}\\Models\\{$name}";
+        $serviceFqcn   = "{$baseNamespace}\\Services\\{$name}Service";
+        $helperFqcn    = "{$baseNamespace}\\Helpers\\StatusHelper";
+        $resourceFqcn  = "{$baseNamespace}\\Http\\Resources\\{$name}Resource";
+        $dtoFqcn       = "{$baseNamespace}\\DTOs\\{$name}DTO";
 
-        // Base use statements
-        $uses = [
-            "{$baseNamespace}\\Helpers\\StatusHelper",
-            "{$baseNamespace}\\Services\\{$serviceName}",
-            "{$baseNamespace}\\Models\\{$modelName}",
-            "{$baseNamespace}\\Http\\Resources\\{$modelName}Resource",
-            "{$baseNamespace}\\Http\\Controllers\\Controller",
-            "Illuminate\\Http\\Request"
-        ];
+        $storeReqFqcn  = "{$baseNamespace}\\Http\\Requests\\Store{$name}Request";
+        $updateReqFqcn = "{$baseNamespace}\\Http\\Requests\\Update{$name}Request";
 
-        $storeRequest = 'Request';
-        $updateRequest = 'Request';
+        $useRequests   = $withRequests ? "use {$storeReqFqcn};\nuse {$updateReqFqcn};\n" : '';
+        $reqStoreType  = $withRequests ? "Store{$name}Request"  : 'Illuminate\\Http\\Request';
+        $reqUpdateType = $withRequests ? "Update{$name}Request" : 'Illuminate\\Http\\Request';
 
-        if ($withRequests) {
-            $requestNamespace = "{$baseNamespace}\\{$formRequestPath}\\{$modelName}";
-            $requestNamespace = str_replace('/', '\\', $requestNamespace);
-            $storeRequest = "Store{$modelName}Request";
-            $updateRequest = "Update{$modelName}Request";
-            $uses[] = "{$requestNamespace}\\{$storeRequest}";
-            $uses[] = "{$requestNamespace}\\{$updateRequest}";
-        }
-
-        // Properly escape backslashes for PHP string output
-//        $uses = array_map(fn($use) => 'use ' . str_replace('\\', '\\\\', $use) . ';', array_unique($uses));
-        $uses = array_map(fn($use) => 'use ' . $use . ';', array_unique($uses));
-
-        $useBlock = implode("\n", $uses);
-
-        // Detect model relations
-        $relations = self::extractModelRelations($modelClass);
-        $loadString = empty($relations)
-            ? ''
-            : "\${$varModel}->load([" . implode(', ', array_map(fn($r) => "'$r'", $relations)) . "]);";
+        $relationsLoad = self::relationsLoadSnippet($modelFqcn);
+        $ns        = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
+        $className = "{$name}Controller";
+        $nameLc    = lcfirst($name);
 
         $content = <<<PHP
 <?php
 
-namespace {$namespace};
+namespace {$ns};
 
-{$useBlock}
-
-class {$className} extends Controller
+use {$modelFqcn};
+use {$serviceFqcn};
+use {$helperFqcn};
+use {$resourceFqcn};
+use {$dtoFqcn};
+use Illuminate\\Http\\Request;
+{$useRequests}
+class {$className}
 {
-    public function __construct(public {$serviceName} \${$varModel}Service)
-    {
-        // Middleware can be applied here if needed
-    }
+    public function __construct(public {$name}Service \$service) {}
 
     public function index()
     {
-        \$items = \$this->{$varModel}Service->all();
-        return StatusHelper::successResponse({$modelName}Resource::collection(\$items), '{$modelName}s retrieved successfully.');
+        \$data = \$this->service->index();
+        return StatusHelper::successResponse({$name}Resource::collection(\$data), 'success');
     }
 
-    public function store({$storeRequest} \$request)
+    public function store({$reqStoreType} \$request)
     {
-        \$created = \$this->{$varModel}Service->create(\$request->validated());
-        return StatusHelper::successResponse(new {$modelName}Resource(\$created->refresh()), '{$modelName} created successfully.', 201);
+        \$dto = {$name}DTO::fromRequest(\$request);
+        \$model = \$this->service->store(\$dto);
+        return StatusHelper::successResponse(new {$name}Resource(\$model), 'created', 201);
     }
 
-    public function show({$modelName} \${$varModel})
+    public function show({$name} \${$nameLc}): mixed
     {
-        {$loadString}
-        return StatusHelper::successResponse(new {$modelName}Resource(\${$varModel}), '{$modelName} retrieved successfully.');
+{$relationsLoad}
+        return StatusHelper::successResponse(new {$name}Resource(\${$nameLc}), 'success');
     }
 
-    public function update({$updateRequest} \$request, {$modelName} \${$varModel})
+    public function update({$reqUpdateType} \$request, {$name} \${$nameLc})
     {
-        \$updated = \$this->{$varModel}Service->update(\${$varModel}->id, \$request->validated());
+        \$dto = {$name}DTO::fromRequest(\$request);
+        \$updated = \$this->service->update(\${$nameLc}->id, \$dto);
         if (!\$updated) {
-            return StatusHelper::errorResponse('Failed to update {$modelName}.', 500);
+            return StatusHelper::errorResponse('update failed', 422);
         }
-
-        {$loadString}
-        return StatusHelper::successResponse(new {$modelName}Resource(\${$varModel}->refresh()), '{$modelName} updated successfully.');
+        \${$nameLc}->refresh();
+{$relationsLoad}
+        return StatusHelper::successResponse(new {$name}Resource(\${$nameLc}), 'updated');
     }
 
-    public function destroy({$modelName} \${$varModel})
+    public function destroy({$name} \${$nameLc})
     {
-        \$deleted = \$this->{$varModel}Service->delete(\${$varModel}->id);
-        if (!\$deleted) {
-            return StatusHelper::errorResponse('Failed to delete {$modelName}.', 500);
-        }
-
-        return StatusHelper::successResponse(null, '{$modelName} deleted successfully.');
+        \$deleted = \$this->service->destroy(\${$nameLc}->id);
+        return \$deleted
+            ? StatusHelper::successResponse(null, 'deleted', 204)
+            : StatusHelper::errorResponse('delete failed', 422);
     }
 }
 PHP;
 
-        File::put("{$controllerPath}/{$className}.php", $content);
+        $target = $controllerPath . "/{$className}.php";
+        $ok = File::put($target, $content);
+        if ($ok === false) {
+            throw new \RuntimeException("Failed to write controller file at: " . $target);
+        }
     }
 
-    /**
-     * Extracts all valid Eloquent relationship method names from the model class.
-     */
-    protected static function extractModelRelations(string $modelClass): array
+    private static function controllerNamespace(string $baseNamespace, string $controllerRel, ?string $sub): string
     {
-        if (!class_exists($modelClass)) return [];
+        $rel = str_replace('/', '\\', trim($controllerRel, '/\\'));
+        $ns  = "{$baseNamespace}\\{$rel}";
+        if ($sub) {
+            $sub = str_replace(['/', '\\'], '\\', trim($sub, '/\\'));
+            $ns .= "\\{$sub}";
+        }
+        return $ns;
+    }
 
-        $model = new $modelClass();
-        $relations = [];
-
-        try {
-            $reflection = new ReflectionClass($model);
-            foreach ($reflection->getMethods() as $method) {
-                if (
-                    $method->class === $modelClass &&
-                    $method->getNumberOfParameters() === 0 &&
-                    !$method->isStatic()
-                ) {
-                    try {
-                        $return = $method->invoke($model);
-                        $relationClass = class_basename(get_class($return));
-
-                        if (in_array($relationClass, [
-                            'BelongsTo', 'HasOne', 'HasMany',
-                            'MorphOne', 'MorphMany', 'MorphTo', 'MorphToMany'
-                        ])) {
-                            $relations[] = $method->getName();
-                        }
-                    } catch (\Throwable $e) {
-                        // Skip invalid or non-relation methods
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            return [];
+    private static function relationsLoadSnippet(string $modelFqcn): string
+    {
+        if (!class_exists($modelFqcn)) {
+            return "        // no relations loaded (model class not found)\n";
         }
 
-        return $relations;
+        $m = new $modelFqcn();
+        $rels = [];
+        foreach (get_class_methods($m) as $method) {
+            if (in_array($method, ['boot', 'booted'])) continue;
+            try {
+                $ret = $m->$method();
+                if (is_object($ret) && method_exists($ret, 'getRelated')) {
+                    $rels[] = $method;
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+        if (empty($rels)) {
+            return "        // no relations to load\n";
+        }
+
+        $relsList = "'" . implode("','", $rels) . "'";
+        $var      = '$' . lcfirst(class_basename($modelFqcn));
+        return "        {$var}->load([{$relsList}]);\n";
     }
 }
