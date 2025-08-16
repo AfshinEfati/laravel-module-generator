@@ -18,8 +18,9 @@ class MakeModuleCommand extends Command
     protected $signature = 'make:module
                             {name : The model/module base name (e.g. Product)}
                             {--controller= : Optional controller subfolder (e.g. Admin)}
-                            {--api : Mark generated controller for API style (passed to generator)}
+                            {--api : API style}
                             {--requests : Generate FormRequests (Store/Update)}
+                            {--tests : Force generate feature tests}   # NEW
                             {--no-controller : Do not generate controller}
                             {--no-resource : Do not generate API Resource}
                             {--no-dto : Do not generate DTO}
@@ -37,12 +38,11 @@ class MakeModuleCommand extends Command
         $controllerSub = $this->option('controller');
         $isApi         = (bool) $this->option('api');
 
-        // ---- Toggle resolution (fix) ----
+        // toggles
         $withController = (bool) ($defaults['with_controller'] ?? true);
         if ($this->option('no-controller')) {
             $withController = false;
         }
-        // Force controller on if user asked for a controller subfolder explicitly
         if (is_string($controllerSub) && $controllerSub !== '') {
             $withController = true;
         }
@@ -57,6 +57,9 @@ class MakeModuleCommand extends Command
         $withUnitTest = (bool) ($defaults['with_unit_test'] ?? true);
         if ($this->option('no-test')) {
             $withUnitTest = false;
+        }
+        if ($this->option('tests')) { // force on
+            $withUnitTest = true;
         }
 
         $withResource = (bool) ($defaults['with_resource'] ?? true);
@@ -73,9 +76,8 @@ class MakeModuleCommand extends Command
         if ($this->option('no-provider')) {
             $withProvider = false;
         }
-        // ---- end toggles ----
 
-        // Always: Repository + Service
+        // generate
         RepositoryGenerator::generate($name, $baseNamespace);
         ServiceGenerator::generate($name, $baseNamespace);
 
@@ -101,19 +103,19 @@ class MakeModuleCommand extends Command
             );
             $this->info("• Controller generated.");
         } else {
-            $this->line("• Controller skipped (use --controller=Subfolder or remove --no-controller).");
+            $this->line("• Controller skipped.");
         }
 
         if ($withRequests) {
             FormRequestGenerator::generate($name, $baseNamespace);
             $this->info("• FormRequests generated.");
         } else {
-            $this->line("• FormRequests skipped (use --requests to include).");
+            $this->line("• FormRequests skipped.");
         }
 
         if ($withUnitTest) {
-            TestGenerator::generate($name);
-            $this->info("• Feature test skeleton generated.");
+            TestGenerator::generate($name, $baseNamespace, is_string($controllerSub) ? $controllerSub : null);
+            $this->info("• Feature tests (CRUD) generated.");
         } else {
             $this->line("• Tests skipped.");
         }
