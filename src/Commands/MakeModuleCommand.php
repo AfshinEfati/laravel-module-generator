@@ -13,6 +13,7 @@ use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 
 class MakeModuleCommand extends Command
