@@ -1,0 +1,29 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Http\Request;
+
+class {{ class }}
+{
+{{ properties }}
+    public function __construct(
+{{ constructor_signature }}
+    ) {
+{{ constructor_body }}
+    }
+
+    public static function fromRequest(Request $request): self
+    {
+        $dto = new self();
+{{ from_request_body }}
+        return $dto;
+    }
+
+    public function toArray(): array
+    {
+        $out = [];
+{{ to_array_body }}
+        return $out;
+    }
+}

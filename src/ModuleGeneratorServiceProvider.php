@@ -42,27 +42,12 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
             __DIR__ . '/Stubs/Helpers/StatusHelper.php'     => app_path('Helpers/StatusHelper.php'),
         ], 'module-generator');
 
-        static::registerCarbonMacros();
-    }
+        $resourceStubPath = function_exists('resource_path')
+            ? resource_path('stubs/module-generator')
+            : app()->resourcePath('stubs/module-generator');
 
-    public static function registerCarbonMacros(): void
-    {
-        if (! class_exists(Carbon::class)) {
-            return;
-        }
-
-        if (! Carbon::hasMacro('toJalali')) {
-            Carbon::macro('toJalali', function (DateTimeZone|string|null $timezone = null): Goli {
-                /** @var \Carbon\Carbon $this */
-
-                return Goli::instance($this, $timezone);
-            });
-        }
-
-        if (! Carbon::hasMacro('fromJalali')) {
-            Carbon::macro('fromJalali', function (string $datetime, DateTimeZone|string|null $timezone = null): Carbon {
-                return Goli::parseJalali($datetime, $timezone)->toCarbon();
-            });
-        }
+        $this->publishes([
+            __DIR__ . '/Stubs/Module' => $resourceStubPath,
+        ], 'module-generator-stubs');
     }
 }

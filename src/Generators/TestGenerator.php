@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Efati\ModuleGenerator\Support\SchemaParser;
@@ -24,301 +25,40 @@ class TestGenerator
 
         $modelFqcn = $baseNamespace . '\\Models\\' . $name;
 
-        // NS کنترلر را مثل ControllerGenerator از مسیر کانفیگ می‌سازیم
         $paths          = config('module-generator.paths', []);
         $controllerRel  = $paths['controller'] ?? ($paths['controllers'] ?? 'Http/Controllers/Api/V1');
         $controllerNs   = self::controllerNamespaceFromRel($baseNamespace, $controllerRel, $controllerSubfolder);
         $controllerFqcn = $controllerNs . '\\' . $name . 'Controller';
 
-        $resourceSegment   = Str::kebab(Str::pluralStudly($name)); // products
-        $testRouteSegment  = 'test-' . $resourceSegment;
-        $baseUri           = '/' . $testRouteSegment;
+        $resourceSegment  = Str::kebab(Str::pluralStudly($name));
+        $testRouteSegment = 'test-' . $resourceSegment;
+        $baseUri          = '/' . $testRouteSegment;
 
         $fillable       = self::getFillable($modelFqcn, $schema);
         $fillableExport = self::exportArray($fillable);
         $schemaExport   = self::exportSchema($schema);
 
-        // baseNamespace را به‌صورت literal امن داخل کد تست قرار می‌دهیم
         $baseNsLiteral = var_export($baseNamespace, true);
+
+        $content = Stub::render('Test/feature', [
+            'class'                  => $className,
+            'base_uri'               => $baseUri,
+            'test_route_segment'     => $testRouteSegment,
+            'controller_fqcn'        => $controllerFqcn,
+            'fillable_export'        => $fillableExport,
+            'base_namespace_literal' => $baseNsLiteral,
+            'model_fqcn'             => $modelFqcn,
+        ]);
 
         $content = <<<PHP
 <?php
-
-namespace Tests\\Feature;
-
-use Tests\\TestCase;
-use Illuminate\\Foundation\\Testing\\RefreshDatabase;
-use Illuminate\\Foundation\\Testing\\WithFaker;
-use Illuminate\\Support\\Facades\\Route;
-
-class {$className} extends TestCase
-{
-    use RefreshDatabase, WithFaker;
-
-    protected string \$baseUri = '{$baseUri}';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // روت‌های آزمایشی مستقل از روت‌های پروژه
-        Route::middleware('api')->group(function () {
-            Route::apiResource('{$testRouteSegment}', \\{$controllerFqcn}::class);
-        });
-    }
-
-    /**
-     * تعریف اسکیما از CLI (در صورت وجود)
-     */
-    private function schemaDefinition(): array
-    {
-        return {$schemaExport};
-    }
-
-    /**
-     * فیلدهای fillable مدل
-     */
-    private function fillable(): array
-    {
-        \$schema = \$this->schemaDefinition();
-        if (!empty(\$schema)) {
-            return array_keys(\$schema);
-        }
-
-        return {$fillableExport};
-    }
-
-    private function uniqueField(): ?string
-    {
-        \$schema = \$this->schemaDefinition();
-        foreach (\$schema as \$field => \$definition) {
-            if (is_array(\$definition) && !empty(\$definition['unique'])) {
-                return \$field;
-            }
-        }
-
-        foreach (\$this->fillable() as \$field) {
-            if (\$field === 'slug' || str_contains(\$field, 'slug')) {
-                return \$field;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * ساخت payload معتبر/نسبتاً معتبر برای store/update
-     * خروجی: [payload, canCreate]
-     */
-    private function buildValidPayload(bool \$forCreate = true): array
-    {
-        \$payload = [];
-        \$canCreate = true;
-
-        \$schema = \$this->schemaDefinition();
-        \$fields = !empty(\$schema) ? \$schema : array_fill_keys(\$this->fillable(), null);
-
-        foreach (\$fields as \$field => \$definition) {
-            if (str_ends_with(\$field, '_at')) {
-                continue;
-            }
-            if (str_ends_with(\$field, '_id')) {
-                \$base = substr(\$field, 0, -3);
-                \$related = {$baseNsLiteral} . '\\\\Models\\\\' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$base)));
-
-                \$id = null;
-                if (class_exists(\$related)) {
-                    if (method_exists(\$related, 'factory')) {
-                        \$id = \$related::factory()->create()->getKey();
-                    } else {
-                        try {
-                            \$obj = new \$related();
-                            \$fill = method_exists(\$obj, 'getFillable') ? \$obj->getFillable() : [];
-                            \$data = [];
-                            foreach (\$fill as \$f) {
-                                if (str_ends_with(\$f, '_id')) { continue; }
-                                if (stripos(\$f, 'email') !== false) { \$data[\$f] = 'x'.uniqid().'@example.test'; continue; }
-                                if (stripos(\$f, 'slug')  !== false) { \$data[\$f] = 'slug-'.uniqid(); continue; }
-                                if (stripos(\$f, 'name')  !== false) { \$data[\$f] = 'Name '.uniqid(); continue; }
-                                if (stripos(\$f, 'price') !== false || stripos(\$f, 'amount') !== false) { \$data[\$f] = 1; continue; }
-                                if (stripos(\$f, 'is_') === 0 || stripos(\$f, 'has_') === 0) { \$data[\$f] = true; continue; }
-                                \$data[\$f] = 'val';
-                            }
-                            \$obj = \$related::query()->create(\$data);
-                            \$id = \$obj->getKey();
-                        } catch (\\Throwable \$e) {}
-                    }
-                }
-                if (\$id === null) {
-                    \$canCreate = false;
-                } else {
-                    \$payload[\$field] = \$id;
-                }
-                continue;
-            }
-
-            \$type = is_array(\$definition) ? strtolower((string) (\$definition['type'] ?? '')) : '';
-            if (\$type !== '') {
-                switch (\$type) {
-                    case 'boolean':
-                        \$payload[\$field] = true;
-                        continue 2;
-                    case 'integer':
-                        \$payload[\$field] = \$this->faker->numberBetween(1, 1000);
-                        continue 2;
-                    case 'numeric':
-                        \$payload[\$field] = \$this->faker->randomFloat(2, 1, 1000);
-                        continue 2;
-                    case 'date':
-                        \$payload[\$field] = \$this->faker->date('Y-m-d');
-                        continue 2;
-                    case 'datetime':
-                        \$payload[\$field] = \$this->faker->dateTime()->format('Y-m-d H:i:s');
-                        continue 2;
-                    case 'json':
-                    case 'array':
-                        \$payload[\$field] = ['sample' => 'value'];
-                        continue 2;
-                    case 'uuid':
-                        \$payload[\$field] = (string) \$this->faker->uuid();
-                        continue 2;
-                    case 'email':
-                        \$payload[\$field] = 'u'.uniqid().'@example.test';
-                        continue 2;
-                    case 'url':
-                        \$payload[\$field] = 'https://example.test/' . uniqid();
-                        continue 2;
-                    case 'text':
-                        \$payload[\$field] = \$this->faker->sentence();
-                        continue 2;
-                    case 'string':
-                        \$payload[\$field] = \$this->faker->words(3, true);
-                        continue 2;
-                }
-            }
-
-            if (stripos(\$field, 'email') !== false) {
-                \$payload[\$field] = 'u'.uniqid().'@example.test';
-            } elseif (stripos(\$field, 'slug') !== false || stripos(\$field, 'code') !== false) {
-                \$payload[\$field] = 'slug-'.uniqid();
-            } elseif (stripos(\$field, 'name') !== false || stripos(\$field, 'title') !== false) {
-                \$payload[\$field] = 'Title '.uniqid();
-            } elseif (stripos(\$field, 'price') !== false || stripos(\$field, 'amount') !== false || stripos(\$field, 'rate') !== false) {
-                \$payload[\$field] = 1000;
-            } elseif (stripos(\$field, 'is_') === 0 || stripos(\$field, 'has_') === 0) {
-                \$payload[\$field] = true;
-            } else {
-                \$payload[\$field] = 'text';
-            }
-        }
-
-        return [\$payload, \$canCreate];
-    }
-
-    private function createModel(): \\{$modelFqcn}
-    {
-        if (method_exists(\\{$modelFqcn}::class, 'factory')) {
-            return \\{$modelFqcn}::factory()->create();
-        }
-        [\$payload, \$can] = \$this->buildValidPayload(true);
-        return \\{$modelFqcn}::query()->create(\$payload);
-    }
-
-    public function test_index_returns_list(): void
-    {
-        try {
-            if (method_exists(\\{$modelFqcn}::class, 'factory')) {
-                \\{$modelFqcn}::factory()->count(3)->create();
-            }
-        } catch (\\Throwable \$e) {}
-        \$res = \$this->json('GET', \$this->baseUri);
-        \$res->assertStatus(200)->assertJsonStructure(['success', 'message', 'data']);
-    }
-
-    public function test_store_creates_resource_with_valid_data_or_422_when_unresolvable_fk(): void
-    {
-        [\$payload, \$canCreate] = \$this->buildValidPayload(true);
-        \$res = \$this->postJson(\$this->baseUri, \$payload);
-        if (\$canCreate) {
-            \$res->assertStatus(201)->assertJson(['success' => true]);
-        } else {
-            \$res->assertStatus(422);
-        }
-    }
-
-    public function test_store_returns_validation_error_for_duplicate_unique_when_applicable(): void
-    {
-        \$uniqueField = \$this->uniqueField();
-        if (!\$uniqueField) {
-            \$this->markTestSkipped('no unique-like field to test duplication');
-        }
-        \$existing = \$this->createModel();
-        [\$payload, \$can] = \$this->buildValidPayload(true);
-        \$payload[\$uniqueField] = \$existing->{\$uniqueField};
-        \$res = \$this->postJson(\$this->baseUri, \$payload);
-        \$res->assertStatus(422);
-    }
-
-    public function test_show_returns_single_resource(): void
-    {
-        \$model = \$this->createModel();
-        \$res = \$this->getJson(\$this->baseUri . '/' . \$model->getKey());
-        \$res->assertStatus(200)->assertJson(['success' => true]);
-    }
-
-    public function test_show_returns_404_for_missing_resource(): void
-    {
-        \$res = \$this->getJson(\$this->baseUri . '/999999999');
-        \$res->assertStatus(404);
-    }
-
-    public function test_update_updates_resource_with_valid_data(): void
-    {
-        \$model = \$this->createModel();
-        [\$payload, \$can] = \$this->buildValidPayload(false);
-        foreach (\$payload as \$k => \$v) {
-            if (is_string(\$v) && !str_ends_with(\$k, '_id')) {
-                \$payload[\$k] = 'updated-' . uniqid();
-                break;
-            }
-        }
-        \$res = \$this->patchJson(\$this->baseUri . '/' . \$model->getKey(), \$payload);
-        (\$payload ? \$res->assertStatus(200) : \$res->assertStatus(422));
-    }
-
-    public function test_update_returns_validation_error_on_duplicate_unique_when_applicable(): void
-    {
-        \$uniqueField = \$this->uniqueField();
-        if (!\$uniqueField) {
-            \$this->markTestSkipped('no unique-like field to test duplication on update');
-        }
-        \$a = \$this->createModel();
-        \$b = \$this->createModel();
-        \$res = \$this->patchJson(\$this->baseUri . '/' . \$b->getKey(), [\$uniqueField => \$a->{\$uniqueField}]);
-        \$res->assertStatus(422);
-    }
-
-    public function test_destroy_deletes_resource(): void
-    {
-        \$model = \$this->createModel();
-        \$res = \$this->deleteJson(\$this->baseUri . '/' . \$model->getKey());
-        \$res->assertStatus(204);
-    }
-
-    public function test_destroy_returns_404_for_missing_resource(): void
-    {
-        \$res = \$this->deleteJson(\$this->baseUri . '/999999999');
-        \$res->assertStatus(404);
-    }
-}
-PHP;
 
         return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
     private static function controllerNamespaceFromRel(string $baseNamespace, string $controllerRel, ?string $subfolder): string
     {
-        $rel = str_replace('/', '\\', trim($controllerRel, '/\\')); // e.g. Http/Controllers/Api/V1
+        $rel = str_replace('/', '\\', trim($controllerRel, '/\\'));
         $ns  = $baseNamespace . '\\' . $rel;
         if ($subfolder) {
             $ns .= '\\' . str_replace(['/', '\\'], '\\', trim($subfolder, '/\\'));

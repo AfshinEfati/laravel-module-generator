@@ -39,6 +39,19 @@ This will create `config/module-generator.php` where you can adjust:
 - **Default controller path** (e.g., `App\Http\Controllers\Api\V1`)
 - **Enable/Disable** generation of tests, form requests, DTOs, etc.
 
+### Customising generator stubs
+
+If your team follows specific coding standards you can publish and edit the generator stubs:
+
+```bash
+php artisan vendor:publish --tag=module-generator-stubs
+```
+
+All stub files will be copied to `resources/stubs/module-generator`. The generators always look for a published stub first, so
+any changes you make there (naming conventions, imports, method bodies, docblocks, etc.) will be reflected in the next
+generation run. The package uses simple placeholders such as `{{ namespace }}`, `{{ class }}` or `{{ store_argument }}` inside
+the stub files—leave these intact and only change the surrounding structure to keep the dynamic parts working.
+
 ---
 
 ## Usage

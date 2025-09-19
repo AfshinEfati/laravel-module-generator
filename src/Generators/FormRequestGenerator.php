@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Efati\ModuleGenerator\Support\SchemaParser;
@@ -180,13 +181,20 @@ class FormRequestGenerator
         }
         $rulesStr = implode("\n", $rulesExport);
 
-        $uses = "use Illuminate\\Foundation\\Http\\FormRequest;";
-        $uniquePatch = '';
+        $uses = [
+            'use Illuminate\\Foundation\\Http\\FormRequest;',
+        ];
+
+        $rulesBody = '';
 
         if ($isUpdate) {
-            $uses .= "\nuse Illuminate\\Validation\\Rule;";
+            $uses[] = 'use Illuminate\\Validation\\Rule;';
             $routeParamVar = $routeParam ? ("'" . $routeParam . "'") : "'id'";
             $tableVal      = $table ? ("'" . $table . "'") : "'items'";
+
+            $rulesInit = $rulesStr === ''
+                ? '        $rules = [];'
+                : "        \$rules = [\n{$rulesStr}\n        ];";
 
             $uniquePatch = <<<PHP
 
@@ -221,52 +229,36 @@ class FormRequestGenerator
         }
         unset(\$pipe);
 PHP;
+
+            $bodyParts = [
+                $rulesInit,
+                $uniquePatch,
+                '',
+                '        foreach ($rules as $k => &$arr) {',
+                '            if (is_array($arr)) {',
+                '                $arr = array_map(function ($x) { return $x; }, $arr);',
+                '            }',
+                '        }',
+                '        unset($arr);',
+                '',
+                '        return $rules;',
+            ];
+
+            $rulesBody = implode("\n", $bodyParts);
+        } else {
+            $rulesBody = $rulesStr === ''
+                ? '        return [];'
+                : "        return [\n{$rulesStr}\n        ];";
         }
-
-        $rulesBody = $isUpdate
-            ? <<<PHP
-
-        \$rules = [
-{$rulesStr}
-        ];{$uniquePatch}
-
-        foreach (\$rules as \$k => &\$arr) {
-            if (is_array(\$arr)) {
-                \$arr = array_map(function (\$x) { return \$x; }, \$arr);
-            }
-        }
-        unset(\$arr);
-
-        return \$rules;
-PHP
-            : <<<PHP
-
-        return [
-{$rulesStr}
-        ];
-PHP;
 
         $ns = $baseNamespace . '\\Http\\Requests';
 
-        return <<<PHP
-<?php
-
-namespace {$ns};
-
-{$uses}
-
-class {$className} extends FormRequest
-{
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    public function rules(): array
-    {{$rulesBody}
-}
-}
-PHP;
+        return Stub::render('FormRequest/request', [
+            'namespace'  => $ns,
+            'uses'       => implode("\n", $uses),
+            'class'      => $className,
+            'rules_body' => $rulesBody,
+        ]);
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool
