@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\File;
 
 class RepositoryGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App'): void
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
     {
         $paths = config('module-generator.paths', []);
 
@@ -38,7 +38,9 @@ interface {$name}RepositoryInterface
     public function delete(int \$id): bool;
 }
 ";
-        File::put($contractPath . "/{$name}RepositoryInterface.php", $contract);
+        $results = [];
+        $contractFile = $contractPath . "/{$name}RepositoryInterface.php";
+        $results[$contractFile] = self::writeFile($contractFile, $contract, $force);
 
         // Concrete
         $concrete = "<?php
@@ -85,6 +87,20 @@ class {$name}Repository extends BaseRepository implements {$name}RepositoryInter
     }
 }
 ";
-        File::put($eloquentPath . "/{$name}Repository.php", $concrete);
+        $eloquentFile = $eloquentPath . "/{$name}Repository.php";
+        $results[$eloquentFile] = self::writeFile($eloquentFile, $concrete, $force);
+
+        return $results;
+    }
+
+    private static function writeFile(string $path, string $contents, bool $force): bool
+    {
+        if (!$force && File::exists($path)) {
+            return false;
+        }
+
+        File::put($path, $contents);
+
+        return true;
     }
 }

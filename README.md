@@ -47,36 +47,57 @@ This will create `config/module-generator.php` where you can adjust:
 php artisan make:module ModelName [options]
 ```
 
-### Options
+### Options (long form)
 
 | Option                | Description |
 |-----------------------|-------------|
-| `--api`               | Generate an API Resource controller |
-| `--controller=Subdir` | Place controller in a specific subfolder |
-| `--requests`          | Generate Form Requests |
-| `--tests`             | Generate CRUD Feature Tests |
-| `--dto`               | Generate DTO class for the module |
-| `--force`             | Overwrite existing files |
+| `--api`               | Generate an API-flavoured controller (default path: `Http/Controllers/Api/V1`) |
+| `--controller=Subdir` | Place controller inside a subdirectory (forces controller generation) |
+| `--requests`          | Generate Form Requests for Store/Update |
+| `--tests`             | Force CRUD Feature Test generation |
+| `--no-controller`     | Skip controller generation |
+| `--no-resource`       | Skip API Resource generation |
+| `--no-dto`            | Skip DTO generation |
+| `--no-test`           | Skip Feature Test generation |
+| `--no-provider`       | Skip provider creation and auto-registration |
+| `--force`             | Overwrite existing files (default is to skip and warn) |
+
+### Short aliases
+
+| Alias | Long option         |
+|-------|---------------------|
+| `-a`  | `--api`             |
+| `-c`  | `--controller`      |
+| `-r`  | `--requests`        |
+| `-t`  | `--tests`           |
+| `-nc` | `--no-controller`   |
+| `-nr` | `--no-resource`     |
+| `-nd` | `--no-dto`          |
+| `-nt` | `--no-test`         |
+| `-np` | `--no-provider`     |
+| `-f`  | `--force`           |
 
 ---
 
 ### Example
 
 ```bash
-php artisan make:module Product --api --requests --controller=Admin --tests --dto
+php artisan make:module Product --api --requests --controller=Admin --tests
 ```
 
 This will generate:
 
 - **Model**: `app/Models/Product.php`
-- **Repository**: `app/Repositories/ProductRepository.php`
-- **Repository Interface**: `app/Repositories/Interfaces/ProductRepositoryInterface.php`
+- **Repository**: `app/Repositories/Eloquent/ProductRepository.php`
+- **Repository Interface**: `app/Repositories/Contracts/ProductRepositoryInterface.php`
 - **Service**: `app/Services/ProductService.php`
-- **Service Interface**: `app/Services/Interfaces/ProductServiceInterface.php`
+- **Service Interface**: `app/Services/Contracts/ProductServiceInterface.php`
 - **DTO**: `app/DTOs/ProductDTO.php`
 - **Controller**: `app/Http/Controllers/Api/V1/Admin/ProductController.php`
-- **Form Requests**: `app/Http/Requests/Product/StoreRequest.php` & `UpdateRequest.php`
-- **Feature Tests**: `tests/Feature/ProductTest.php`
+- **Form Requests**: `app/Http/Requests/StoreProductRequest.php` & `UpdateProductRequest.php`
+- **Feature Tests**: `tests/Feature/ProductCrudTest.php`
+
+> Tip: rerunning the generator without `--force` will skip existing files and list the skipped paths in the console output.
 
 ---
 
@@ -93,6 +114,12 @@ When using `--tests`, the package will:
 ---
 
 ## Version History
+
+### **v5.3**
+- Added short CLI aliases (`-a`, `-c`, `-r`, `-t`, etc.) for faster module generation.
+- Introduced safe overwrite behaviour: generators skip existing files unless `--force/-f` is provided.
+- Controllers now adapt to API vs. web mode, respecting DTO/resource toggles and returning sensible payloads when those artefacts are disabled.
+- Services fall back to array payloads when DTOs are skipped and can work without provider bindings when `--no-provider` is used.
 
 ### **v5.2**
 - Added **full CRUD Feature Tests** with success & failure cases

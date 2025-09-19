@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class ResourceGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App'): void
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
     {
         $paths = config('module-generator.paths', []);
         $resourceRel = $paths['resource'] ?? ($paths['resources'] ?? 'Http/Resources');
@@ -26,7 +26,7 @@ class ResourceGenerator
 
         $content    = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations);
 
-        File::put($filePath, $content);
+        return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
     private static function getFillable(string $modelFqcn): array
@@ -103,5 +103,16 @@ class {$className} extends JsonResource
     }
 }
 ";
+    }
+
+    private static function writeFile(string $path, string $contents, bool $force): bool
+    {
+        if (!$force && File::exists($path)) {
+            return false;
+        }
+
+        File::put($path, $contents);
+
+        return true;
     }
 }

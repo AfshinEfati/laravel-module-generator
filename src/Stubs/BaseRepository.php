@@ -14,9 +14,9 @@ class BaseRepository implements BaseRepositoryInterface
         $this->model = $model;
     }
 
-    public function all(): iterable
+    public function getAll(): iterable
     {
-        return $this->model->all();
+        return $this->model->query()->latest()->get();
     }
 
     public function find(int|string $id): ?Model
@@ -24,20 +24,22 @@ class BaseRepository implements BaseRepositoryInterface
         return $this->model->find($id);
     }
 
-    public function create(array $data): Model
+    public function store(array $data): Model
     {
         return $this->model->create($data);
     }
 
     public function update(int|string $id, array $data): bool
     {
-        $model = $this->find($id);
-        return $model ? $model->update($data) : false;
+        $record = $this->find($id);
+
+        return $record ? $record->update($data) : false;
     }
 
     public function delete(int|string $id): bool
     {
-        $model = $this->find($id);
-        return $model ? $model->delete() : false;
+        $record = $this->find($id);
+
+        return $record ? (bool) $record->delete() : false;
     }
 }

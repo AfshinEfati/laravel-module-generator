@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class TestGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', ?string $controllerSubfolder = null): void
+    public static function generate(string $name, string $baseNamespace = 'App', ?string $controllerSubfolder = null, bool $force = false): array
     {
         $testsPath = base_path(config('module-generator.tests.feature', 'tests/Feature'));
         File::ensureDirectoryExists($testsPath);
@@ -229,7 +229,7 @@ class {$className} extends TestCase
 }
 PHP;
 
-        File::put($filePath, $content);
+        return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
     private static function controllerNamespaceFromRel(string $baseNamespace, string $controllerRel, ?string $subfolder): string
@@ -253,5 +253,16 @@ PHP;
     {
         $items = array_map(fn($v) => var_export($v, true), $arr);
         return '[' . implode(', ', $items) . ']';
+    }
+
+    private static function writeFile(string $path, string $contents, bool $force): bool
+    {
+        if (!$force && File::exists($path)) {
+            return false;
+        }
+
+        File::put($path, $contents);
+
+        return true;
     }
 }

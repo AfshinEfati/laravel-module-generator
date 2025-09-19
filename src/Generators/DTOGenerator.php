@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\File;
 
 class DTOGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App'): void
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
     {
         $paths = config('module-generator.paths', []);
         $dtoRel = $paths['dto'] ?? ($paths['dtos'] ?? 'DTOs');
@@ -22,7 +22,7 @@ class DTOGenerator
 
         $content   = self::build($className, $baseNamespace, $fillable);
 
-        File::put($filePath, $content);
+        return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
     private static function getFillable(string $modelFqcn): array
@@ -88,5 +88,16 @@ class {$className}
     }
 }
 ";
+    }
+
+    private static function writeFile(string $path, string $content, bool $force): bool
+    {
+        if (!$force && File::exists($path)) {
+            return false;
+        }
+
+        File::put($path, $content);
+
+        return true;
     }
 }

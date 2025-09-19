@@ -17,15 +17,16 @@ class MakeModuleCommand extends Command
 {
     protected $signature = 'make:module
                             {name : The model/module base name (e.g. Product)}
-                            {--controller= : Optional controller subfolder (e.g. Admin)}
-                            {--api : API style}
-                            {--requests : Generate FormRequests (Store/Update)}
-                            {--tests : Force generate feature tests}   # NEW
-                            {--no-controller : Do not generate controller}
-                            {--no-resource : Do not generate API Resource}
-                            {--no-dto : Do not generate DTO}
-                            {--no-test : Do not generate feature test}
-                            {--no-provider : Do not generate provider}';
+                            {--c|controller= : Optional controller subfolder (e.g. Admin)}
+                            {--a|api : Generate API style controller}
+                            {--r|requests : Generate FormRequests (Store/Update)}
+                            {--t|tests : Force generate feature tests}
+                            {--nc|no-controller : Do not generate controller}
+                            {--nr|no-resource : Do not generate API Resource}
+                            {--nd|no-dto : Do not generate DTO}
+                            {--nt|no-test : Do not generate feature test}
+                            {--np|no-provider : Do not generate provider}
+                            {--f|force : Overwrite existing files}';
 
     protected $description = 'Generate Repository, Service, DTO, Provider, Resource, Controller and (optionally) FormRequests for a module';
 
@@ -36,91 +37,134 @@ class MakeModuleCommand extends Command
         $baseNamespace = (string) config('module-generator.base_namespace', 'App');
 
         $controllerSub = $this->option('controller');
-        $isApi         = (bool) $this->option('api');
+        $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']);
+        $force         = $this->input->hasParameterOption(['--force', '--f', '-f']);
 
         // toggles
         $withController = (bool) ($defaults['with_controller'] ?? true);
-        if ($this->option('no-controller')) {
+        if ($this->input->hasParameterOption(['--no-controller', '--nc', '-nc'])) {
             $withController = false;
         }
         if (is_string($controllerSub) && $controllerSub !== '') {
             $withController = true;
         }
 
-        $withRequests = $this->option('requests');
-        if ($withRequests === null) {
-            $withRequests = (bool) ($defaults['with_form_requests'] ?? false);
-        } else {
-            $withRequests = (bool) $withRequests;
+        $withRequests = (bool) ($defaults['with_form_requests'] ?? false);
+        if ($this->input->hasParameterOption(['--requests', '--r', '-r'])) {
+            $withRequests = (bool) $this->option('requests');
         }
 
         $withUnitTest = (bool) ($defaults['with_unit_test'] ?? true);
-        if ($this->option('no-test')) {
+        if ($this->input->hasParameterOption(['--no-test', '--nt', '-nt'])) {
             $withUnitTest = false;
         }
-        if ($this->option('tests')) { // force on
+        if ($this->input->hasParameterOption(['--tests', '--t', '-t'])) { // force on
             $withUnitTest = true;
         }
 
         $withResource = (bool) ($defaults['with_resource'] ?? true);
-        if ($this->option('no-resource')) {
+        if ($this->input->hasParameterOption(['--no-resource', '--nr', '-nr'])) {
             $withResource = false;
         }
 
         $withDTO = (bool) ($defaults['with_dto'] ?? true);
-        if ($this->option('no-dto')) {
+        if ($this->input->hasParameterOption(['--no-dto', '--nd', '-nd'])) {
             $withDTO = false;
         }
 
         $withProvider = (bool) ($defaults['with_provider'] ?? true);
-        if ($this->option('no-provider')) {
+        if ($this->input->hasParameterOption(['--no-provider', '--np', '-np'])) {
             $withProvider = false;
         }
 
         // generate
-        RepositoryGenerator::generate($name, $baseNamespace);
-        ServiceGenerator::generate($name, $baseNamespace);
+        $repoResults = RepositoryGenerator::generate($name, $baseNamespace, $force);
+        $this->reportResults('Repository', $repoResults);
+
+        $serviceResults = ServiceGenerator::generate(
+            name: $name,
+            baseNamespace: $baseNamespace,
+            usesDto: $withDTO,
+            useInterfaces: $withProvider,
+            force: $force
+        );
+        $this->reportResults('Service', $serviceResults);
 
         if ($withDTO) {
-            DTOGenerator::generate($name, $baseNamespace);
+            $dtoResults = DTOGenerator::generate($name, $baseNamespace, $force);
+            $this->reportResults('DTO', $dtoResults);
         }
 
         if ($withResource) {
-            ResourceGenerator::generate($name, $baseNamespace);
+            $resourceResults = ResourceGenerator::generate($name, $baseNamespace, $force);
+            $this->reportResults('Resource', $resourceResults);
         }
 
         if ($withProvider) {
-            ProviderGenerator::generateAndRegister($name, $baseNamespace);
+            $providerResults = ProviderGenerator::generateAndRegister($name, $baseNamespace, $force);
+            $this->reportResults('Provider', $providerResults);
+        } else {
+            $this->warn('• Provider skipped. Remember to bind the repository/service manually.');
         }
 
         if ($withController) {
-            ControllerGenerator::generate(
+            $controllerResults = ControllerGenerator::generate(
                 name: $name,
                 baseNamespace: $baseNamespace,
                 controllerSubfolder: is_string($controllerSub) ? $controllerSub : null,
                 isApi: $isApi,
-                withRequests: (bool) $withRequests
+                withRequests: $withRequests,
+                usesDto: $withDTO,
+                usesResource: $withResource,
+                force: $force
             );
-            $this->info("• Controller generated.");
+            $this->reportResults('Controller', $controllerResults);
         } else {
             $this->line("• Controller skipped.");
         }
 
         if ($withRequests) {
-            FormRequestGenerator::generate($name, $baseNamespace);
-            $this->info("• FormRequests generated.");
+            $requestResults = FormRequestGenerator::generate($name, $baseNamespace, $force);
+            $this->reportResults('FormRequest', $requestResults);
         } else {
             $this->line("• FormRequests skipped.");
         }
 
         if ($withUnitTest) {
-            TestGenerator::generate($name, $baseNamespace, is_string($controllerSub) ? $controllerSub : null);
-            $this->info("• Feature tests (CRUD) generated.");
+            $testResults = TestGenerator::generate(
+                name: $name,
+                baseNamespace: $baseNamespace,
+                controllerSubfolder: is_string($controllerSub) ? $controllerSub : null,
+                force: $force
+            );
+            $this->reportResults('Feature test', $testResults);
         } else {
             $this->line("• Tests skipped.");
         }
 
         $this->info("✅ Module {$name} generated successfully.");
         return self::SUCCESS;
+    }
+
+    private function reportResults(string $label, array $results): void
+    {
+        $created = [];
+        $skipped = [];
+
+        foreach ($results as $path => $written) {
+            if ($written) {
+                $created[] = $path;
+            } else {
+                $skipped[] = $path;
+            }
+        }
+
+        if (!empty($created)) {
+            $this->info(sprintf('• %s generated: %d file(s).', $label, count($created)));
+        }
+
+        foreach ($skipped as $path) {
+            $this->line(sprintf('  - Skipped existing file: %s (use --force to overwrite)', $path));
+        }
     }
 }

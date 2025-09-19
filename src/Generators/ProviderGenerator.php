@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\File;
 
 class ProviderGenerator
 {
-    public static function generateAndRegister(string $name, string $baseNamespace = 'App'): void
+    public static function generateAndRegister(string $name, string $baseNamespace = 'App', bool $force = false): array
     {
         $paths = config('module-generator.paths', []);
         $providerRel = $paths['provider'] ?? ($paths['providers'] ?? 'Providers');
@@ -42,13 +42,19 @@ class {$class} extends ServiceProvider
     }
 }
 ";
-        File::put($providerPath . "/{$class}.php", $content);
+        $providerFile = $providerPath . "/{$class}.php";
+        $results = [
+            $providerFile => self::writeFile($providerFile, $content, $force),
+        ];
 
-        self::registerProvider("{$provNs}\\{$class}");
+        $results = array_merge($results, self::registerProvider("{$provNs}\\{$class}"));
+
+        return $results;
     }
 
-    private static function registerProvider(string $fqcn): void
+    private static function registerProvider(string $fqcn): array
     {
+        $results = [];
         $bootstrapProviders = base_path('bootstrap/providers.php');
         if (File::exists($bootstrapProviders)) {
             $contents = File::get($bootstrapProviders);
@@ -60,8 +66,11 @@ class {$class} extends ServiceProvider
                     1
                 );
                 File::put($bootstrapProviders, $contents);
+                $results[$bootstrapProviders] = true;
+            } else {
+                $results[$bootstrapProviders] = false;
             }
-            return;
+            return $results;
         }
 
         $configApp = config_path('app.php');
@@ -73,8 +82,26 @@ class {$class} extends ServiceProvider
                     $block = rtrim($m[1]) . "\n        {$fqcn}::class,\n    ";
                     $contents = preg_replace($pattern, "'providers' => [\n{$block}],", $contents, 1);
                     File::put($configApp, $contents);
+                    $results[$configApp] = true;
+                } else {
+                    $results[$configApp] = false;
                 }
+            } else {
+                $results[$configApp] = false;
             }
         }
+
+        return $results;
+    }
+
+    private static function writeFile(string $path, string $contents, bool $force): bool
+    {
+        if (!$force && File::exists($path)) {
+            return false;
+        }
+
+        File::put($path, $contents);
+
+        return true;
     }
 }
