@@ -139,6 +139,46 @@ Key capabilities include:
 - seamless Carbon interoperability for chained date operations
 - resolving new instances through the Laravel container using the `goli` binding
 
+### Casting Eloquent attributes to Jalali-aware objects
+
+For database columns that should automatically become `Goli` instances you can use the built-in cast and helper trait.
+
+```php
+use Efati\ModuleGenerator\Support\HasGoliDates;
+use Illuminate\Database\Eloquent\Model;
+
+class Article extends Model
+{
+    use HasGoliDates;
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $goliDates = [
+        'published_at',
+        'published_until',
+    ];
+}
+
+$article = Article::make([
+    'title' => 'New year announcement',
+    // Both Jalali and Gregorian values are accepted thanks to the cast
+    'published_at' => '1403-01-01 10:00:00',
+]);
+
+$article->published_at->toJalaliDateString();     // 1403-01-01
+$article->published_at->formatGregorian('Y-m-d');  // 2024-03-20
+```
+
+The trait automatically pushes the cast to the `$casts` array during model construction. If you need to register casts at
+runtime (for instance in a constructor), call `$model->addGoliDateCast('starts_at', 'ends_at');`.
+
+To see a few round-trip examples you can run the included script:
+
+```bash
+php tests/goli-date-cast.php
+```
+
 ---
 
 ## Version History
