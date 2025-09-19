@@ -62,17 +62,22 @@ class FormRequestGenerator
     private static function buildRules(string $modelFqcn, string $table, ?array $fieldMeta = null): array
 
     {
-        if (is_array($fieldMeta) && !empty($fieldMeta)) {
-            return MigrationFieldParser::buildValidationRules($fieldMeta, $table);
+        $schema = [];
+        if (is_array($fieldMeta)) {
+            $schema = $fieldMeta;
+
+            if (!empty($schema)) {
+                return MigrationFieldParser::buildValidationRules($schema, $table);
+            }
         }
 
         $fillable = [];
         if (class_exists($modelFqcn)) {
             $m = new $modelFqcn();
-            $fillable = method_exists($m, 'getFillable') ? $m->getFillable() : [];
+            $fillable = method_exists($m, 'getFillable') ? (array) $m->getFillable() : [];
         }
 
-        if (empty($fillable)) {
+        if (empty($fillable) && !empty($schema)) {
             $fillable = SchemaParser::fieldNames($schema);
         }
 
