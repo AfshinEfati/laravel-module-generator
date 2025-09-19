@@ -4,6 +4,7 @@ namespace Efati\ModuleGenerator;
 
 use Illuminate\Support\ServiceProvider;
 use Efati\ModuleGenerator\Commands\MakeModuleCommand;
+use Efati\ModuleGenerator\Support\Goli;
 
 class ModuleGeneratorServiceProvider extends ServiceProvider
 {
@@ -13,6 +14,15 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
             __DIR__ . '/config/module-generator.php',
             'module-generator'
         );
+
+        $this->app->bind('goli', function ($app, array $parameters = []) {
+            $datetime = $parameters['datetime'] ?? ($parameters[0] ?? null);
+            $timezone = $parameters['timezone'] ?? ($parameters[1] ?? null);
+
+            return Goli::instance($datetime, $timezone);
+        });
+
+        $this->app->alias('goli', Goli::class);
 
         $this->commands([
             MakeModuleCommand::class,

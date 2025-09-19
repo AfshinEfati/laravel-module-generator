@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use Carbon\Carbon;
+use DateTimeInterface;
+use Efati\ModuleGenerator\Support\Goli;
 use Illuminate\Http\JsonResponse;
 
 class StatusHelper
@@ -41,40 +43,46 @@ class StatusHelper
     }
 
     /**
-     * Format date fields into a consistent structure.
-     * Falls back gracefully if 'verta()' is not available.
+     * Format date fields into a consistent structure using the built-in Goli helper.
+     * Falls back gracefully if parsing fails.
      */
-    public static function formatDates(?string $datetime): ?array
-    {
-        if (!$datetime) {
+    public static function formatDates(
+        Carbon|DateTimeInterface|Goli|int|string|null $datetime
+    ): ?array {
+        if ($datetime === null) {
+            return null;
+        }
+
+        if (is_string($datetime) && trim($datetime) === '') {
             return null;
         }
 
         try {
-            $carbon = $datetime instanceof Carbon ? $datetime : Carbon::parse($datetime);
+            $jalali = $datetime instanceof Goli ? $datetime : Goli::instance($datetime);
+            $carbon = $jalali->toCarbon();
         } catch (\Throwable $e) {
-            return null;
-        }
+            try {
+                if ($datetime instanceof Carbon) {
+                    $carbon = $datetime->copy();
+                } elseif ($datetime instanceof DateTimeInterface) {
+                    $carbon = Carbon::instance($datetime);
+                } elseif (is_int($datetime)) {
+                    $carbon = Carbon::createFromTimestamp($datetime);
+                } else {
+                    $carbon = Carbon::parse((string) $datetime);
+                }
 
-        $iso = $carbon->toIso8601String();
-        $date = $carbon->toDateString();
-        $time = $carbon->toTimeString();
-
-        // Fallback when 'verta' is not installed
-        $fa_date = $date;
-        try {
-            if (function_exists('verta')) {
-                $fa_date = verta($carbon)->format('Y-m-d'); // customize if needed
+                $jalali = Goli::instance($carbon);
+            } catch (\Throwable $e) {
+                return null;
             }
-        } catch (\Throwable $e) {
-            // keep fallback
         }
 
         return [
-            'date'    => $date,
-            'time'    => $time,
-            'fa_date' => $fa_date,
-            'iso'     => $iso,
+            'date'    => $carbon->toDateString(),
+            'time'    => $carbon->toTimeString(),
+            'fa_date' => $jalali->format('Y-m-d', true),
+            'iso'     => $carbon->toIso8601String(),
         ];
     }
 

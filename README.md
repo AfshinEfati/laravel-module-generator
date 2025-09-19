@@ -12,6 +12,7 @@ A Laravel package to generate fully structured modules (Model, Repository, Servi
 - Respects your existing `.env` database configuration for tests (no forced SQLite)
 - Ability to override stubs
 - Compatible with Laravel 10+ and Laravel 11
+- Built-in `goli()` helper for Jalali date handling (no external dependency)
 
 ---
 
@@ -113,6 +114,32 @@ When using `--tests`, the package will:
 
 ---
 
+## Goli Date Helper
+
+The package now ships with an in-house Jalali toolkit exposed via the `goli()` helper and the `Goli` class, so you can
+drop the third-party Verta dependency and reuse the converter anywhere in your project.
+
+```php
+use Efati\ModuleGenerator\Support\Goli;
+
+// via the global helper autoloaded by composer
+$goli = goli(now())->format('Y/m/d');
+
+// resolving an instance directly or from the service container binding
+$goli = Goli::instance('2024-03-20 12:00:00')->toJalaliDateString();
+$resolved = app(Goli::class, ['datetime' => now()]);
+```
+
+Key capabilities include:
+
+- parsing Jalali date strings (with optional Persian/Arabic digits) via `goli()` or `Goli::parseJalali()`
+- converting Jalali dates to Gregorian and vice versa, including array helpers and timezone awareness
+- formatting output with automatic Persian digit localisation when desired
+- seamless Carbon interoperability for chained date operations
+- resolving new instances through the Laravel container using the `goli` binding
+
+---
+
 ## Version History
 
 ### **v5.3**
@@ -141,3 +168,7 @@ When using `--tests`, the package will:
 ## License
 
 MIT
+
+---
+
+_پینوشت: با تشکر از gole davoodi 😆_
