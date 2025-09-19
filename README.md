@@ -129,6 +129,10 @@ $goli = goli(now())->format('Y/m/d');
 // resolving an instance directly or from the service container binding
 $goli = Goli::instance('2024-03-20 12:00:00')->toJalaliDateString();
 $resolved = app(Goli::class, ['datetime' => now()]);
+
+// human readable differences with optional Persian digits
+$diff = goli('2024-03-20')->diffForHumans();          // "5 روز پیش"
+$diffFuture = goli('2025-03-20')->diffForHumans(null, true); // "۱ سال بعد"
 ```
 
 Key capabilities include:
