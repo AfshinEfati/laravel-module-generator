@@ -4,10 +4,11 @@ namespace Efati\ModuleGenerator\Generators;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class FormRequestGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false, array $schema = []): array
     {
         $paths  = config('module-generator.paths', []);
         $reqRel = $paths['form_request'] ?? ($paths['requests'] ?? 'Http/Requests');
@@ -19,7 +20,7 @@ class FormRequestGenerator
         $table      = self::guessTable($modelFqcn);
         $routeParam = lcfirst($name);
 
-        [$storeRules, $updateRules] = self::buildRules($modelFqcn, $table);
+        [$storeRules, $updateRules] = self::buildRules($modelFqcn, $table, $schema);
 
         $storeContent  = self::buildRequestClass('Store' . $name . 'Request', $baseNamespace, $storeRules, false, null, null);
         $updateContent = self::buildRequestClass('Update' . $name . 'Request', $baseNamespace, $updateRules, true, $routeParam, $table);
@@ -45,7 +46,7 @@ class FormRequestGenerator
         return Str::snake(Str::pluralStudly(class_basename($modelFqcn)));
     }
 
-    private static function buildRules(string $modelFqcn, string $table): array
+    private static function buildRules(string $modelFqcn, string $table, array $schema): array
     {
         $fillable = [];
         if (class_exists($modelFqcn)) {
@@ -53,23 +54,40 @@ class FormRequestGenerator
             $fillable = method_exists($m, 'getFillable') ? $m->getFillable() : [];
         }
 
+        if (empty($fillable)) {
+            $fillable = SchemaParser::fieldNames($schema);
+        }
+
+        $schemaMap = SchemaParser::keyByName($schema);
+
         $store = [];
         foreach ($fillable as $f) {
-            $store[$f] = implode('|', self::inferRuleForField($f, $table, true));
+            $definition = $schemaMap[$f] ?? null;
+            $rules      = self::inferRuleForField($f, $table, true, $definition);
+            if (!empty($rules)) {
+                $store[$f] = implode('|', $rules);
+            }
         }
 
         $update = [];
         foreach ($fillable as $f) {
-            $r = self::inferRuleForField($f, $table, false);
-            array_unshift($r, 'sometimes');
-            $update[$f] = implode('|', $r);
+            $definition = $schemaMap[$f] ?? null;
+            $r          = self::inferRuleForField($f, $table, false, $definition);
+            if (!empty($r)) {
+                array_unshift($r, 'sometimes');
+                $update[$f] = implode('|', $r);
+            }
         }
 
         return [$store, $update];
     }
 
-    private static function inferRuleForField(string $field, string $table, bool $forCreate): array
+    private static function inferRuleForField(string $field, string $table, bool $forCreate, ?array $definition = null): array
     {
+        if ($definition !== null) {
+            return self::rulesFromDefinition($field, $table, $definition);
+        }
+
         if (Str::endsWith($field, '_id')) {
             $base    = substr($field, 0, -3);
             $fkTable = Str::snake(Str::pluralStudly($base));
@@ -97,6 +115,55 @@ class FormRequestGenerator
             return ['nullable', 'numeric'];
         }
         return ['nullable'];
+    }
+
+    private static function rulesFromDefinition(string $field, string $table, array $definition): array
+    {
+        $nullable = (bool) ($definition['nullable'] ?? false);
+        $rules    = [$nullable ? 'nullable' : 'required'];
+
+        $typeRules = self::rulesForType((string) ($definition['type'] ?? 'string'));
+        if (!empty($typeRules)) {
+            $rules = array_merge($rules, $typeRules);
+        }
+
+        if (!empty($definition['unique'])) {
+            $rules[] = 'unique:' . $table . ',' . $field;
+        }
+
+        if (!empty($definition['foreign']) && is_array($definition['foreign'])) {
+            $fkTable  = $definition['foreign']['table'] ?? null;
+            $fkColumn = $definition['foreign']['column'] ?? 'id';
+            if ($fkTable) {
+                $rules[] = 'exists:' . $fkTable . ',' . $fkColumn;
+            }
+        } elseif (Str::endsWith($field, '_id')) {
+            $base    = substr($field, 0, -3);
+            $fkTable = Str::snake(Str::pluralStudly($base));
+            $rules[] = 'exists:' . $fkTable . ',id';
+        }
+
+        return array_values(array_unique($rules));
+    }
+
+    private static function rulesForType(string $type): array
+    {
+        $type = SchemaParser::normalizeType($type);
+
+        return match ($type) {
+            'string' => ['string', 'max:255'],
+            'text' => ['string'],
+            'integer' => ['integer'],
+            'numeric' => ['numeric'],
+            'boolean' => ['boolean'],
+            'date' => ['date'],
+            'datetime' => ['date'],
+            'json', 'array' => ['array'],
+            'uuid' => ['uuid'],
+            'email' => ['email', 'max:255'],
+            'url' => ['url'],
+            default => [],
+        };
     }
 
     private static function buildRequestClass(
