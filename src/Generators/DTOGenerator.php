@@ -43,16 +43,26 @@ class DTOGenerator
 
     {
         if (!class_exists($modelFqcn)) {
-            return SchemaParser::fieldNames($schema);
+            return [];
         }
+
         $model = new $modelFqcn();
-        $fillable = method_exists($model, 'getFillable') ? $model->getFillable() : [];
 
-        if (empty($fillable)) {
-            return SchemaParser::fieldNames($schema);
+        if (method_exists($model, 'getFillable')) {
+            $fillable = (array) $model->getFillable();
+            if (!empty($fillable)) {
+                return array_values($fillable);
+            }
         }
 
-        return $fillable;
+        if (property_exists($model, 'fillable') && is_array($model->fillable)) {
+            $fillable = array_filter($model->fillable, fn ($value) => is_string($value) && $value !== '');
+            if (!empty($fillable)) {
+                return array_values($fillable);
+            }
+        }
+
+        return [];
     }
 
     private static function build(string $className, string $baseNamespace, array $fillable): string
