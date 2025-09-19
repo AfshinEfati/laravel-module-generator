@@ -2,6 +2,8 @@
 
 namespace Efati\ModuleGenerator;
 
+use Carbon\Carbon;
+use DateTimeZone;
 use Illuminate\Support\ServiceProvider;
 use Efati\ModuleGenerator\Commands\MakeModuleCommand;
 use Efati\ModuleGenerator\Support\Goli;

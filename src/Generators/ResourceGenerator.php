@@ -5,10 +5,11 @@ namespace Efati\ModuleGenerator\Generators;
 use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class ResourceGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false, array $schema = []): array
     {
         $paths = config('module-generator.paths', []);
         $resourceRel = $paths['resource'] ?? ($paths['resources'] ?? 'Http/Resources');
@@ -22,7 +23,7 @@ class ResourceGenerator
         $modelFqcn  = "{$baseNamespace}\\Models\\{$name}";
         $helperFqcn = "{$baseNamespace}\\Helpers\\StatusHelper";
 
-        $fillable   = self::getFillable($modelFqcn);
+        $fillable   = self::getFillable($modelFqcn, $schema);
         $relations  = self::detectRelations($modelFqcn);
 
         $content    = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations);
@@ -30,11 +31,19 @@ class ResourceGenerator
         return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
-    private static function getFillable(string $modelFqcn): array
+    private static function getFillable(string $modelFqcn, array $schema): array
     {
-        if (!class_exists($modelFqcn)) return [];
-        $m = new $modelFqcn();
-        return method_exists($m, 'getFillable') ? $m->getFillable() : [];
+        if (!class_exists($modelFqcn)) {
+            return SchemaParser::fieldNames($schema);
+        }
+        $m        = new $modelFqcn();
+        $fillable = method_exists($m, 'getFillable') ? $m->getFillable() : [];
+
+        if (empty($fillable)) {
+            return SchemaParser::fieldNames($schema);
+        }
+
+        return $fillable;
     }
 
     private static function detectRelations(string $modelFqcn): array

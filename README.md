@@ -76,6 +76,7 @@ php artisan make:module ModelName [options]
 | `--no-test`           | Skip Feature Test generation |
 | `--no-provider`       | Skip provider creation and auto-registration |
 | `--force`             | Overwrite existing files (default is to skip and warn) |
+| `--fields=`           | Inline schema definition so generators can infer fillable fields, validation rules, and test payloads before the Eloquent model exists |
 
 ### Short aliases
 
@@ -114,6 +115,36 @@ This will generate:
 
 > Tip: rerunning the generator without `--force` will skip existing files and list the skipped paths in the console output.
 
+### Schema option (`--fields`)
+
+When you run the command before creating the actual Eloquent model, you can describe the schema inline so DTOs, FormRequests, Resources, and Feature tests know which attributes to work with:
+
+```bash
+php artisan make:module Product \
+  --api --requests --tests \
+  --fields="title:string:unique, price:decimal(8,2):nullable, is_active:boolean, category_id:foreignId:nullable:fk=categories.id"
+```
+
+The syntax is a comma-separated list of field definitions using `name:type[:modifier[:modifier...]]`. Modifiers can also be separated with spaces or pipes (`|`). The supported modifiers are:
+
+- `nullable` – marks the field as optional (`required` is assumed otherwise)
+- `unique` – adds unique validation to the generated FormRequests
+- `fk=table.column` – adds a foreign key rule (`fk=table` defaults the column to `id`)
+
+Supported types (aliases are allowed, e.g. `foreignId` → `integer`):
+
+- `string`, `text`
+- `integer` (int, bigInteger, foreignId, etc.)
+- `numeric` / `decimal` / `float` / `double`
+- `boolean`
+- `date`, `datetime`
+- `json`, `array`
+- `uuid`
+- `email`
+- `url`
+
+Parentheses are ignored when normalising the type, so `decimal(8,2)` will still map to a numeric rule. The schema is used as a fallback whenever the generator cannot read fillable fields from an actual model class.
+
 ---
 
 ## Test Generation
@@ -142,6 +173,10 @@ $goli = goli(now())->format('Y/m/d');
 // resolving an instance directly or from the service container binding
 $goli = Goli::instance('2024-03-20 12:00:00')->toJalaliDateString();
 $resolved = app(Goli::class, ['datetime' => now()]);
+
+// human readable differences with optional Persian digits
+$diff = goli('2024-03-20')->diffForHumans();          // "5 روز پیش"
+$diffFuture = goli('2025-03-20')->diffForHumans(null, true); // "۱ سال بعد"
 ```
 
 Key capabilities include:
@@ -151,6 +186,26 @@ Key capabilities include:
 - formatting output with automatic Persian digit localisation when desired
 - seamless Carbon interoperability for chained date operations
 - resolving new instances through the Laravel container using the `goli` binding
+
+### Carbon Jalali Macros
+
+When the service provider boots it registers two Carbon macros, giving you an instant bridge between `Carbon` and `Goli`:
+
+```php
+use Carbon\Carbon;
+
+$jalaliNow = Carbon::now('Asia/Tehran')->toJalali();
+echo $jalaliNow->format('Y/m/d H:i'); // 1402/12/29 16:45 for example output
+
+$gregorian = Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
+echo $gregorian->format('Y-m-d H:i'); // 2024-03-20 08:30
+```
+
+The `toJalali()` macro returns a `Goli` instance, so you keep access to all Jalali helpers (digit localisation, formatting helpers, etc.).
+`fromJalali()` gives you a regular `Carbon` instance back for further chaining. Both macros accept an optional timezone argument and are only registered once, so you can safely call the service provider multiple times (or invoke `ModuleGeneratorServiceProvider::registerCarbonMacros()` manually in a console script).
+
+> Looking for a quick smoke test? Run `php tests/CarbonMacrosExample.php` to execute the same round-trip conversion showcased above.
+
 
 ---
 

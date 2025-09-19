@@ -12,6 +12,7 @@ use Efati\ModuleGenerator\Generators\TestGenerator;
 use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class MakeModuleCommand extends Command
 {
@@ -26,7 +27,8 @@ class MakeModuleCommand extends Command
                             {--nd|no-dto : Do not generate DTO}
                             {--nt|no-test : Do not generate feature test}
                             {--np|no-provider : Do not generate provider}
-                            {--f|force : Overwrite existing files}';
+                            {--f|force : Overwrite existing files}
+                            {--fields= : Optional schema definition (e.g. "title:string, price:decimal:nullable, category_id:foreignId:fk=categories.id")}';
 
     protected $description = 'Generate Repository, Service, DTO, Provider, Resource, Controller and (optionally) FormRequests for a module';
 
@@ -35,6 +37,7 @@ class MakeModuleCommand extends Command
         $name          = Str::studly($this->argument('name'));
         $defaults      = (array) config('module-generator.defaults', []);
         $baseNamespace = (string) config('module-generator.base_namespace', 'App');
+        $schema        = $this->parseSchemaOption();
 
         $controllerSub = $this->option('controller');
         $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']);
@@ -91,12 +94,12 @@ class MakeModuleCommand extends Command
         $this->reportResults('Service', $serviceResults);
 
         if ($withDTO) {
-            $dtoResults = DTOGenerator::generate($name, $baseNamespace, $force);
+            $dtoResults = DTOGenerator::generate($name, $baseNamespace, $force, $schema);
             $this->reportResults('DTO', $dtoResults);
         }
 
         if ($withResource) {
-            $resourceResults = ResourceGenerator::generate($name, $baseNamespace, $force);
+            $resourceResults = ResourceGenerator::generate($name, $baseNamespace, $force, $schema);
             $this->reportResults('Resource', $resourceResults);
         }
 
@@ -124,7 +127,7 @@ class MakeModuleCommand extends Command
         }
 
         if ($withRequests) {
-            $requestResults = FormRequestGenerator::generate($name, $baseNamespace, $force);
+            $requestResults = FormRequestGenerator::generate($name, $baseNamespace, $force, $schema);
             $this->reportResults('FormRequest', $requestResults);
         } else {
             $this->line("• FormRequests skipped.");
@@ -135,7 +138,8 @@ class MakeModuleCommand extends Command
                 name: $name,
                 baseNamespace: $baseNamespace,
                 controllerSubfolder: is_string($controllerSub) ? $controllerSub : null,
-                force: $force
+                force: $force,
+                schema: $schema
             );
             $this->reportResults('Feature test', $testResults);
         } else {
@@ -166,5 +170,19 @@ class MakeModuleCommand extends Command
         foreach ($skipped as $path) {
             $this->line(sprintf('  - Skipped existing file: %s (use --force to overwrite)', $path));
         }
+    }
+
+    /**
+     * Parse the --fields option into an array of field definitions.
+     */
+    private function parseSchemaOption(): array
+    {
+        $raw = $this->option('fields');
+
+        if (!is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        return SchemaParser::parse($raw);
     }
 }
