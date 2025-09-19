@@ -1,22 +1,36 @@
 <?php
 
-use Efati\ModuleGenerator\Support\Verta;
 use Carbon\Carbon;
+use Efati\ModuleGenerator\Support\Goli;
 
-if (!function_exists('verta')) {
+if (!function_exists('goli')) {
     /**
-     * Create a new Verta instance using the package implementation.
+     * Create a new Goli instance using the package implementation.
      *
-     * @param  Verta|Carbon|\DateTimeInterface|int|string|array<int|string, mixed>|null  $datetime
+     * @param  Goli|Carbon|\DateTimeInterface|int|string|array<int|string, mixed>|null  $datetime
      */
-    function verta(
-        Verta|Carbon|\DateTimeInterface|int|string|array|null $datetime = null,
+    function goli(
+        Goli|Carbon|\DateTimeInterface|int|string|array|null $datetime = null,
         \DateTimeZone|string|null $timezone = null
-    ): Verta {
-        if ($datetime instanceof Verta && $timezone === null) {
+    ): Goli {
+        if ($datetime instanceof Goli && $timezone === null) {
             return $datetime;
         }
 
-        return Verta::instance($datetime, $timezone);
+        return Goli::instance($datetime, $timezone);
+    }
+}
+
+if (!function_exists('goli_date')) {
+    /**
+     * Alias for goli() to improve readability when formatting dates.
+     *
+     * @param  Goli|Carbon|\DateTimeInterface|int|string|array<int|string, mixed>|null  $datetime
+     */
+    function goli_date(
+        Goli|Carbon|\DateTimeInterface|int|string|array|null $datetime = null,
+        \DateTimeZone|string|null $timezone = null
+    ): Goli {
+        return goli($datetime, $timezone);
     }
 }

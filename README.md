@@ -12,7 +12,8 @@ A Laravel package to generate fully structured modules (Model, Repository, Servi
 - Respects your existing `.env` database configuration for tests (no forced SQLite)
 - Ability to override stubs
 - Compatible with Laravel 10+ and Laravel 11
-- Built-in `verta()` helper for Jalali date handling (no external dependency)
+- Built-in `goli()` helper for Jalali date handling (no external dependency)
+
 
 ---
 
@@ -114,23 +115,29 @@ When using `--tests`, the package will:
 
 ---
 
-## Jalali Date Helper
+## Goli Date Helper
 
-Starting from this release the package ships with an in-house implementation of the popular `verta()` helper. You no longer
-need a third-party dependency to work with Jalali dates in the generated modules.
+The package now ships with an in-house Jalali toolkit exposed via the `goli()` helper and the `Goli` class, so you can
+drop the third-party Verta dependency and reuse the converter anywhere in your project.
 
 ```php
-use Efati\ModuleGenerator\Support\Verta;
+use Efati\ModuleGenerator\Support\Goli;
 
-// via the global helper
-$jalali = verta(now())->format('Y/m/d');
+// via the global helper autoloaded by composer
+$goli = goli(now())->format('Y/m/d');
 
-// or interacting with the class directly
-$jalali = Verta::instance('2024-03-20 12:00:00')->toJalaliDateString();
+// resolving an instance directly or from the service container binding
+$goli = Goli::instance('2024-03-20 12:00:00')->toJalaliDateString();
+$resolved = app(Goli::class, ['datetime' => now()]);
 ```
 
-The helper exposes date conversion utilities, Persian digit formatting, timezone awareness, and first-class Carbon
-interoperability right out of the box.
+Key capabilities include:
+
+- parsing Jalali date strings (with optional Persian/Arabic digits) via `goli()` or `Goli::parseJalali()`
+- converting Jalali dates to Gregorian and vice versa, including array helpers and timezone awareness
+- formatting output with automatic Persian digit localisation when desired
+- seamless Carbon interoperability for chained date operations
+- resolving new instances through the Laravel container using the `goli` binding
 
 ---
 
@@ -162,3 +169,7 @@ interoperability right out of the box.
 ## License
 
 MIT
+
+---
+
+_پینوشت: با تشکر از gole davoodi 😆_
