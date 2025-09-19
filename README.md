@@ -139,45 +139,25 @@ Key capabilities include:
 - seamless Carbon interoperability for chained date operations
 - resolving new instances through the Laravel container using the `goli` binding
 
-### Casting Eloquent attributes to Jalali-aware objects
+### Carbon Jalali Macros
 
-For database columns that should automatically become `Goli` instances you can use the built-in cast and helper trait.
+When the service provider boots it registers two Carbon macros, giving you an instant bridge between `Carbon` and `Goli`:
 
 ```php
-use Efati\ModuleGenerator\Support\HasGoliDates;
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
-class Article extends Model
-{
-    use HasGoliDates;
+$jalaliNow = Carbon::now('Asia/Tehran')->toJalali();
+echo $jalaliNow->format('Y/m/d H:i'); // 1402/12/29 16:45 for example output
 
-    /**
-     * @var array<int, string>
-     */
-    protected array $goliDates = [
-        'published_at',
-        'published_until',
-    ];
-}
-
-$article = Article::make([
-    'title' => 'New year announcement',
-    // Both Jalali and Gregorian values are accepted thanks to the cast
-    'published_at' => '1403-01-01 10:00:00',
-]);
-
-$article->published_at->toJalaliDateString();     // 1403-01-01
-$article->published_at->formatGregorian('Y-m-d');  // 2024-03-20
+$gregorian = Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
+echo $gregorian->format('Y-m-d H:i'); // 2024-03-20 08:30
 ```
 
-The trait automatically pushes the cast to the `$casts` array during model construction. If you need to register casts at
-runtime (for instance in a constructor), call `$model->addGoliDateCast('starts_at', 'ends_at');`.
+The `toJalali()` macro returns a `Goli` instance, so you keep access to all Jalali helpers (digit localisation, formatting helpers, etc.).
+`fromJalali()` gives you a regular `Carbon` instance back for further chaining. Both macros accept an optional timezone argument and are only registered once, so you can safely call the service provider multiple times (or invoke `ModuleGeneratorServiceProvider::registerCarbonMacros()` manually in a console script).
 
-To see a few round-trip examples you can run the included script:
+> Looking for a quick smoke test? Run `php tests/CarbonMacrosExample.php` to execute the same round-trip conversion showcased above.
 
-```bash
-php tests/goli-date-cast.php
-```
 
 ---
 

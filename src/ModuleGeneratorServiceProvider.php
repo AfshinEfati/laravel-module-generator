@@ -2,6 +2,8 @@
 
 namespace Efati\ModuleGenerator;
 
+use Carbon\Carbon;
+use DateTimeZone;
 use Illuminate\Support\ServiceProvider;
 use Efati\ModuleGenerator\Commands\MakeModuleCommand;
 use Efati\ModuleGenerator\Support\Goli;
@@ -39,5 +41,28 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
             __DIR__ . '/config/module-generator.php'        => config_path('module-generator.php'),
             __DIR__ . '/Stubs/Helpers/StatusHelper.php'     => app_path('Helpers/StatusHelper.php'),
         ], 'module-generator');
+
+        static::registerCarbonMacros();
+    }
+
+    public static function registerCarbonMacros(): void
+    {
+        if (! class_exists(Carbon::class)) {
+            return;
+        }
+
+        if (! Carbon::hasMacro('toJalali')) {
+            Carbon::macro('toJalali', function (DateTimeZone|string|null $timezone = null): Goli {
+                /** @var \Carbon\Carbon $this */
+
+                return Goli::instance($this, $timezone);
+            });
+        }
+
+        if (! Carbon::hasMacro('fromJalali')) {
+            Carbon::macro('fromJalali', function (string $datetime, DateTimeZone|string|null $timezone = null): Carbon {
+                return Goli::parseJalali($datetime, $timezone)->toCarbon();
+            });
+        }
     }
 }
