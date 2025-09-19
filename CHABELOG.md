@@ -9,6 +9,7 @@ All notable changes to this package will be documented in this file.
 - `ControllerGenerator`: generates full RESTful API controllers with service injection, resource usage, and request validation.
 - `ResourceGenerator`: generates JsonResource with auto-detected fields, boolean formatting, date formatting, and eager loaded relations.
 - `StatusHelper`: added as default helper for standardized success/error API responses and data formatting.
+- Built-in Jalali date helper (replacement for external `verta` dependency) with Persian digit formatting support.
 - Auto-discovery of model relations (`BelongsTo`, `HasOne`, etc.) for eager loading in `show` and `update` methods.
 
 ### 🔧 Changed

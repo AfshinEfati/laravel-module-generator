@@ -12,6 +12,7 @@ A Laravel package to generate fully structured modules (Model, Repository, Servi
 - Respects your existing `.env` database configuration for tests (no forced SQLite)
 - Ability to override stubs
 - Compatible with Laravel 10+ and Laravel 11
+- Built-in `verta()` helper for Jalali date handling (no external dependency)
 
 ---
 
@@ -110,6 +111,26 @@ When using `--tests`, the package will:
 - Test for `404 Not Found` when accessing non-existent records
 - Test validation errors from Form Requests
 - Test successful creation, update, and deletion
+
+---
+
+## Jalali Date Helper
+
+Starting from this release the package ships with an in-house implementation of the popular `verta()` helper. You no longer
+need a third-party dependency to work with Jalali dates in the generated modules.
+
+```php
+use Efati\ModuleGenerator\Support\Verta;
+
+// via the global helper
+$jalali = verta(now())->format('Y/m/d');
+
+// or interacting with the class directly
+$jalali = Verta::instance('2024-03-20 12:00:00')->toJalaliDateString();
+```
+
+The helper exposes date conversion utilities, Persian digit formatting, timezone awareness, and first-class Carbon
+interoperability right out of the box.
 
 ---
 
