@@ -1,0 +1,60 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ uses }}
+
+class {{ class }} extends Controller
+{
+    public function __construct(public {{ service_class }} $service) {}
+
+    public function index(): View
+    {
+        $items = $this->service->index();
+        return view('{{ view_base }}.index', compact('items'));
+    }
+
+    public function create(): View
+    {
+        return view('{{ view_base }}.create');
+    }
+
+    public function store({{ store_request_type }} $request): RedirectResponse
+    {
+        // @todo update validation rules and authorisation as needed.
+{{ store_payload }}
+        $this->service->store({{ store_argument }});
+
+        return redirect()->route('{{ route_name }}.index')
+            ->with('status', '{{ name }} created.');
+    }
+
+    public function show({{ model_class }} ${{ model_variable }}): View
+    {
+{{ relations_load }}
+        return view('{{ view_base }}.show', compact('{{ model_variable }}'));
+    }
+
+    public function edit({{ model_class }} ${{ model_variable }}): View
+    {
+{{ relations_load }}
+        return view('{{ view_base }}.edit', compact('{{ model_variable }}'));
+    }
+
+    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }}): RedirectResponse
+    {
+{{ update_payload }}
+        $this->service->update(${{ model_variable }}->id, {{ update_argument }});
+
+        return redirect()->route('{{ route_name }}.show', ${{ model_variable }})
+            ->with('status', '{{ name }} updated.');
+    }
+
+    public function destroy({{ model_class }} ${{ model_variable }}): RedirectResponse
+    {
+        $this->service->destroy(${{ model_variable }}->id);
+
+        return redirect()->route('{{ route_name }}.index')
+            ->with('status', '{{ name }} deleted.');
+    }
+}

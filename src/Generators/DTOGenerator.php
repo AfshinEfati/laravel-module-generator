@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 
 class DTOGenerator
@@ -38,56 +39,35 @@ class DTOGenerator
     {
         $ns = "{$baseNamespace}\\DTOs";
 
-        $props = [];
-        $ctor  = [];
-        $asg   = [];
+        $properties = [];
+        $constructorSignature = [];
+        $constructorBody = [];
+
         foreach ($fillable as $f) {
-            $props[] = "    public mixed \${$f};";
-            $ctor[]  = "        mixed \${$f} = null";
-            $asg[]   = "        \$this->{$f} = \${$f};";
+            $properties[] = "    public mixed \${$f};";
+            $constructorSignature[] = "        mixed \${$f} = null";
+            $constructorBody[] = "        \$this->{$f} = \${$f};";
         }
 
-        $ctorSig = implode(",\n", $ctor);
-        $asgBody = implode("\n", $asg);
-
-        $fromReq = [];
+        $fromRequestBody = [];
         foreach ($fillable as $f) {
-            $fromReq[] = "            \$dto->{$f} = \$request->input('{$f}');";
+            $fromRequestBody[] = "            \$dto->{$f} = \$request->input('{$f}');";
         }
-        $fromReqBody = implode("\n", $fromReq);
 
-        $toArray = empty($fillable) ? '' : implode("\n", array_map(fn($f) => "        if (\$this->{$f} !== null) { \$out['{$f}'] = \$this->{$f}; }", $fillable));
+        $toArrayBody = [];
+        foreach ($fillable as $f) {
+            $toArrayBody[] = "        if (\$this->{$f} !== null) { \$out['{$f}'] = \$this->{$f}; }";
+        }
 
-        return "<?php
-
-namespace {$ns};
-
-use Illuminate\\Http\\Request;
-
-class {$className}
-{
-" . (empty($props) ? '' : implode("\n", $props) . "\n") . "
-    public function __construct(
-{$ctorSig}
-    ) {
-{$asgBody}
-    }
-
-    public static function fromRequest(Request \$request): self
-    {
-        \$dto = new self();
-{$fromReqBody}
-        return \$dto;
-    }
-
-    public function toArray(): array
-    {
-        \$out = [];
-{$toArray}
-        return \$out;
-    }
-}
-";
+        return Stub::render('DTO/dto', [
+            'namespace'             => $ns,
+            'class'                 => $className,
+            'properties'            => empty($properties) ? '' : implode("\n", $properties) . "\n",
+            'constructor_signature' => implode(",\n", $constructorSignature),
+            'constructor_body'      => implode("\n", $constructorBody),
+            'from_request_body'     => implode("\n", $fromRequestBody),
+            'to_array_body'         => implode("\n", $toArrayBody),
+        ]);
     }
 
     private static function writeFile(string $path, string $content, bool $force): bool

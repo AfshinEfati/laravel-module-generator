@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 
 class RepositoryGenerator
@@ -22,72 +23,33 @@ class RepositoryGenerator
 
         $modelFqcn = $baseNamespace . '\\Models\\' . $name;
 
-        // Contract
-        $contract = "<?php
-
-namespace {$baseNamespace}\\Repositories\\Contracts;
-
-use Illuminate\\Database\\Eloquent\\Model;
-
-interface {$name}RepositoryInterface
-{
-    public function getAll();
-    public function find(int \$id): ?Model;
-    public function store(array \$data): Model;
-    public function update(int \$id, array \$data): bool;
-    public function delete(int \$id): bool;
-}
-";
         $results = [];
-        $contractFile = $contractPath . "/{$name}RepositoryInterface.php";
+
+        $contractNamespace = $baseNamespace . '\\Repositories\\Contracts';
+        $contractClass      = $name . 'RepositoryInterface';
+        $contractFile       = $contractPath . "/{$contractClass}.php";
+
+        $contract = Stub::render('Repository/contract', [
+            'namespace' => $contractNamespace,
+            'interface' => $contractClass,
+        ]);
+
         $results[$contractFile] = self::writeFile($contractFile, $contract, $force);
 
-        // Concrete
-        $concrete = "<?php
+        $eloquentNamespace = $baseNamespace . '\\Repositories\\Eloquent';
+        $eloquentClass     = $name . 'Repository';
+        $eloquentFile      = $eloquentPath . "/{$eloquentClass}.php";
 
-namespace {$baseNamespace}\\Repositories\\Eloquent;
+        $concrete = Stub::render('Repository/concrete', [
+            'namespace'             => $eloquentNamespace,
+            'interface_fqcn'        => $contractNamespace . '\\' . $contractClass,
+            'base_repository_fqcn'  => $baseNamespace . '\\Repositories\\Eloquent\\BaseRepository',
+            'model_fqcn'            => $modelFqcn,
+            'class'                 => $eloquentClass,
+            'interface'             => $contractClass,
+            'model'                 => $name,
+        ]);
 
-use {$baseNamespace}\\Repositories\\Contracts\\{$name}RepositoryInterface;
-use {$baseNamespace}\\Repositories\\Eloquent\\BaseRepository;
-use {$modelFqcn};
-use Illuminate\\Database\\Eloquent\\Model;
-
-class {$name}Repository extends BaseRepository implements {$name}RepositoryInterface
-{
-    public function __construct(public {$name} \$model)
-    {
-        parent::__construct(\$this->model);
-    }
-
-    public function getAll()
-    {
-        return \$this->model->query()->latest()->get();
-    }
-
-    public function find(int \$id): ?Model
-    {
-        return \$this->model->find(\$id);
-    }
-
-    public function store(array \$data): Model
-    {
-        return \$this->model->create(\$data);
-    }
-
-    public function update(int \$id, array \$data): bool
-    {
-        \$item = \$this->find(\$id);
-        return \$item ? \$item->update(\$data) : false;
-    }
-
-    public function delete(int \$id): bool
-    {
-        \$item = \$this->find(\$id);
-        return \$item ? (bool) \$item->delete() : false;
-    }
-}
-";
-        $eloquentFile = $eloquentPath . "/{$name}Repository.php";
         $results[$eloquentFile] = self::writeFile($eloquentFile, $concrete, $force);
 
         return $results;

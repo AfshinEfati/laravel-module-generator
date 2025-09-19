@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -63,7 +64,6 @@ class ResourceGenerator
             'Illuminate\\Http\\Resources\\Json\\JsonResource',
             $helperFqcn,
         ];
-        $usesBlock = 'use ' . implode(";\nuse ", array_unique($uses)) . ';';
 
         $body = [];
         foreach ($fillable as $field) {
@@ -85,24 +85,12 @@ class ResourceGenerator
                 : \$this->whenLoaded('{$rel}'),";
         }
 
-        $bodyBlock = implode("\n", $body);
-
-        return "<?php
-
-namespace {$ns};
-
-{$usesBlock}
-
-class {$className} extends JsonResource
-{
-    public function toArray(\$request): array
-    {
-        return [
-{$bodyBlock}
-        ];
-    }
-}
-";
+        return Stub::render('Resource/resource', [
+            'namespace' => $ns,
+            'uses'      => 'use ' . implode(";\nuse ", array_unique($uses)) . ';',
+            'class'     => $className,
+            'body'      => implode("\n", $body),
+        ]);
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool
