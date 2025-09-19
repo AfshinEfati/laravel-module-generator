@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Carbon\Carbon;
+use Efati\ModuleGenerator\Support\Verta;
 use Illuminate\Http\JsonResponse;
 
 class StatusHelper
@@ -42,7 +43,7 @@ class StatusHelper
 
     /**
      * Format date fields into a consistent structure.
-     * Falls back gracefully if 'verta()' is not available.
+     * Falls back gracefully if Jalali conversion fails.
      */
     public static function formatDates(?string $datetime): ?array
     {
@@ -60,14 +61,11 @@ class StatusHelper
         $date = $carbon->toDateString();
         $time = $carbon->toTimeString();
 
-        // Fallback when 'verta' is not installed
         $fa_date = $date;
         try {
-            if (function_exists('verta')) {
-                $fa_date = verta($carbon)->format('Y-m-d'); // customize if needed
-            }
+            $fa_date = Verta::instance($carbon)->format('Y-m-d');
         } catch (\Throwable $e) {
-            // keep fallback
+            // keep fallback when conversion fails
         }
 
         return [
