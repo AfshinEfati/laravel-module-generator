@@ -2,13 +2,19 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class FormRequestGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
-    {
+    public static function generate(
+        string $name,
+        string $baseNamespace = 'App',
+        bool $force = false,
+        ?array $fields = null,
+        ?string $migrationTable = null
+    ): array {
         $paths  = config('module-generator.paths', []);
         $reqRel = $paths['form_request'] ?? ($paths['requests'] ?? 'Http/Requests');
 
@@ -16,10 +22,10 @@ class FormRequestGenerator
         File::ensureDirectoryExists($reqPath);
 
         $modelFqcn  = $baseNamespace . '\\Models\\' . $name;
-        $table      = self::guessTable($modelFqcn);
+        $table      = self::guessTable($modelFqcn, $migrationTable);
         $routeParam = lcfirst($name);
 
-        [$storeRules, $updateRules] = self::buildRules($modelFqcn, $table);
+        [$storeRules, $updateRules] = self::buildRules($modelFqcn, $table, $fields);
 
         $storeContent  = self::buildRequestClass('Store' . $name . 'Request', $baseNamespace, $storeRules, false, null, null);
         $updateContent = self::buildRequestClass('Update' . $name . 'Request', $baseNamespace, $updateRules, true, $routeParam, $table);
@@ -33,8 +39,12 @@ class FormRequestGenerator
         ];
     }
 
-    private static function guessTable(string $modelFqcn): string
+    private static function guessTable(string $modelFqcn, ?string $migrationTable): string
     {
+        if ($migrationTable) {
+            return $migrationTable;
+        }
+
         if (class_exists($modelFqcn)) {
             $m = new $modelFqcn();
             if (property_exists($m, 'table') && $m->table) {
@@ -45,8 +55,12 @@ class FormRequestGenerator
         return Str::snake(Str::pluralStudly(class_basename($modelFqcn)));
     }
 
-    private static function buildRules(string $modelFqcn, string $table): array
+    private static function buildRules(string $modelFqcn, string $table, ?array $fieldMeta = null): array
     {
+        if (is_array($fieldMeta) && !empty($fieldMeta)) {
+            return MigrationFieldParser::buildValidationRules($fieldMeta, $table);
+        }
+
         $fillable = [];
         if (class_exists($modelFqcn)) {
             $m = new $modelFqcn();

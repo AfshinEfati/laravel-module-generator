@@ -12,6 +12,7 @@ use Efati\ModuleGenerator\Generators\TestGenerator;
 use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
+use Efati\ModuleGenerator\Support\MigrationFieldParser;
 
 class MakeModuleCommand extends Command
 {
@@ -26,6 +27,7 @@ class MakeModuleCommand extends Command
                             {--nd|no-dto : Do not generate DTO}
                             {--nt|no-test : Do not generate feature test}
                             {--np|no-provider : Do not generate provider}
+                            {--fm|from-migration= : Migration file path or hint for inferring fields}
                             {--f|force : Overwrite existing files}';
 
     protected $description = 'Generate Repository, Service, DTO, Provider, Resource, Controller and (optionally) FormRequests for a module';
@@ -77,6 +79,31 @@ class MakeModuleCommand extends Command
             $withProvider = false;
         }
 
+        $modelFqcn      = $baseNamespace . '\\Models\\' . $name;
+        $migrationHint  = $this->option('from-migration');
+        $parsed         = null;
+        $parsedFields   = [];
+        $parsedRelations = [];
+        $parsedTable    = null;
+
+        if (is_string($migrationHint) && $migrationHint !== '') {
+            $parsed = MigrationFieldParser::parse($name, $migrationHint);
+        } elseif (!class_exists($modelFqcn)) {
+            $parsed = MigrationFieldParser::parse($name, null);
+        }
+
+        if (is_array($parsed)) {
+            $parsedFields    = $parsed['fields'] ?? [];
+            $parsedRelations = $parsed['relations'] ?? [];
+            $parsedTable     = $parsed['table'] ?? null;
+        }
+
+        if (is_string($migrationHint) && $migrationHint !== '' && empty($parsedFields)) {
+            $this->warn('• Unable to extract fields from the provided migration hint. Falling back to runtime inspection.');
+        } elseif (!class_exists($modelFqcn) && empty($parsedFields)) {
+            $this->warn('• Model class not found and fields could not be inferred from migration. Some generators may use empty metadata.');
+        }
+
         // generate
         $repoResults = RepositoryGenerator::generate($name, $baseNamespace, $force);
         $this->reportResults('Repository', $repoResults);
@@ -91,12 +118,18 @@ class MakeModuleCommand extends Command
         $this->reportResults('Service', $serviceResults);
 
         if ($withDTO) {
-            $dtoResults = DTOGenerator::generate($name, $baseNamespace, $force);
+            $dtoResults = DTOGenerator::generate($name, $baseNamespace, $force, $parsedFields);
             $this->reportResults('DTO', $dtoResults);
         }
 
         if ($withResource) {
-            $resourceResults = ResourceGenerator::generate($name, $baseNamespace, $force);
+            $resourceResults = ResourceGenerator::generate(
+                $name,
+                $baseNamespace,
+                $force,
+                $parsedFields,
+                $parsedRelations
+            );
             $this->reportResults('Resource', $resourceResults);
         }
 
@@ -124,7 +157,13 @@ class MakeModuleCommand extends Command
         }
 
         if ($withRequests) {
-            $requestResults = FormRequestGenerator::generate($name, $baseNamespace, $force);
+            $requestResults = FormRequestGenerator::generate(
+                $name,
+                $baseNamespace,
+                $force,
+                $parsedFields,
+                $parsedTable
+            );
             $this->reportResults('FormRequest', $requestResults);
         } else {
             $this->line("• FormRequests skipped.");
@@ -135,7 +174,8 @@ class MakeModuleCommand extends Command
                 name: $name,
                 baseNamespace: $baseNamespace,
                 controllerSubfolder: is_string($controllerSub) ? $controllerSub : null,
-                force: $force
+                force: $force,
+                fields: $parsedFields
             );
             $this->reportResults('Feature test', $testResults);
         } else {

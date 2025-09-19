@@ -12,6 +12,7 @@ All notable changes to this package will be documented in this file.
 - Built-in Jalali date helper (`Goli` class and `goli()` helper) replacing the external dependency, with Persian digit formatting support, Jalali string parsing, and conversion helpers available application-wide.
 
 - Auto-discovery of model relations (`BelongsTo`, `HasOne`, etc.) for eager loading in `show` and `update` methods.
+- `MigrationFieldParser` support with a new `--from-migration` CLI flag to derive fillable fields, casts, validation rules, and test payloads directly from migration files when the model class is missing.
 
 ### 🔧 Changed
 - New simplified CLI flags:

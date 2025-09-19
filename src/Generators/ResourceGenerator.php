@@ -2,13 +2,19 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class ResourceGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
-    {
+    public static function generate(
+        string $name,
+        string $baseNamespace = 'App',
+        bool $force = false,
+        ?array $fields = null,
+        array $migrationRelations = []
+    ): array {
         $paths = config('module-generator.paths', []);
         $resourceRel = $paths['resource'] ?? ($paths['resources'] ?? 'Http/Resources');
 
@@ -21,43 +27,114 @@ class ResourceGenerator
         $modelFqcn  = "{$baseNamespace}\\Models\\{$name}";
         $helperFqcn = "{$baseNamespace}\\Helpers\\StatusHelper";
 
-        $fillable   = self::getFillable($modelFqcn);
-        $relations  = self::detectRelations($modelFqcn);
+        $fillable  = self::resolveFillable($modelFqcn, $fields);
+        $casts     = self::resolveCasts($modelFqcn, $fields);
+        $relations = self::resolveRelations($modelFqcn, $baseNamespace, $migrationRelations);
 
-        $content    = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations);
+        $content = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations, $casts);
 
         return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
+    private static function resolveFillable(string $modelFqcn, ?array $fields): array
+    {
+        if (is_array($fields) && !empty($fields)) {
+            return MigrationFieldParser::buildFillableFromFields($fields);
+        }
+
+        return self::getFillable($modelFqcn);
+    }
+
+    private static function resolveCasts(string $modelFqcn, ?array $fields): array
+    {
+        if (is_array($fields) && !empty($fields)) {
+            return MigrationFieldParser::buildCastsFromFields($fields);
+        }
+
+        return self::getModelCasts($modelFqcn);
+    }
+
     private static function getFillable(string $modelFqcn): array
     {
-        if (!class_exists($modelFqcn)) return [];
+        if (!class_exists($modelFqcn)) {
+            return [];
+        }
         $m = new $modelFqcn();
         return method_exists($m, 'getFillable') ? $m->getFillable() : [];
     }
 
+    private static function getModelCasts(string $modelFqcn): array
+    {
+        if (!class_exists($modelFqcn)) {
+            return [];
+        }
+        $m = new $modelFqcn();
+        return method_exists($m, 'getCasts') ? $m->getCasts() : [];
+    }
+
     private static function detectRelations(string $modelFqcn): array
     {
-        if (!class_exists($modelFqcn)) return [];
+        if (!class_exists($modelFqcn)) {
+            return [];
+        }
         $m = new $modelFqcn();
         $rels = [];
 
         foreach (get_class_methods($m) as $method) {
-            if (in_array($method, ['boot', 'booted'])) continue;
+            if (in_array($method, ['boot', 'booted'])) {
+                continue;
+            }
             try {
                 $ret = $m->$method();
                 if (is_object($ret) && method_exists($ret, 'getRelated')) {
                     $rels[$method] = get_class($ret->getRelated());
                 }
             } catch (\Throwable $e) {
-                // ignore
+                // ignore relation that throws
             }
         }
+
         return $rels;
     }
 
-    private static function build(string $className, string $baseNamespace, string $helperFqcn, array $fillable, array $relations): string
+    private static function resolveRelations(string $modelFqcn, string $baseNamespace, array $migrationRelations): array
     {
+        $relations = [];
+
+        foreach ($migrationRelations as $key => $info) {
+            if (!is_array($info)) {
+                continue;
+            }
+            $name = $info['name'] ?? (is_string($key) ? $key : null);
+            if (!$name) {
+                continue;
+            }
+            $base = $info['related_model'] ?? Str::studly($name);
+            $relations[$name] = [
+                'model'    => $baseNamespace . '\\Models\\' . $base,
+                'resource' => $baseNamespace . '\\Http\\Resources\\' . $base . 'Resource',
+            ];
+        }
+
+        foreach (self::detectRelations($modelFqcn) as $rel => $relatedFqcn) {
+            $base = class_exists($relatedFqcn) ? class_basename($relatedFqcn) : Str::studly($rel);
+            $relations[$rel] = [
+                'model'    => $relatedFqcn,
+                'resource' => $baseNamespace . '\\Http\\Resources\\' . $base . 'Resource',
+            ];
+        }
+
+        return $relations;
+    }
+
+    private static function build(
+        string $className,
+        string $baseNamespace,
+        string $helperFqcn,
+        array $fillable,
+        array $relations,
+        array $casts
+    ): string {
         $ns = "{$baseNamespace}\\Http\\Resources";
         $uses = [
             'Illuminate\\Http\\Resources\\Json\\JsonResource',
@@ -67,42 +144,27 @@ class ResourceGenerator
 
         $body = [];
         foreach ($fillable as $field) {
-            if (Str::endsWith($field, ['_at'])) {
+            $castType = self::normalizeCast($casts[$field] ?? null);
+            if ($castType === 'datetime' || $castType === 'date' || Str::endsWith($field, ['_at'])) {
                 $body[] = "            '{$field}' => StatusHelper::formatDates(\$this->{$field}),";
-            } elseif (Str::startsWith($field, ['is_', 'has_'])) {
+            } elseif ($castType === 'boolean' || $castType === 'bool' || Str::startsWith($field, ['is_', 'has_'])) {
                 $body[] = "            '{$field}' => StatusHelper::getStatus((bool) \$this->{$field}),";
             } else {
                 $body[] = "            '{$field}' => \$this->{$field},";
             }
         }
 
-        foreach ($relations as $rel => $relatedFqcn) {
-            $relatedModel = class_exists($relatedFqcn) ? class_basename($relatedFqcn) : 'Related';
-            $relatedResourceFqcn = "{$baseNamespace}\\Http\\Resources\\{$relatedModel}Resource";
+        foreach ($relations as $rel => $meta) {
+            $resourceFqcn = $meta['resource'];
             $body[] =
-"            '{$rel}' => class_exists('{$relatedResourceFqcn}')
-                ? new \\{$relatedResourceFqcn}(\$this->whenLoaded('{$rel}'))
+"            '{$rel}' => class_exists('{$resourceFqcn}')
+                ? new \\{$resourceFqcn}(\$this->whenLoaded('{$rel}'))
                 : \$this->whenLoaded('{$rel}'),";
         }
 
         $bodyBlock = implode("\n", $body);
 
-        return "<?php
-
-namespace {$ns};
-
-{$usesBlock}
-
-class {$className} extends JsonResource
-{
-    public function toArray(\$request): array
-    {
-        return [
-{$bodyBlock}
-        ];
-    }
-}
-";
+        return "<?php\n\nnamespace {$ns};\n\n{$usesBlock}\n\nclass {$className} extends JsonResource\n{\n    public function toArray(\\$request): array\n    {\n        return [\n{$bodyBlock}\n        ];\n    }\n}\n";
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool
@@ -114,5 +176,24 @@ class {$className} extends JsonResource
         File::put($path, $contents);
 
         return true;
+    }
+
+    private static function normalizeCast(?string $cast): ?string
+    {
+        if ($cast === null) {
+            return null;
+        }
+
+        $cast = strtolower($cast);
+        if (str_contains($cast, ':')) {
+            $cast = strstr($cast, ':', true);
+        }
+
+        return match ($cast) {
+            'datetime', 'immutable_datetime', 'custom_datetime' => 'datetime',
+            'date', 'immutable_date' => 'date',
+            'bool', 'boolean' => 'boolean',
+            default => $cast,
+        };
     }
 }

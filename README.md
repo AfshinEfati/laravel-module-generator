@@ -62,6 +62,7 @@ php artisan make:module ModelName [options]
 | `--no-dto`            | Skip DTO generation |
 | `--no-test`           | Skip Feature Test generation |
 | `--no-provider`       | Skip provider creation and auto-registration |
+| `--from-migration=`   | Provide a migration path or keyword to infer fields when the model class does not exist yet |
 | `--force`             | Overwrite existing files (default is to skip and warn) |
 
 ### Short aliases
@@ -77,6 +78,7 @@ php artisan make:module ModelName [options]
 | `-nd` | `--no-dto`          |
 | `-nt` | `--no-test`         |
 | `-np` | `--no-provider`     |
+| `-fm` | `--from-migration`  |
 | `-f`  | `--force`           |
 
 ---
@@ -100,6 +102,14 @@ This will generate:
 - **Feature Tests**: `tests/Feature/ProductCrudTest.php`
 
 > Tip: rerunning the generator without `--force` will skip existing files and list the skipped paths in the console output.
+
+> New in v4: you can prime the generator with a migration when the Eloquent model class is not ready yet:
+>
+> ```bash
+> php artisan make:module Product --from-migration=database/migrations/2024_05_01_000000_create_products_table.php
+> ```
+>
+> The command will scan the migration, infer columns, nullable/unique flags, and foreign keys, then feed that metadata to the DTO, FormRequest, Resource, and Feature Test generators.
 
 ---
 

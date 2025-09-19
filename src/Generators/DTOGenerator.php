@@ -2,11 +2,12 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Illuminate\Support\Facades\File;
 
 class DTOGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false, ?array $fields = null): array
     {
         $paths = config('module-generator.paths', []);
         $dtoRel = $paths['dto'] ?? ($paths['dtos'] ?? 'DTOs');
@@ -18,11 +19,20 @@ class DTOGenerator
         $filePath  = $dtoPath . "/{$className}.php";
 
         $modelFqcn = "{$baseNamespace}\\Models\\{$name}";
-        $fillable  = self::getFillable($modelFqcn);
+        $fillable  = self::resolveFillable($modelFqcn, $fields);
 
         $content   = self::build($className, $baseNamespace, $fillable);
 
         return [$filePath => self::writeFile($filePath, $content, $force)];
+    }
+
+    private static function resolveFillable(string $modelFqcn, ?array $fields): array
+    {
+        if (is_array($fields) && !empty($fields)) {
+            return MigrationFieldParser::buildFillableFromFields($fields);
+        }
+
+        return self::getFillable($modelFqcn);
     }
 
     private static function getFillable(string $modelFqcn): array
