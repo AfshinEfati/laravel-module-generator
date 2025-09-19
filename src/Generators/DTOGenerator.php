@@ -3,10 +3,11 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Illuminate\Support\Facades\File;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class DTOGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false): array
+    public static function generate(string $name, string $baseNamespace = 'App', bool $force = false, array $schema = []): array
     {
         $paths = config('module-generator.paths', []);
         $dtoRel = $paths['dto'] ?? ($paths['dtos'] ?? 'DTOs');
@@ -18,20 +19,26 @@ class DTOGenerator
         $filePath  = $dtoPath . "/{$className}.php";
 
         $modelFqcn = "{$baseNamespace}\\Models\\{$name}";
-        $fillable  = self::getFillable($modelFqcn);
+        $fillable  = self::getFillable($modelFqcn, $schema);
 
         $content   = self::build($className, $baseNamespace, $fillable);
 
         return [$filePath => self::writeFile($filePath, $content, $force)];
     }
 
-    private static function getFillable(string $modelFqcn): array
+    private static function getFillable(string $modelFqcn, array $schema): array
     {
         if (!class_exists($modelFqcn)) {
-            return [];
+            return SchemaParser::fieldNames($schema);
         }
         $model = new $modelFqcn();
-        return method_exists($model, 'getFillable') ? $model->getFillable() : [];
+        $fillable = method_exists($model, 'getFillable') ? $model->getFillable() : [];
+
+        if (empty($fillable)) {
+            return SchemaParser::fieldNames($schema);
+        }
+
+        return $fillable;
     }
 
     private static function build(string $className, string $baseNamespace, array $fillable): string

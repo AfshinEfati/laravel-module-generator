@@ -4,10 +4,17 @@ namespace Efati\ModuleGenerator\Generators;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class TestGenerator
 {
-    public static function generate(string $name, string $baseNamespace = 'App', ?string $controllerSubfolder = null, bool $force = false): array
+    public static function generate(
+        string $name,
+        string $baseNamespace = 'App',
+        ?string $controllerSubfolder = null,
+        bool $force = false,
+        array $schema = []
+    ): array
     {
         $testsPath = base_path(config('module-generator.tests.feature', 'tests/Feature'));
         File::ensureDirectoryExists($testsPath);
@@ -27,8 +34,9 @@ class TestGenerator
         $testRouteSegment  = 'test-' . $resourceSegment;
         $baseUri           = '/' . $testRouteSegment;
 
-        $fillable       = self::getFillable($modelFqcn);
+        $fillable       = self::getFillable($modelFqcn, $schema);
         $fillableExport = self::exportArray($fillable);
+        $schemaExport   = self::exportSchema($schema);
 
         // baseNamespace را به‌صورت literal امن داخل کد تست قرار می‌دهیم
         $baseNsLiteral = var_export($baseNamespace, true);
@@ -60,11 +68,42 @@ class {$className} extends TestCase
     }
 
     /**
+     * تعریف اسکیما از CLI (در صورت وجود)
+     */
+    private function schemaDefinition(): array
+    {
+        return {$schemaExport};
+    }
+
+    /**
      * فیلدهای fillable مدل
      */
     private function fillable(): array
     {
+        \$schema = \$this->schemaDefinition();
+        if (!empty(\$schema)) {
+            return array_keys(\$schema);
+        }
+
         return {$fillableExport};
+    }
+
+    private function uniqueField(): ?string
+    {
+        \$schema = \$this->schemaDefinition();
+        foreach (\$schema as \$field => \$definition) {
+            if (is_array(\$definition) && !empty(\$definition['unique'])) {
+                return \$field;
+            }
+        }
+
+        foreach (\$this->fillable() as \$field) {
+            if (\$field === 'slug' || str_contains(\$field, 'slug')) {
+                return \$field;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -76,7 +115,10 @@ class {$className} extends TestCase
         \$payload = [];
         \$canCreate = true;
 
-        foreach (\$this->fillable() as \$field) {
+        \$schema = \$this->schemaDefinition();
+        \$fields = !empty(\$schema) ? \$schema : array_fill_keys(\$this->fillable(), null);
+
+        foreach (\$fields as \$field => \$definition) {
             if (str_ends_with(\$field, '_at')) {
                 continue;
             }
@@ -113,6 +155,46 @@ class {$className} extends TestCase
                     \$payload[\$field] = \$id;
                 }
                 continue;
+            }
+
+            \$type = is_array(\$definition) ? strtolower((string) (\$definition['type'] ?? '')) : '';
+            if (\$type !== '') {
+                switch (\$type) {
+                    case 'boolean':
+                        \$payload[\$field] = true;
+                        continue 2;
+                    case 'integer':
+                        \$payload[\$field] = \$this->faker->numberBetween(1, 1000);
+                        continue 2;
+                    case 'numeric':
+                        \$payload[\$field] = \$this->faker->randomFloat(2, 1, 1000);
+                        continue 2;
+                    case 'date':
+                        \$payload[\$field] = \$this->faker->date('Y-m-d');
+                        continue 2;
+                    case 'datetime':
+                        \$payload[\$field] = \$this->faker->dateTime()->format('Y-m-d H:i:s');
+                        continue 2;
+                    case 'json':
+                    case 'array':
+                        \$payload[\$field] = ['sample' => 'value'];
+                        continue 2;
+                    case 'uuid':
+                        \$payload[\$field] = (string) \$this->faker->uuid();
+                        continue 2;
+                    case 'email':
+                        \$payload[\$field] = 'u'.uniqid().'@example.test';
+                        continue 2;
+                    case 'url':
+                        \$payload[\$field] = 'https://example.test/' . uniqid();
+                        continue 2;
+                    case 'text':
+                        \$payload[\$field] = \$this->faker->sentence();
+                        continue 2;
+                    case 'string':
+                        \$payload[\$field] = \$this->faker->words(3, true);
+                        continue 2;
+                }
             }
 
             if (stripos(\$field, 'email') !== false) {
@@ -166,12 +248,13 @@ class {$className} extends TestCase
 
     public function test_store_returns_validation_error_for_duplicate_unique_when_applicable(): void
     {
-        if (!in_array('slug', \$this->fillable(), true)) {
-            \$this->markTestSkipped('no unique-like field (slug) to test duplication');
+        \$uniqueField = \$this->uniqueField();
+        if (!\$uniqueField) {
+            \$this->markTestSkipped('no unique-like field to test duplication');
         }
         \$existing = \$this->createModel();
         [\$payload, \$can] = \$this->buildValidPayload(true);
-        \$payload['slug'] = \$existing->slug;
+        \$payload[\$uniqueField] = \$existing->{\$uniqueField};
         \$res = \$this->postJson(\$this->baseUri, \$payload);
         \$res->assertStatus(422);
     }
@@ -205,12 +288,13 @@ class {$className} extends TestCase
 
     public function test_update_returns_validation_error_on_duplicate_unique_when_applicable(): void
     {
-        if (!in_array('slug', \$this->fillable(), true)) {
-            \$this->markTestSkipped('no unique-like field (slug) to test duplication on update');
+        \$uniqueField = \$this->uniqueField();
+        if (!\$uniqueField) {
+            \$this->markTestSkipped('no unique-like field to test duplication on update');
         }
         \$a = \$this->createModel();
         \$b = \$this->createModel();
-        \$res = \$this->patchJson(\$this->baseUri . '/' . \$b->getKey(), ['slug' => \$a->slug]);
+        \$res = \$this->patchJson(\$this->baseUri . '/' . \$b->getKey(), [\$uniqueField => \$a->{\$uniqueField}]);
         \$res->assertStatus(422);
     }
 
@@ -242,17 +326,91 @@ PHP;
         return $ns;
     }
 
-    private static function getFillable(string $modelFqcn): array
+    private static function getFillable(string $modelFqcn, array $schema): array
     {
-        if (!class_exists($modelFqcn)) return [];
-        $m = new $modelFqcn();
-        return method_exists($m, 'getFillable') ? $m->getFillable() : [];
+        if (!class_exists($modelFqcn)) {
+            return SchemaParser::fieldNames($schema);
+        }
+        $m        = new $modelFqcn();
+        $fillable = method_exists($m, 'getFillable') ? $m->getFillable() : [];
+
+        if (empty($fillable)) {
+            return SchemaParser::fieldNames($schema);
+        }
+
+        return $fillable;
     }
 
     private static function exportArray(array $arr): string
     {
         $items = array_map(fn($v) => var_export($v, true), $arr);
         return '[' . implode(', ', $items) . ']';
+    }
+
+    private static function exportSchema(array $schema): string
+    {
+        if (empty($schema)) {
+            return '[]';
+        }
+
+        $assoc = [];
+        foreach ($schema as $field) {
+            if (!isset($field['name'])) {
+                continue;
+            }
+
+            $foreign = null;
+            if (!empty($field['foreign']) && is_array($field['foreign'])) {
+                $table  = $field['foreign']['table'] ?? null;
+                $column = $field['foreign']['column'] ?? 'id';
+                if ($table) {
+                    $foreign = ['table' => $table, 'column' => $column];
+                }
+            }
+
+            $assoc[$field['name']] = [
+                'type'     => SchemaParser::normalizeType((string) ($field['type'] ?? 'string')),
+                'nullable' => (bool) ($field['nullable'] ?? false),
+                'unique'   => (bool) ($field['unique'] ?? false),
+                'foreign'  => $foreign,
+            ];
+        }
+
+        if (empty($assoc)) {
+            return '[]';
+        }
+
+        return self::exportValue($assoc, 2);
+    }
+
+    private static function exportValue(mixed $value, int $indent = 0): string
+    {
+        if (is_array($value)) {
+            if ($value === []) {
+                return '[]';
+            }
+
+            $indentStr     = str_repeat('    ', $indent);
+            $nextIndentStr = str_repeat('    ', $indent + 1);
+            $lines         = [];
+
+            foreach ($value as $key => $val) {
+                $keyPrefix = is_int($key) ? '' : var_export($key, true) . ' => ';
+                $lines[]   = $nextIndentStr . $keyPrefix . self::exportValue($val, $indent + 1);
+            }
+
+            return "[\n" . implode(",\n", $lines) . "\n" . $indentStr . "]";
+        }
+
+        if ($value === null) {
+            return 'null';
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        return var_export($value, true);
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool

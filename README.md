@@ -63,6 +63,7 @@ php artisan make:module ModelName [options]
 | `--no-test`           | Skip Feature Test generation |
 | `--no-provider`       | Skip provider creation and auto-registration |
 | `--force`             | Overwrite existing files (default is to skip and warn) |
+| `--fields=`           | Inline schema definition so generators can infer fillable fields, validation rules, and test payloads before the Eloquent model exists |
 
 ### Short aliases
 
@@ -100,6 +101,36 @@ This will generate:
 - **Feature Tests**: `tests/Feature/ProductCrudTest.php`
 
 > Tip: rerunning the generator without `--force` will skip existing files and list the skipped paths in the console output.
+
+### Schema option (`--fields`)
+
+When you run the command before creating the actual Eloquent model, you can describe the schema inline so DTOs, FormRequests, Resources, and Feature tests know which attributes to work with:
+
+```bash
+php artisan make:module Product \
+  --api --requests --tests \
+  --fields="title:string:unique, price:decimal(8,2):nullable, is_active:boolean, category_id:foreignId:nullable:fk=categories.id"
+```
+
+The syntax is a comma-separated list of field definitions using `name:type[:modifier[:modifier...]]`. Modifiers can also be separated with spaces or pipes (`|`). The supported modifiers are:
+
+- `nullable` – marks the field as optional (`required` is assumed otherwise)
+- `unique` – adds unique validation to the generated FormRequests
+- `fk=table.column` – adds a foreign key rule (`fk=table` defaults the column to `id`)
+
+Supported types (aliases are allowed, e.g. `foreignId` → `integer`):
+
+- `string`, `text`
+- `integer` (int, bigInteger, foreignId, etc.)
+- `numeric` / `decimal` / `float` / `double`
+- `boolean`
+- `date`, `datetime`
+- `json`, `array`
+- `uuid`
+- `email`
+- `url`
+
+Parentheses are ignored when normalising the type, so `decimal(8,2)` will still map to a numeric rule. The schema is used as a fallback whenever the generator cannot read fillable fields from an actual model class.
 
 ---
 
