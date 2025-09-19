@@ -145,6 +145,8 @@ class ResourceGenerator
             $helperFqcn,
         ];
 
+        $usesBlock = self::buildUses($uses);
+
         $body = [];
         foreach ($fillable as $field) {
             $castType = self::normalizeCast($casts[$field] ?? null);
@@ -167,8 +169,19 @@ class ResourceGenerator
 
         $bodyBlock = implode("\n", $body);
 
-        return "<?php\n\nnamespace {$ns};\n\n{$usesBlock}\n\nclass {$className} extends JsonResource\n{\n    public function toArray(\\$request): array\n    {\n        return [\n{$bodyBlock}\n        ];\n    }\n}\n";
+        return "<?php\n\nnamespace {$ns};\n\n{$usesBlock}\n\nclass {$className} extends JsonResource\n{\n    public function toArray(\$request): array\n    {\n        return [\n{$bodyBlock}\n        ];\n    }\n}\n";
 
+    }
+
+    private static function buildUses(array $uses): string
+    {
+        $uses = array_values(array_unique(array_filter($uses)));
+
+        if (empty($uses)) {
+            return '';
+        }
+
+        return 'use ' . implode(";\nuse ", $uses) . ';';
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool
