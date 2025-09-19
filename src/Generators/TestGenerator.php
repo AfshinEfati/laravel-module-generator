@@ -3,8 +3,10 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class TestGenerator
 {
@@ -15,6 +17,7 @@ class TestGenerator
         bool $force = false,
         ?array $fields = null
     ): array {
+
         $testsPath = base_path(config('module-generator.tests.feature', 'tests/Feature'));
         File::ensureDirectoryExists($testsPath);
 
@@ -36,6 +39,17 @@ class TestGenerator
         $fillable        = array_keys($fieldMetadata);
         $fillableExport  = self::exportArray($fillable);
         $metadataExport  = self::exportAssoc($fieldMetadata, 2);
+
+
+        $content = Stub::render('Test/feature', [
+            'class'                  => $className,
+            'base_uri'               => $baseUri,
+            'test_route_segment'     => $testRouteSegment,
+            'controller_fqcn'        => $controllerFqcn,
+            'fillable_export'        => $fillableExport,
+            'base_namespace_literal' => $baseNsLiteral,
+            'model_fqcn'             => $modelFqcn,
+        ]);
 
         $content = <<<PHP
 <?php
@@ -63,8 +77,14 @@ class {$className} extends TestCase
     }
 
     private function fillable(): array
+
     {
-        return {$fillableExport};
+        $rel = str_replace('/', '\\', trim($controllerRel, '/\\'));
+        $ns  = $baseNamespace . '\\' . $rel;
+        if ($subfolder) {
+            $ns .= '\\' . str_replace(['/', '\\'], '\\', trim($subfolder, '/\\'));
+        }
+        return $ns;
     }
 
     private function fieldMetadata(): array
@@ -115,7 +135,10 @@ class {$className} extends TestCase
             }
 
             \$payload[\$field] = \$this->fakeValueForField(\$field, \$meta);
+
         }
+        $m        = new $modelFqcn();
+        $fillable = method_exists($m, 'getFillable') ? $m->getFillable() : [];
 
         return [\$payload, \$canCreate];
     }
@@ -177,10 +200,8 @@ class {$className} extends TestCase
     {
         if (method_exists(\\{$modelFqcn}::class, 'factory')) {
             return \\{$modelFqcn}::factory()->create();
+
         }
-        [\$payload, \$can] = \$this->buildValidPayload(true);
-        return \\{$modelFqcn}::query()->create(\$payload);
-    }
 
     public function test_index_returns_list(): void
     {
@@ -191,86 +212,61 @@ class {$className} extends TestCase
         } catch (\Throwable \$e) {}
         \$res = \$this->json('GET', \$this->baseUri);
         \$res->assertStatus(200)->assertJsonStructure(['success', 'message', 'data']);
+
     }
 
-    public function test_store_creates_resource_with_valid_data_or_422_when_unresolvable_fk(): void
+    private static function exportArray(array $arr): string
     {
-        [\$payload, \$canCreate] = \$this->buildValidPayload(true);
-        \$res = \$this->postJson(\$this->baseUri, \$payload);
-        if (\$canCreate) {
-            \$res->assertStatus(201)->assertJson(['success' => true]);
-        } else {
-            \$res->assertStatus(422);
+        $items = array_map(fn($v) => var_export($v, true), $arr);
+        return '[' . implode(', ', $items) . ']';
+    }
+
+    private static function exportSchema(array $schema): string
+    {
+        if (empty($schema)) {
+            return '[]';
         }
-    }
 
-    public function test_store_returns_validation_error_for_duplicate_unique_when_applicable(): void
-    {
-        if (!in_array('slug', \$this->fillable(), true)) {
-            \$this->markTestSkipped('no unique-like field (slug) to test duplication');
-        }
-        \$existing = \$this->createModel();
-        [\$payload, \$can] = \$this->buildValidPayload(true);
-        \$payload['slug'] = \$existing->slug;
-        \$res = \$this->postJson(\$this->baseUri, \$payload);
-        \$res->assertStatus(422);
-    }
-
-    public function test_show_returns_single_resource(): void
-    {
-        \$model = \$this->createModel();
-        \$res = \$this->getJson(\$this->baseUri . '/' . \$model->getKey());
-        \$res->assertStatus(200)->assertJson(['success' => true]);
-    }
-
-    public function test_show_returns_404_for_missing_resource(): void
-    {
-        \$res = \$this->getJson(\$this->baseUri . '/999999999');
-        \$res->assertStatus(404);
-    }
-
-    public function test_update_updates_resource_with_valid_data(): void
-    {
-        \$model = \$this->createModel();
-        [\$payload, \$can] = \$this->buildValidPayload(false);
-        foreach (\$payload as \$k => \$v) {
-            if (is_string(\$v) && !str_ends_with(\$k, '_id')) {
-                \$payload[\$k] = 'updated-' . uniqid();
-                break;
+        $assoc = [];
+        foreach ($schema as $field) {
+            if (!isset($field['name'])) {
+                continue;
             }
+
+            $foreign = null;
+            if (!empty($field['foreign']) && is_array($field['foreign'])) {
+                $table  = $field['foreign']['table'] ?? null;
+                $column = $field['foreign']['column'] ?? 'id';
+                if ($table) {
+                    $foreign = ['table' => $table, 'column' => $column];
+                }
+            }
+
+            $assoc[$field['name']] = [
+                'type'     => SchemaParser::normalizeType((string) ($field['type'] ?? 'string')),
+                'nullable' => (bool) ($field['nullable'] ?? false),
+                'unique'   => (bool) ($field['unique'] ?? false),
+                'foreign'  => $foreign,
+            ];
         }
-        \$res = \$this->patchJson(\$this->baseUri . '/' . \$model->getKey(), \$payload);
-        (\$payload ? \$res->assertStatus(200) : \$res->assertStatus(422));
-    }
 
-    public function test_update_returns_validation_error_on_duplicate_unique_when_applicable(): void
-    {
-        if (!in_array('slug', \$this->fillable(), true)) {
-            \$this->markTestSkipped('no unique-like field (slug) to test duplication on update');
+        if (empty($assoc)) {
+            return '[]';
         }
-        \$a = \$this->createModel();
-        \$b = \$this->createModel();
-        \$res = \$this->patchJson(\$this->baseUri . '/' . \$b->getKey(), ['slug' => \$a->slug]);
-        \$res->assertStatus(422);
+
+        return self::exportValue($assoc, 2);
     }
 
-    public function test_destroy_deletes_resource(): void
+    private static function exportValue(mixed $value, int $indent = 0): string
     {
-        \$model = \$this->createModel();
-        \$res = \$this->deleteJson(\$this->baseUri . '/' . \$model->getKey());
-        \$res->assertStatus(204);
-    }
+        if (is_array($value)) {
+            if ($value === []) {
+                return '[]';
+            }
 
-    public function test_destroy_returns_404_for_missing_resource(): void
-    {
-        \$res = \$this->deleteJson(\$this->baseUri . '/999999999');
-        \$res->assertStatus(404);
-    }
-}
-PHP;
-
-        return [$filePath => self::writeFile($filePath, $content, $force)];
-    }
+            $indentStr     = str_repeat('    ', $indent);
+            $nextIndentStr = str_repeat('    ', $indent + 1);
+            $lines         = [];
 
     private static function controllerNamespaceFromRel(string $baseNamespace, string $controllerRel, ?string $subfolder): string
     {
@@ -278,9 +274,8 @@ PHP;
         $ns  = $baseNamespace . '\\' . $rel;
         if ($subfolder) {
             $ns .= '\\' . str_replace(['/', '\\'], '\\', trim($subfolder, '/\\'));
+
         }
-        return $ns;
-    }
 
     private static function resolveFieldMetadata(string $modelFqcn, ?array $fields, string $baseNamespace): array
     {
@@ -375,10 +370,12 @@ PHP;
         return method_exists($m, 'getFillable') ? $m->getFillable() : [];
     }
 
-    private static function exportArray(array $arr): string
-    {
-        $items = array_map(fn($v) => var_export($v, true), $arr);
-        return '[' . implode(', ', $items) . ']';
+
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        return var_export($value, true);
     }
 
     private static function exportAssoc(array $arr, int $indentLevel = 0): string

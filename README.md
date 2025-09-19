@@ -39,6 +39,19 @@ This will create `config/module-generator.php` where you can adjust:
 - **Default controller path** (e.g., `App\Http\Controllers\Api\V1`)
 - **Enable/Disable** generation of tests, form requests, DTOs, etc.
 
+### Customising generator stubs
+
+If your team follows specific coding standards you can publish and edit the generator stubs:
+
+```bash
+php artisan vendor:publish --tag=module-generator-stubs
+```
+
+All stub files will be copied to `resources/stubs/module-generator`. The generators always look for a published stub first, so
+any changes you make there (naming conventions, imports, method bodies, docblocks, etc.) will be reflected in the next
+generation run. The package uses simple placeholders such as `{{ namespace }}`, `{{ class }}` or `{{ store_argument }}` inside
+the stub files—leave these intact and only change the surrounding structure to keep the dynamic parts working.
+
 ---
 
 ## Usage
@@ -64,6 +77,7 @@ php artisan make:module ModelName [options]
 | `--no-provider`       | Skip provider creation and auto-registration |
 | `--from-migration=`   | Provide a migration path or keyword to infer fields when the model class does not exist yet |
 | `--force`             | Overwrite existing files (default is to skip and warn) |
+| `--fields=`           | Inline schema definition so generators can infer fillable fields, validation rules, and test payloads before the Eloquent model exists |
 
 ### Short aliases
 
@@ -111,6 +125,7 @@ This will generate:
 >
 > The command will scan the migration, infer columns, nullable/unique flags, and foreign keys, then feed that metadata to the DTO, FormRequest, Resource, and Feature Test generators.
 
+
 ---
 
 ## Test Generation
@@ -139,6 +154,10 @@ $goli = goli(now())->format('Y/m/d');
 // resolving an instance directly or from the service container binding
 $goli = Goli::instance('2024-03-20 12:00:00')->toJalaliDateString();
 $resolved = app(Goli::class, ['datetime' => now()]);
+
+// human readable differences with optional Persian digits
+$diff = goli('2024-03-20')->diffForHumans();          // "5 روز پیش"
+$diffFuture = goli('2025-03-20')->diffForHumans(null, true); // "۱ سال بعد"
 ```
 
 Key capabilities include:
@@ -148,6 +167,26 @@ Key capabilities include:
 - formatting output with automatic Persian digit localisation when desired
 - seamless Carbon interoperability for chained date operations
 - resolving new instances through the Laravel container using the `goli` binding
+
+### Carbon Jalali Macros
+
+When the service provider boots it registers two Carbon macros, giving you an instant bridge between `Carbon` and `Goli`:
+
+```php
+use Carbon\Carbon;
+
+$jalaliNow = Carbon::now('Asia/Tehran')->toJalali();
+echo $jalaliNow->format('Y/m/d H:i'); // 1402/12/29 16:45 for example output
+
+$gregorian = Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
+echo $gregorian->format('Y-m-d H:i'); // 2024-03-20 08:30
+```
+
+The `toJalali()` macro returns a `Goli` instance, so you keep access to all Jalali helpers (digit localisation, formatting helpers, etc.).
+`fromJalali()` gives you a regular `Carbon` instance back for further chaining. Both macros accept an optional timezone argument and are only registered once, so you can safely call the service provider multiple times (or invoke `ModuleGeneratorServiceProvider::registerCarbonMacros()` manually in a console script).
+
+> Looking for a quick smoke test? Run `php tests/CarbonMacrosExample.php` to execute the same round-trip conversion showcased above.
+
 
 ---
 

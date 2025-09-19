@@ -3,8 +3,10 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Support\SchemaParser;
 
 class ResourceGenerator
 {
@@ -15,6 +17,7 @@ class ResourceGenerator
         ?array $fields = null,
         array $migrationRelations = []
     ): array {
+
         $paths = config('module-generator.paths', []);
         $resourceRel = $paths['resource'] ?? ($paths['resources'] ?? 'Http/Resources');
 
@@ -30,6 +33,7 @@ class ResourceGenerator
         $fillable  = self::resolveFillable($modelFqcn, $fields);
         $casts     = self::resolveCasts($modelFqcn, $fields);
         $relations = self::resolveRelations($modelFqcn, $baseNamespace, $migrationRelations);
+
 
         $content = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations, $casts);
 
@@ -140,7 +144,6 @@ class ResourceGenerator
             'Illuminate\\Http\\Resources\\Json\\JsonResource',
             $helperFqcn,
         ];
-        $usesBlock = 'use ' . implode(";\nuse ", array_unique($uses)) . ';';
 
         $body = [];
         foreach ($fillable as $field) {
@@ -165,6 +168,7 @@ class ResourceGenerator
         $bodyBlock = implode("\n", $body);
 
         return "<?php\n\nnamespace {$ns};\n\n{$usesBlock}\n\nclass {$className} extends JsonResource\n{\n    public function toArray(\\$request): array\n    {\n        return [\n{$bodyBlock}\n        ];\n    }\n}\n";
+
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool

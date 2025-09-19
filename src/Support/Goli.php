@@ -119,6 +119,32 @@ class Goli implements JsonSerializable
         '۹' => '9', '٩' => '9',
     ];
 
+    /**
+     * Translation table for diffForHumans units.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private const HUMAN_DIFF_UNITS = [
+        'second' => ['singular' => 'ثانیه', 'plural' => 'ثانیه'],
+        'minute' => ['singular' => 'دقیقه', 'plural' => 'دقیقه'],
+        'hour'   => ['singular' => 'ساعت', 'plural' => 'ساعت'],
+        'day'    => ['singular' => 'روز', 'plural' => 'روز'],
+        'month'  => ['singular' => 'ماه', 'plural' => 'ماه'],
+        'year'   => ['singular' => 'سال', 'plural' => 'سال'],
+    ];
+
+    /**
+     * Direction labels for diffForHumans output.
+     *
+     * @var array<string, string>
+     */
+    private const HUMAN_DIFF_DIRECTIONS = [
+        'past'   => 'پیش',
+        'future' => 'بعد',
+    ];
+
+    private const HUMAN_DIFF_NOW = 'همین حالا';
+
     protected Carbon $datetime;
 
     /**
@@ -314,6 +340,53 @@ class Goli implements JsonSerializable
     public function toIso8601String(): string
     {
         return $this->datetime->toIso8601String();
+    }
+
+    public function diffForHumans(?Carbon $other = null, bool $persianDigits = false): string
+    {
+        $reference = $other ? $other->copy() : Carbon::now($this->datetime->getTimezone());
+
+        if ($other !== null) {
+            $reference->setTimezone($this->datetime->getTimezone());
+        }
+
+        $diffInSeconds = $this->datetime->getTimestamp() - $reference->getTimestamp();
+
+        if ($diffInSeconds === 0) {
+            $result = self::HUMAN_DIFF_NOW;
+
+            return $persianDigits ? static::persianNumbers($result) : $result;
+        }
+
+        $comparison = $reference;
+
+        if (($years = $this->datetime->diffInYears($comparison, true)) > 0) {
+            $unit = 'year';
+            $value = $years;
+        } elseif (($months = $this->datetime->diffInMonths($comparison, true)) > 0) {
+            $unit = 'month';
+            $value = $months;
+        } elseif (($days = $this->datetime->diffInDays($comparison, true)) > 0) {
+            $unit = 'day';
+            $value = $days;
+        } elseif (($hours = $this->datetime->diffInHours($comparison, true)) > 0) {
+            $unit = 'hour';
+            $value = $hours;
+        } elseif (($minutes = $this->datetime->diffInMinutes($comparison, true)) > 0) {
+            $unit = 'minute';
+            $value = $minutes;
+        } else {
+            $unit = 'second';
+            $value = max(1, $this->datetime->diffInSeconds($comparison, true));
+        }
+
+        $directionKey = $diffInSeconds > 0 ? 'future' : 'past';
+        $forms = self::HUMAN_DIFF_UNITS[$unit];
+        $unitLabel = $value === 1 ? $forms['singular'] : ($forms['plural'] ?? $forms['singular']);
+
+        $result = sprintf('%d %s %s', $value, $unitLabel, self::HUMAN_DIFF_DIRECTIONS[$directionKey]);
+
+        return $persianDigits ? static::persianNumbers($result) : $result;
     }
 
     public function jsonSerialize(): mixed

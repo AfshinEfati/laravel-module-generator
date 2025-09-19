@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 
 class ProviderGenerator
@@ -22,26 +23,14 @@ class ProviderGenerator
         $provNs    = str_replace('/', '\\', $provNs);
         $class     = "{$name}ServiceProvider";
 
-        $content = "<?php
-
-namespace {$provNs};
-
-use Illuminate\\Support\\ServiceProvider;
-
-class {$class} extends ServiceProvider
-{
-    public function register(): void
-    {
-        \$this->app->bind(\\{$repoIf}::class, \\{$repoNs}::class);
-        \$this->app->bind(\\{$serviceIf}::class, \\{$serviceNs}::class);
-    }
-
-    public function boot(): void
-    {
-        //
-    }
-}
-";
+        $content = Stub::render('Provider/provider', [
+            'namespace'           => $provNs,
+            'class'               => $class,
+            'repository_interface'=> $repoIf,
+            'repository_concrete' => $repoNs,
+            'service_interface'   => $serviceIf,
+            'service_concrete'    => $serviceNs,
+        ]);
         $providerFile = $providerPath . "/{$class}.php";
         $results = [
             $providerFile => self::writeFile($providerFile, $content, $force),

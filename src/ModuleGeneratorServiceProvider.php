@@ -2,6 +2,8 @@
 
 namespace Efati\ModuleGenerator;
 
+use Carbon\Carbon;
+use DateTimeZone;
 use Illuminate\Support\ServiceProvider;
 use Efati\ModuleGenerator\Commands\MakeModuleCommand;
 use Efati\ModuleGenerator\Support\Goli;
@@ -39,5 +41,13 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
             __DIR__ . '/config/module-generator.php'        => config_path('module-generator.php'),
             __DIR__ . '/Stubs/Helpers/StatusHelper.php'     => app_path('Helpers/StatusHelper.php'),
         ], 'module-generator');
+
+        $resourceStubPath = function_exists('resource_path')
+            ? resource_path('stubs/module-generator')
+            : app()->resourcePath('stubs/module-generator');
+
+        $this->publishes([
+            __DIR__ . '/Stubs/Module' => $resourceStubPath,
+        ], 'module-generator-stubs');
     }
 }

@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Support\ServiceProvider;
+
+class {{ class }} extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->bind(\{{ repository_interface }}::class, \{{ repository_concrete }}::class);
+        $this->app->bind(\{{ service_interface }}::class, \{{ service_concrete }}::class);
+    }
+
+    public function boot(): void
+    {
+        //
+    }
+}

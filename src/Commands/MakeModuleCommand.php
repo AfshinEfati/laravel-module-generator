@@ -14,6 +14,7 @@ use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 
+
 class MakeModuleCommand extends Command
 {
     protected $signature = 'make:module
@@ -30,6 +31,7 @@ class MakeModuleCommand extends Command
                             {--fm|from-migration= : Migration file path or hint for inferring fields}
                             {--f|force : Overwrite existing files}';
 
+
     protected $description = 'Generate Repository, Service, DTO, Provider, Resource, Controller and (optionally) FormRequests for a module';
 
     public function handle(): int
@@ -37,6 +39,7 @@ class MakeModuleCommand extends Command
         $name          = Str::studly($this->argument('name'));
         $defaults      = (array) config('module-generator.defaults', []);
         $baseNamespace = (string) config('module-generator.base_namespace', 'App');
+        $schema        = $this->parseSchemaOption();
 
         $controllerSub = $this->option('controller');
         $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']);
@@ -119,6 +122,7 @@ class MakeModuleCommand extends Command
 
         if ($withDTO) {
             $dtoResults = DTOGenerator::generate($name, $baseNamespace, $force, $parsedFields);
+
             $this->reportResults('DTO', $dtoResults);
         }
 
@@ -130,6 +134,7 @@ class MakeModuleCommand extends Command
                 $parsedFields,
                 $parsedRelations
             );
+
             $this->reportResults('Resource', $resourceResults);
         }
 
@@ -164,6 +169,7 @@ class MakeModuleCommand extends Command
                 $parsedFields,
                 $parsedTable
             );
+
             $this->reportResults('FormRequest', $requestResults);
         } else {
             $this->line("• FormRequests skipped.");
@@ -176,6 +182,7 @@ class MakeModuleCommand extends Command
                 controllerSubfolder: is_string($controllerSub) ? $controllerSub : null,
                 force: $force,
                 fields: $parsedFields
+
             );
             $this->reportResults('Feature test', $testResults);
         } else {
@@ -206,5 +213,19 @@ class MakeModuleCommand extends Command
         foreach ($skipped as $path) {
             $this->line(sprintf('  - Skipped existing file: %s (use --force to overwrite)', $path));
         }
+    }
+
+    /**
+     * Parse the --fields option into an array of field definitions.
+     */
+    private function parseSchemaOption(): array
+    {
+        $raw = $this->option('fields');
+
+        if (!is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        return SchemaParser::parse($raw);
     }
 }

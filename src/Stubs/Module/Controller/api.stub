@@ -1,0 +1,48 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ uses }}
+
+class {{ class }}
+{
+    public function __construct(public {{ service_class }} $service) {}
+
+    public function index()
+    {
+{{ index_body }}
+    }
+
+    public function store({{ store_request_type }} $request)
+    {
+{{ store_payload }}
+        $model = $this->service->store({{ store_argument }});
+{{ store_response }}
+    }
+
+    public function show({{ model_class }} ${{ model_variable }}): mixed
+    {
+{{ relations_load }}
+{{ show_response }}
+    }
+
+    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
+    {
+{{ update_payload }}
+        $updated = $this->service->update(${{ model_variable }}->id, {{ update_argument }});
+        if (!$updated) {
+            return StatusHelper::errorResponse('update failed', 422);
+        }
+        ${{ model_variable }}->refresh();
+{{ relations_load }}
+{{ update_response }}
+    }
+
+    public function destroy({{ model_class }} ${{ model_variable }})
+    {
+        $deleted = $this->service->destroy(${{ model_variable }}->id);
+        return $deleted
+            ? StatusHelper::successResponse(null, 'deleted', 204)
+            : StatusHelper::errorResponse('delete failed', 422);
+    }
+}

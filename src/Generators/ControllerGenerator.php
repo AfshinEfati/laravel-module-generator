@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -109,27 +110,32 @@ class ControllerGenerator
             $imports[] = $updateReqFqcn;
         }
 
-        $imports = array_unique($imports);
-        $usesBlock = 'use ' . implode(";\nuse ", $imports) . ';';
-        $nameLc = lcfirst($name);
+        $usesBlock = self::buildUses($imports);
+        $nameLc    = lcfirst($name);
 
         $requestStoreType  = $withRequests ? "Store{$name}Request" : 'Request';
         $requestUpdateType = $withRequests ? "Update{$name}Request" : 'Request';
 
+        $payloadSource = $withRequests ? '$request->validated();' : '$request->all();';
         $payloadInitStore = $usesDto
             ? "        \$dto = {$name}DTO::fromRequest(\$request);"
-            : "        \$payload = " . ($withRequests ? '$request->validated();' : '$request->all();');
+            : "        \$payload = {$payloadSource}";
         $payloadInitUpdate = $usesDto
             ? "        \$dto = {$name}DTO::fromRequest(\$request);"
-            : "        \$payload = " . ($withRequests ? '$request->validated();' : '$request->all();');
+            : "        \$payload = {$payloadSource}";
 
         $storeArgument  = $usesDto ? '$dto' : '$payload';
         $updateArgument = $usesDto ? '$dto' : '$payload';
-        $modelVariable  = '$' . $nameLc;
 
-        $resourceCollection = $usesResource
-            ? "        return StatusHelper::successResponse({$name}Resource::collection(\$data), 'success');"
-            : "        return StatusHelper::successResponse(\$data, 'success');";
+        $indexBody = implode("\n", [
+            '        $data = $this->service->index();',
+            $usesResource
+                ? "        return StatusHelper::successResponse({$name}Resource::collection(\$data), 'success');"
+                : "        return StatusHelper::successResponse(\$data, 'success');",
+        ]);
+
+        $modelVariable = '$' . $nameLc;
+
         $resourceSingle = $usesResource
             ? "        return StatusHelper::successResponse(new {$name}Resource({$modelVariable}), 'success');"
             : "        return StatusHelper::successResponse({$modelVariable}, 'success');";
@@ -140,57 +146,25 @@ class ControllerGenerator
             ? "        return StatusHelper::successResponse(new {$name}Resource(\$model), 'created', 201);"
             : "        return StatusHelper::successResponse(\$model, 'created', 201);";
 
-        return <<<PHP
-<?php
-
-namespace {$namespace};
-
-{$usesBlock}
-
-class {$name}Controller
-{
-    public function __construct(public {$name}Service \$service) {}
-
-    public function index()
-    {
-        \$data = \$this->service->index();
-{$resourceCollection}
-    }
-
-    public function store({$requestStoreType} \$request)
-    {
-{$payloadInitStore}
-        \$model = \$this->service->store({$storeArgument});
-{$resourceCreated}
-    }
-
-    public function show({$name} \${$nameLc}): mixed
-    {
-{$relationsLoad}
-{$resourceSingle}
-    }
-
-    public function update({$requestUpdateType} \$request, {$name} \${$nameLc})
-    {
-{$payloadInitUpdate}
-        \$updated = \$this->service->update(\${$nameLc}->id, {$updateArgument});
-        if (!\$updated) {
-            return StatusHelper::errorResponse('update failed', 422);
-        }
-        \${$nameLc}->refresh();
-{$relationsLoad}
-{$resourceUpdated}
-    }
-
-    public function destroy({$name} \${$nameLc})
-    {
-        \$deleted = \$this->service->destroy(\${$nameLc}->id);
-        return \$deleted
-            ? StatusHelper::successResponse(null, 'deleted', 204)
-            : StatusHelper::errorResponse('delete failed', 422);
-    }
-}
-PHP;
+        return Stub::render('Controller/api', [
+            'namespace'           => $namespace,
+            'uses'                => $usesBlock,
+            'class'               => $name . 'Controller',
+            'service_class'       => $name . 'Service',
+            'index_body'          => $indexBody,
+            'store_request_type'  => $requestStoreType,
+            'store_payload'       => $payloadInitStore,
+            'store_argument'      => $storeArgument,
+            'store_response'      => $resourceCreated,
+            'model_class'         => $name,
+            'model_variable'      => $nameLc,
+            'relations_load'      => $relationsLoad,
+            'show_response'       => $resourceSingle,
+            'update_request_type' => $requestUpdateType,
+            'update_payload'      => $payloadInitUpdate,
+            'update_argument'     => $updateArgument,
+            'update_response'     => $resourceUpdated,
+        ]);
     }
 
     private static function buildWebController(
@@ -223,8 +197,7 @@ PHP;
             $imports[] = $updateReqFqcn;
         }
 
-        $imports = array_unique($imports);
-        $usesBlock = 'use ' . implode(";\nuse ", $imports) . ';';
+        $usesBlock = self::buildUses($imports);
 
         $nameLc    = lcfirst($name);
         $viewBase  = Str::kebab(Str::pluralStudly($name));
@@ -233,78 +206,42 @@ PHP;
         $requestStoreType  = $withRequests ? "Store{$name}Request" : 'Request';
         $requestUpdateType = $withRequests ? "Update{$name}Request" : 'Request';
 
+        $payloadSource = $withRequests ? '$request->validated();' : '$request->all();';
         $payloadInitStore = $usesDto
             ? "        \$dto = {$name}DTO::fromRequest(\$request);"
-            : "        \$payload = " . ($withRequests ? '$request->validated();' : '$request->all();');
+            : "        \$payload = {$payloadSource}";
         $payloadInitUpdate = $usesDto
             ? "        \$dto = {$name}DTO::fromRequest(\$request);"
-            : "        \$payload = " . ($withRequests ? '$request->validated();' : '$request->all();');
+            : "        \$payload = {$payloadSource}";
 
         $storeArgument  = $usesDto ? '$dto' : '$payload';
         $updateArgument = $usesDto ? '$dto' : '$payload';
 
-        return <<<PHP
-<?php
-
-namespace {$namespace};
-
-{$usesBlock}
-
-class {$name}Controller extends Controller
-{
-    public function __construct(public {$name}Service \$service) {}
-
-    public function index(): View
-    {
-        \$items = \$this->service->index();
-        return view('{$viewBase}.index', compact('items'));
+        return Stub::render('Controller/web', [
+            'namespace'           => $namespace,
+            'uses'                => $usesBlock,
+            'class'               => $name . 'Controller',
+            'service_class'       => $name . 'Service',
+            'view_base'           => $viewBase,
+            'route_name'          => $routeName,
+            'name'                => $name,
+            'store_request_type'  => $requestStoreType,
+            'store_payload'       => $payloadInitStore,
+            'store_argument'      => $storeArgument,
+            'model_class'         => $name,
+            'model_variable'      => $nameLc,
+            'relations_load'      => $relationsLoad,
+            'update_request_type' => $requestUpdateType,
+            'update_payload'      => $payloadInitUpdate,
+            'update_argument'     => $updateArgument,
+        ]);
     }
 
-    public function create(): View
+    private static function buildUses(array $imports): string
     {
-        return view('{$viewBase}.create');
-    }
+        $imports = array_values(array_unique($imports));
 
-    public function store({$requestStoreType} \$request): RedirectResponse
-    {
-        // @todo update validation rules and authorisation as needed.
-{$payloadInitStore}
-        \$this->service->store({$storeArgument});
-
-        return redirect()->route('{$routeName}.index')
-            ->with('status', '{$name} created.');
-    }
-
-    public function show({$name} \${$nameLc}): View
-    {
-{$relationsLoad}
-        return view('{$viewBase}.show', compact('{$nameLc}'));
-    }
-
-    public function edit({$name} \${$nameLc}): View
-    {
-{$relationsLoad}
-        return view('{$viewBase}.edit', compact('{$nameLc}'));
-    }
-
-    public function update({$requestUpdateType} \$request, {$name} \${$nameLc}): RedirectResponse
-    {
-{$payloadInitUpdate}
-        \$this->service->update(\${$nameLc}->id, {$updateArgument});
-
-        return redirect()->route('{$routeName}.show', \${$nameLc})
-            ->with('status', '{$name} updated.');
-    }
-
-    public function destroy({$name} \${$nameLc}): RedirectResponse
-    {
-        \$this->service->destroy(\${$nameLc}->id);
-
-        return redirect()->route('{$routeName}.index')
-            ->with('status', '{$name} deleted.');
-    }
-}
-PHP;
+        return 'use ' . implode(";\nuse ", $imports) . ';';
     }
 
     private static function controllerNamespace(string $baseNamespace, string $controllerRel, ?string $sub): string
