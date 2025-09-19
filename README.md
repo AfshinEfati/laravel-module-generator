@@ -14,6 +14,7 @@ A Laravel package to generate fully structured modules (Model, Repository, Servi
 - Compatible with Laravel 10+ and Laravel 11
 - Built-in `goli()` helper for Jalali date handling (no external dependency)
 
+
 ---
 
 ## Installation

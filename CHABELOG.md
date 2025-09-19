@@ -10,6 +10,7 @@ All notable changes to this package will be documented in this file.
 - `ResourceGenerator`: generates JsonResource with auto-detected fields, boolean formatting, date formatting, and eager loaded relations.
 - `StatusHelper`: added as default helper for standardized success/error API responses and data formatting.
 - Built-in Jalali date helper (`Goli` class and `goli()` helper) replacing the external dependency, with Persian digit formatting support, Jalali string parsing, and conversion helpers available application-wide.
+
 - Auto-discovery of model relations (`BelongsTo`, `HasOne`, etc.) for eager loading in `show` and `update` methods.
 
 ### 🔧 Changed
