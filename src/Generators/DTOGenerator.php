@@ -3,9 +3,9 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\Stub;
 
 use Illuminate\Support\Facades\File;
-use Efati\ModuleGenerator\Support\SchemaParser;
 
 class DTOGenerator
 {
