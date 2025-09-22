@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use JsonSerializable;
 
 /**
- * Lightweight Jalali date helper inspired by hekmatinasser/verta.
+ * Lightweight Jalali date helper inspired by anathematise/verta.
  */
 class Verta implements JsonSerializable
 {
