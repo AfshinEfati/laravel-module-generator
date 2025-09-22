@@ -43,8 +43,8 @@ class ServiceGenerator
             $interfaceUses[] = $dtoFqcn;
         }
 
-        $storeSignature  = $usesDto ? "public function store({$name}DTO \\$dto): Model;" : 'public function store(array \\$data): Model;';
-        $updateSignature = $usesDto ? "public function update(int \\$id, {$name}DTO \\$dto): bool;" : 'public function update(int \\$id, array \\$data): bool;';
+        $storeSignature  = $usesDto ? "public function store({$name}DTO \$dto): Model;" : 'public function store(array $data): Model;';
+        $updateSignature = $usesDto ? "public function update(int \$id, {$name}DTO \$dto): bool;" : 'public function update(int $id, array $data): bool;';
 
         $interfaceContent = Stub::render('Service/interface', [
             'namespace'        => $baseNamespace . '\\Services\\Contracts',
@@ -74,8 +74,8 @@ class ServiceGenerator
             $serviceUses[] = $dtoFqcn;
         }
 
-        $storeArgument  = $usesDto ? "{$name}DTO \\$dto" : 'array \\$data';
-        $updateArgument = $usesDto ? "{$name}DTO \\$dto" : 'array \\$data';
+        $storeArgument  = $usesDto ? "{$name}DTO \$dto" : 'array $data';
+        $updateArgument = $usesDto ? "{$name}DTO \$dto" : 'array $data';
         $storeBody      = $usesDto
             ? '        return $this->repository->store($dto->toArray());'
             : '        return $this->repository->store($data);';
