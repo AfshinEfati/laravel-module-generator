@@ -2,11 +2,11 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
-use Efati\ModuleGenerator\Support\MigrationFieldParser;
-
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
+use Efati\ModuleGenerator\Support\Stub;
 
 class FormRequestGenerator
 {
