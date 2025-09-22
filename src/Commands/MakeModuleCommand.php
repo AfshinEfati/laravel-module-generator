@@ -30,6 +30,7 @@ class MakeModuleCommand extends Command
                             {--nt|no-test : Do not generate feature test}
                             {--np|no-provider : Do not generate provider}
                             {--fm|from-migration= : Migration file path or hint for inferring fields}
+                            {--fields= : Inline schema definition for modules without migrations}
                             {--f|force : Overwrite existing files}';
 
 
@@ -40,7 +41,7 @@ class MakeModuleCommand extends Command
         $name          = Str::studly($this->argument('name'));
         $defaults      = (array) config('module-generator.defaults', []);
         $baseNamespace = (string) config('module-generator.base_namespace', 'App');
-        $schema        = $this->parseSchemaOption();
+        $schemaDefinitions = $this->parseSchemaOption();
 
         $controllerSub = $this->option('controller');
         $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']);
@@ -83,29 +84,36 @@ class MakeModuleCommand extends Command
             $withProvider = false;
         }
 
-        $modelFqcn      = $baseNamespace . '\\Models\\' . $name;
-        $migrationHint  = $this->option('from-migration');
-        $parsed         = null;
-        $parsedFields   = [];
+        $modelFqcn       = $baseNamespace . '\\Models\\' . $name;
+        $migrationHint   = $this->option('from-migration');
+        $parsed          = null;
+        $parsedFields    = [];
         $parsedRelations = [];
-        $parsedTable    = null;
+        $parsedTable     = null;
 
-        if (is_string($migrationHint) && $migrationHint !== '') {
-            $parsed = MigrationFieldParser::parse($name, $migrationHint);
-        } elseif (!class_exists($modelFqcn)) {
-            $parsed = MigrationFieldParser::parse($name, null);
+        if (!empty($schemaDefinitions)) {
+            [$parsedFields, $parsedRelations] = $this->prepareSchemaDefinitions($schemaDefinitions);
+            $parsedTable = Str::snake(Str::pluralStudly($name));
         }
 
-        if (is_array($parsed)) {
-            $parsedFields    = $parsed['fields'] ?? [];
-            $parsedRelations = $parsed['relations'] ?? [];
-            $parsedTable     = $parsed['table'] ?? null;
-        }
+        if (empty($parsedFields)) {
+            if (is_string($migrationHint) && $migrationHint !== '') {
+                $parsed = MigrationFieldParser::parse($name, $migrationHint);
+            } elseif (!class_exists($modelFqcn)) {
+                $parsed = MigrationFieldParser::parse($name, null);
+            }
 
-        if (is_string($migrationHint) && $migrationHint !== '' && empty($parsedFields)) {
-            $this->warn('• Unable to extract fields from the provided migration hint. Falling back to runtime inspection.');
-        } elseif (!class_exists($modelFqcn) && empty($parsedFields)) {
-            $this->warn('• Model class not found and fields could not be inferred from migration. Some generators may use empty metadata.');
+            if (is_array($parsed)) {
+                $parsedFields    = $parsed['fields'] ?? [];
+                $parsedRelations = $parsed['relations'] ?? [];
+                $parsedTable     = $parsed['table'] ?? null;
+            }
+
+            if (is_string($migrationHint) && $migrationHint !== '' && empty($parsedFields)) {
+                $this->warn('• Unable to extract fields from the provided migration hint. Falling back to runtime inspection.');
+            } elseif (!class_exists($modelFqcn) && empty($parsedFields)) {
+                $this->warn('• Model class not found and fields could not be inferred from migration. Some generators may use empty metadata.');
+            }
         }
 
         // generate
@@ -214,6 +222,113 @@ class MakeModuleCommand extends Command
         foreach ($skipped as $path) {
             $this->line(sprintf('  - Skipped existing file: %s (use --force to overwrite)', $path));
         }
+    }
+
+    /**
+     * Convert inline schema definitions into migration-style metadata arrays.
+     *
+     * @param  array<int, array<string, mixed>>  $schema
+     * @return array{0: array<string, array<string, mixed>>, 1: array<string, array<string, mixed>>}
+     */
+    private function prepareSchemaDefinitions(array $schema): array
+    {
+        $fields    = [];
+        $relations = [];
+
+        foreach (SchemaParser::keyByName($schema) as $name => $definition) {
+            if (!is_string($name) || $name === '') {
+                continue;
+            }
+
+            $normalizedType = SchemaParser::normalizeType((string) ($definition['type'] ?? 'string'));
+
+            $fieldMeta = [
+                'name'         => $name,
+                'type'         => $normalizedType,
+                'cast'         => $this->inferCastFromType($normalizedType),
+                'nullable'     => (bool) ($definition['nullable'] ?? false),
+                'unique'       => (bool) ($definition['unique'] ?? false),
+                'auto_managed' => false,
+            ];
+
+            $foreignMeta = $this->buildForeignMetadataFromSchema($name, $definition['foreign'] ?? null);
+
+            if ($foreignMeta !== null) {
+                $fieldMeta['foreign'] = $foreignMeta;
+
+                $relations[$foreignMeta['relation']] = [
+                    'name'          => $foreignMeta['relation'],
+                    'type'          => 'belongsTo',
+                    'foreign_key'   => $name,
+                    'table'         => $foreignMeta['table'],
+                    'references'    => $foreignMeta['references'] ?? 'id',
+                    'related_model' => $foreignMeta['related'],
+                ];
+            }
+
+            $fields[$name] = $fieldMeta;
+        }
+
+        return [$fields, $relations];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $foreign
+     * @return array{type: string, references: string, table: string|null, related: string, relation: string}|null
+     */
+    private function buildForeignMetadataFromSchema(string $field, ?array $foreign): ?array
+    {
+        $hasForeignInfo      = is_array($foreign) && (!empty($foreign['table']) || !empty($foreign['column']));
+        $looksLikeForeignKey = Str::endsWith($field, '_id');
+
+        if (!$hasForeignInfo && !$looksLikeForeignKey) {
+            return null;
+        }
+
+        $base = $looksLikeForeignKey ? substr($field, 0, -3) : $field;
+        $base = Str::singular($base) ?: $field;
+
+        $relation = Str::camel($base);
+        $related  = Str::studly($base);
+
+        $table   = null;
+        $column  = 'id';
+
+        if (is_array($foreign)) {
+            if (isset($foreign['table']) && is_string($foreign['table']) && $foreign['table'] !== '') {
+                $table = $foreign['table'];
+            }
+            if (isset($foreign['column']) && is_string($foreign['column']) && $foreign['column'] !== '') {
+                $column = $foreign['column'];
+            }
+        }
+
+        if ($table === null || $table === '') {
+            $table = Str::snake(Str::pluralStudly($related));
+        }
+
+        return [
+            'type'       => 'belongsTo',
+            'references' => $column,
+            'table'      => $table,
+            'related'    => $related,
+            'relation'   => $relation,
+        ];
+    }
+
+    private function inferCastFromType(string $type): ?string
+    {
+        return match ($type) {
+            'integer' => 'int',
+            'numeric' => 'float',
+            'float' => 'float',
+            'decimal' => 'float',
+            'boolean' => 'bool',
+            'json', 'array' => 'array',
+            'date' => 'date',
+            'datetime' => 'datetime',
+            default => null,
+        };
     }
 
     /**
