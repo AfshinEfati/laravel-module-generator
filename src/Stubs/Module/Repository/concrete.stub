@@ -2,42 +2,33 @@
 
 namespace {{ namespace }};
 
-use {{ interface_fqcn }};
-use {{ base_repository_fqcn }};
-use {{ model_fqcn }};
-use Illuminate\Database\Eloquent\Model;
+{{ uses }}
 
 class {{ class }} extends BaseRepository implements {{ interface }}
 {
-    public function __construct(public {{ model }} $model)
+    public function __construct({{ model }} $model)
     {
-        parent::__construct($this->model);
+        parent::__construct($model);
     }
 
-    public function getAll()
+    /**
+     * @return iterable<{{ model }}>
+     */
+    public function getAll(): iterable
     {
-        return $this->model->query()->latest()->get();
+        /** @var iterable<{{ model }}> */
+        return parent::getAll();
     }
 
-    public function find(int $id): ?Model
+    public function find(int|string $id): ?{{ model }}
     {
-        return $this->model->find($id);
+        /** @var {{ model }}|null */
+        return parent::find($id);
     }
 
-    public function store(array $data): Model
+    public function store(array $data): {{ model }}
     {
-        return $this->model->create($data);
-    }
-
-    public function update(int $id, array $data): bool
-    {
-        $item = $this->find($id);
-        return $item ? $item->update($data) : false;
-    }
-
-    public function delete(int $id): bool
-    {
-        $item = $this->find($id);
-        return $item ? (bool) $item->delete() : false;
+        /** @var {{ model }} */
+        return parent::store($data);
     }
 }
