@@ -2,9 +2,11 @@
 
 namespace App\Services\Contracts;
 
+use App\Repositories\Contracts\BaseRepositoryInterface;
+
 interface BaseServiceInterface
 {
-    public function repository(): object;
+    public function repository(): BaseRepositoryInterface;
 
     public function index(): mixed;
 

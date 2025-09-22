@@ -29,9 +29,15 @@ class RepositoryGenerator
         $contractClass      = $name . 'RepositoryInterface';
         $contractFile       = $contractPath . "/{$contractClass}.php";
 
+        $contractUses = [
+            $modelFqcn,
+        ];
+
         $contract = Stub::render('Repository/contract', [
             'namespace' => $contractNamespace,
+            'uses'      => self::buildUses($contractUses),
             'interface' => $contractClass,
+            'model'     => $name,
         ]);
 
         $results[$contractFile] = self::writeFile($contractFile, $contract, $force);
@@ -40,19 +46,30 @@ class RepositoryGenerator
         $eloquentClass     = $name . 'Repository';
         $eloquentFile      = $eloquentPath . "/{$eloquentClass}.php";
 
+        $concreteUses = [
+            $contractNamespace . '\\' . $contractClass,
+            $baseNamespace . '\\Repositories\\Eloquent\\BaseRepository',
+            $modelFqcn,
+        ];
+
         $concrete = Stub::render('Repository/concrete', [
-            'namespace'             => $eloquentNamespace,
-            'interface_fqcn'        => $contractNamespace . '\\' . $contractClass,
-            'base_repository_fqcn'  => $baseNamespace . '\\Repositories\\Eloquent\\BaseRepository',
-            'model_fqcn'            => $modelFqcn,
-            'class'                 => $eloquentClass,
-            'interface'             => $contractClass,
-            'model'                 => $name,
+            'namespace' => $eloquentNamespace,
+            'uses'      => self::buildUses($concreteUses),
+            'class'     => $eloquentClass,
+            'interface' => $contractClass,
+            'model'     => $name,
         ]);
 
         $results[$eloquentFile] = self::writeFile($eloquentFile, $concrete, $force);
 
         return $results;
+    }
+
+    private static function buildUses(array $uses): string
+    {
+        $uses = array_values(array_unique(array_filter($uses)));
+
+        return $uses ? 'use ' . implode(";\nuse ", $uses) . ';' : '';
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool

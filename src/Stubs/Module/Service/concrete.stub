@@ -6,33 +6,30 @@ namespace {{ namespace }};
 
 class {{ class }} extends BaseService implements {{ interface }}
 {
-    public function __construct(public {{ repository_type }} $repository)
+    public function __construct({{ repository_type_hint }} $repository)
     {
-        parent::__construct($this->repository);
+        parent::__construct($repository);
     }
 
-    public function index()
+    /**
+     * @return iterable<{{ model }}>
+     */
+    public function index(): iterable
     {
-        return $this->repository->getAll();
+        /** @var iterable<{{ model }}> */
+        return parent::index();
     }
 
-    public function show(int $id): ?Model
+    public function show(int|string $id): ?{{ model }}
     {
-        return $this->repository->find($id);
+        /** @var {{ model }}|null */
+        return parent::show($id);
     }
 
-    public function store({{ store_argument }}): Model
+{{ store_method }}
+{{ update_method }}
+    public function destroy(int|string $id): bool
     {
-{{ store_body }}
-    }
-
-    public function update(int $id, {{ update_argument }}): bool
-    {
-{{ update_body }}
-    }
-
-    public function destroy(int $id): bool
-    {
-        return $this->repository->delete($id);
+        return parent::destroy($id);
     }
 }

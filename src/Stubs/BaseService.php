@@ -2,17 +2,18 @@
 
 namespace App\Services;
 
+use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Services\Contracts\BaseServiceInterface;
 use BadMethodCallException;
 
 abstract class BaseService implements BaseServiceInterface
 {
     /**
-     * @param object $repository Concrete repository for the service.
+     * @param BaseRepositoryInterface $repository Concrete repository for the service.
      */
-    public function __construct(protected object $repository) {}
+    public function __construct(protected BaseRepositoryInterface $repository) {}
 
-    public function repository(): object
+    public function repository(): BaseRepositoryInterface
     {
         return $this->repository;
     }
@@ -58,7 +59,7 @@ abstract class BaseService implements BaseServiceInterface
     protected function callRepository(string $method, array $arguments = []): mixed
     {
         if (!method_exists($this->repository, $method)) {
-            throw new BadMethodCallException(sprintf('Repository method %s::%s not found.', $this->repository::class, $method));
+            throw new BadMethodCallException(sprintf('Repository method %s::%s not found.', get_class($this->repository), $method));
         }
 
         return $this->repository->{$method}(...$arguments);

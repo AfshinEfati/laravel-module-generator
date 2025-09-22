@@ -4,11 +4,16 @@ namespace {{ namespace }};
 
 {{ uses }}
 
-interface {{ interface }}
+interface {{ interface }} extends BaseServiceInterface
 {
-    public function index();
-    public function show(int $id): ?Model;
-    {{ store_signature }}
-    {{ update_signature }}
-    public function destroy(int $id): bool;
+    /**
+     * @return iterable<{{ model }}>
+     */
+    public function index(): iterable;
+
+    public function show(int|string $id): ?{{ model }};
+
+{{ store_method }}
+{{ update_method }}
+    public function destroy(int|string $id): bool;
 }

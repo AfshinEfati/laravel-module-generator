@@ -2,13 +2,20 @@
 
 namespace {{ namespace }};
 
-use Illuminate\Database\Eloquent\Model;
+{{ uses }}
 
-interface {{ interface }}
+interface {{ interface }} extends BaseRepositoryInterface
 {
-    public function getAll();
-    public function find(int $id): ?Model;
-    public function store(array $data): Model;
-    public function update(int $id, array $data): bool;
-    public function delete(int $id): bool;
+    /**
+     * @return iterable<{{ model }}>
+     */
+    public function getAll(): iterable;
+
+    public function find(int|string $id): ?{{ model }};
+
+    public function store(array $data): {{ model }};
+
+    public function update(int|string $id, array $data): bool;
+
+    public function delete(int|string $id): bool;
 }

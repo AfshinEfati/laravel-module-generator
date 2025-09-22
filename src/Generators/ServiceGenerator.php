@@ -29,6 +29,7 @@ class ServiceGenerator
         $repoInterfaceFqcn = "{$baseNamespace}\\Repositories\\Contracts\\{$name}RepositoryInterface";
         $repoConcreteFqcn  = "{$baseNamespace}\\Repositories\\Eloquent\\{$name}Repository";
         $dtoFqcn           = "{$baseNamespace}\\DTOs\\{$name}DTO";
+        $modelFqcn         = "{$baseNamespace}\\Models\\{$name}";
 
         $serviceInterfacePath = $contractPath . "/{$name}ServiceInterface.php";
         $serviceConcretePath  = $servicePath . "/{$name}Service.php";
@@ -37,21 +38,37 @@ class ServiceGenerator
 
         // Interface generation
         $interfaceUses = [
-            'Illuminate\\Database\\Eloquent\\Model',
+            $modelFqcn,
         ];
         if ($usesDto) {
             $interfaceUses[] = $dtoFqcn;
         }
 
-        $storeSignature  = $usesDto ? "public function store({$name}DTO \$dto): Model;" : 'public function store(array $data): Model;';
-        $updateSignature = $usesDto ? "public function update(int \$id, {$name}DTO \$dto): bool;" : 'public function update(int $id, array $data): bool;';
+        $payloadDocType = $usesDto ? "{$name}DTO|array" : 'array';
+
+        $interfaceStoreMethod = implode("\n", [
+            '    /**',
+            "     * @param {$payloadDocType} \$payload",
+            "     * @return {$name}",
+            '     */',
+            "    public function store(mixed \$payload): {$name};",
+        ]) . "\n";
+
+        $interfaceUpdateMethod = implode("\n", [
+            '    /**',
+            '     * @param int|string $id',
+            "     * @param {$payloadDocType} \$payload",
+            '     */',
+            '    public function update(int|string $id, mixed $payload): bool;',
+        ]) . "\n";
 
         $interfaceContent = Stub::render('Service/interface', [
-            'namespace'        => $baseNamespace . '\\Services\\Contracts',
-            'uses'             => self::buildUses($interfaceUses),
-            'interface'        => $name . 'ServiceInterface',
-            'store_signature'  => $storeSignature,
-            'update_signature' => $updateSignature,
+            'namespace'     => $baseNamespace . '\\Services\\Contracts',
+            'uses'          => self::buildUses($interfaceUses),
+            'interface'     => $name . 'ServiceInterface',
+            'model'         => $name,
+            'store_method'  => $interfaceStoreMethod,
+            'update_method' => $interfaceUpdateMethod,
         ]);
 
         $results[$serviceInterfacePath] = self::writeFile($serviceInterfacePath, $interfaceContent, $force);
@@ -60,39 +77,65 @@ class ServiceGenerator
         $serviceUses = [
             $baseNamespace . '\\Services\\Contracts\\' . $name . 'ServiceInterface',
             $baseNamespace . '\\Services\\BaseService',
-            'Illuminate\\Database\\Eloquent\\Model',
+            $modelFqcn,
         ];
 
-        $repositoryType = $useInterfaces ? $name . 'RepositoryInterface' : $name . 'Repository';
-        $repositoryUse  = $useInterfaces ? $repoInterfaceFqcn : $repoConcreteFqcn;
-        $serviceUses[]  = $repositoryUse;
+        $repositoryTypeHint = $useInterfaces ? $name . 'RepositoryInterface' : $name . 'Repository';
+        $repositoryUse      = $useInterfaces ? $repoInterfaceFqcn : $repoConcreteFqcn;
+        $serviceUses[]      = $repositoryUse;
 
-        if (!$useInterfaces) {
-            $serviceUses[] = $repoInterfaceFqcn;
-        }
         if ($usesDto) {
             $serviceUses[] = $dtoFqcn;
         }
 
-        $storeArgument  = $usesDto ? "{$name}DTO \$dto" : 'array $data';
-        $updateArgument = $usesDto ? "{$name}DTO \$dto" : 'array $data';
-        $storeBody      = $usesDto
-            ? '        return $this->repository->store($dto->toArray());'
-            : '        return $this->repository->store($data);';
-        $updateBody     = $usesDto
-            ? '        return $this->repository->update($id, $dto->toArray());'
-            : '        return $this->repository->update($id, $data);';
+        $serviceStoreMethodLines = [
+            '    /**',
+            "     * @param {$payloadDocType} \$payload",
+            "     * @return {$name}",
+            '     */',
+            "    public function store(mixed \$payload): {$name}",
+            '    {',
+        ];
+        if ($usesDto) {
+            $serviceStoreMethodLines[] = "        if (\$payload instanceof {$name}DTO) {";
+            $serviceStoreMethodLines[] = '            $payload = $payload->toArray();';
+            $serviceStoreMethodLines[] = '        }';
+            $serviceStoreMethodLines[] = '';
+        }
+        $serviceStoreMethodLines[] = "        /** @var {$name} */";
+        $serviceStoreMethodLines[] = '        return parent::store($payload);';
+        $serviceStoreMethodLines[] = '    }';
+        $serviceStoreMethodLines[] = '';
+        $serviceStoreMethod = implode("\n", $serviceStoreMethodLines);
+
+        $serviceUpdateMethodLines = [
+            '    /**',
+            '     * @param int|string $id',
+            "     * @param {$payloadDocType} \$payload",
+            '     */',
+            '    public function update(int|string $id, mixed $payload): bool',
+            '    {',
+        ];
+        if ($usesDto) {
+            $serviceUpdateMethodLines[] = "        if (\$payload instanceof {$name}DTO) {";
+            $serviceUpdateMethodLines[] = '            $payload = $payload->toArray();';
+            $serviceUpdateMethodLines[] = '        }';
+            $serviceUpdateMethodLines[] = '';
+        }
+        $serviceUpdateMethodLines[] = '        return parent::update($id, $payload);';
+        $serviceUpdateMethodLines[] = '    }';
+        $serviceUpdateMethodLines[] = '';
+        $serviceUpdateMethod = implode("\n", $serviceUpdateMethodLines);
 
         $serviceContent = Stub::render('Service/concrete', [
-            'namespace'        => $baseNamespace . '\\Services',
-            'uses'             => self::buildUses($serviceUses),
-            'class'            => $name . 'Service',
-            'interface'        => $name . 'ServiceInterface',
-            'repository_type'  => $repositoryType,
-            'store_argument'   => $storeArgument,
-            'update_argument'  => $updateArgument,
-            'store_body'       => $storeBody,
-            'update_body'      => $updateBody,
+            'namespace'             => $baseNamespace . '\\Services',
+            'uses'                  => self::buildUses($serviceUses),
+            'class'                 => $name . 'Service',
+            'interface'             => $name . 'ServiceInterface',
+            'repository_type_hint'  => $repositoryTypeHint,
+            'model'                 => $name,
+            'store_method'          => $serviceStoreMethod,
+            'update_method'         => $serviceUpdateMethod,
         ]);
 
         $results[$serviceConcretePath] = self::writeFile($serviceConcretePath, $serviceContent, $force);
@@ -102,9 +145,9 @@ class ServiceGenerator
 
     private static function buildUses(array $uses): string
     {
-        $uses = array_values(array_unique($uses));
+        $uses = array_values(array_unique(array_filter($uses)));
 
-        return 'use ' . implode(";\nuse ", $uses) . ';';
+        return $uses ? 'use ' . implode(";\nuse ", $uses) . ';' : '';
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool
