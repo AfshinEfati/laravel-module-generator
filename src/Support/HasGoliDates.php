@@ -16,6 +16,8 @@ trait HasGoliDates
         }
     }
 
+
+
     /**
      * Resolve the list of attributes that should be converted into Goli instances.
      *
