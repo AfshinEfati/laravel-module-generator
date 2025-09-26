@@ -4,18 +4,33 @@ site_url: https://efati.github.io/laravel-module-generator/
 repo_name: efati/laravel-module-generator
 repo_url: https://github.com/efati/laravel-module-generator
 nav:
-  - Home: index.md
-  - Getting Started:
-      - Installation: installation.md
-      - Configuration: configuration.md
-  - Usage: usage.md
-  - Advanced Features: advanced.md
-  - Reference:
-      - Changelog: changelog.md
-      - GitHub Pages Setup: github-pages-setup.md
-      - Information Architecture: ia.md
+  - en:
+      - Home: en/index.md
+      - Getting started:
+          - Quickstart: en/quickstart.md
+          - Installation: en/installation.md
+          - Configuration: en/configuration.md
+      - Usage: en/usage.md
+      - Advanced guides: en/advanced.md
+      - Reference:
+          - CLI & file reference: en/reference.md
+          - Changelog: en/changelog.md
+          - GitHub Pages setup: en/github-pages-setup.md
+  - fa:
+      - صفحه‌ اصلی: fa/index.md
+      - شروع سریع:
+          - راه‌اندازی فوری: fa/quickstart.md
+          - نصب: fa/installation.md
+          - پیکربندی: fa/configuration.md
+      - کار با ابزار: fa/usage.md
+      - راهنمای پیشرفته: fa/advanced.md
+      - مرجع:
+          - راهنمای مرجع: fa/reference.md
+          - تغییرات نسخه‌ها: fa/changelog.md
+          - راه‌اندازی GitHub Pages: fa/github-pages-setup.md
 theme:
   name: material
+  language: en
   palette:
     - scheme: default
       primary: indigo
