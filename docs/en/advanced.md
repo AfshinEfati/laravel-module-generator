@@ -2,6 +2,7 @@
 
 [🇮🇷 فارسی](../fa/advanced.md){ .language-switcher }
 
+
 Customise the generator beyond the defaults to match your organisation.
 
 ## Override stubs per artefact
@@ -36,3 +37,4 @@ This keeps the core package intact while letting you layer additional behaviour 
 - Ensure `composer install --no-dev` runs before invoking `php artisan make:module` inside automated scripts.
 - Use the generated feature tests in your CI pipeline for confidence when regenerating modules.
 - Leverage the existing [GitHub Pages workflow](github-pages-setup.md) to publish documentation updates alongside code changes.
+

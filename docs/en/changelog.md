@@ -4,6 +4,7 @@
 
 A summary of notable releases for Laravel Module Generator. For the full history see [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) and [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md).
 
+
 ## v6.2.4
 
 - Improved `--fields` parsing to capture nullable/unique modifiers and inline foreign keys.

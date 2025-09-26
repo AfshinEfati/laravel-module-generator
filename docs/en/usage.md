@@ -2,6 +2,7 @@
 
 [🇮🇷 فارسی](../fa/usage.md){ .language-switcher }
 
+
 Explore common command combinations and workflows for everyday development.
 
 ## Command overview
@@ -75,3 +76,4 @@ phpunit --testsuite=Feature
 ```
 
 Use the [advanced guides](advanced.md) when you need to hook into lifecycle events, override base classes, or build custom generators.
+

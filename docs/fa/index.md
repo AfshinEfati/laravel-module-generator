@@ -17,6 +17,7 @@ hide:
       <a class="md-button md-button--primary" href="installation.md">راهنمای نصب</a>
       <a class="md-button md-button--secondary" href="quickstart.md">اولین ماژول را بسازید</a>
       <a class="md-button" href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener">مشاهده در گیت‌هاب</a>
+
     </div>
   </div>
 </div>
@@ -59,5 +60,6 @@ hide:
 - با [چک‌لیست نصب](installation.md) تنظیمات و فایل‌ها را منتشر کنید.
 - از [راهنمای شروع سریع](quickstart.md) برای تعریف اسکیم یا استفاده از مایگریشن موجود بهره ببرید.
 - وقتی نیاز به کنترل بیشتر داشتید، به [الگوهای استفاده](usage.md)، [راهنماهای پیشرفته](advanced.md) و [مرجع CLI](reference.md) سر بزنید.
+
 
 </div>

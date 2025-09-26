@@ -2,6 +2,7 @@
 
 [🇮🇷 فارسی](../fa/github-pages-setup.md){ .language-switcher }
 
+
 The repository already ships with a GitHub Actions workflow that builds and publishes the MkDocs site to GitHub Pages. Follow the steps below to keep deployments healthy.
 
 ## 1. Configure repository settings

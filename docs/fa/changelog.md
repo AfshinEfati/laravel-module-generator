@@ -6,6 +6,7 @@
 
 خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
 
+
 ## v6.2.4
 
 - بهبود پردازش `--fields` برای پشتیبانی از `nullable`، `unique` و کلیدهای خارجی درون‌خطی.

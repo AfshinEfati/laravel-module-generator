@@ -15,6 +15,7 @@ hide:
       <a class="md-button md-button--primary" href="installation.md">Installation guide</a>
       <a class="md-button md-button--secondary" href="quickstart.md">Run your first module</a>
       <a class="md-button" href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener">View on GitHub</a>
+
     </div>
   </div>
 </div>
@@ -57,3 +58,4 @@ hide:
 - Follow the [installation checklist](installation.md) to publish configuration and stubs.
 - Use the [quickstart recipes](quickstart.md) for inline schemas or existing migrations.
 - Dive into [usage patterns](usage.md), [advanced guides](advanced.md), and the [CLI reference](reference.md) when you need more control.
+

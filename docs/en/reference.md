@@ -2,6 +2,7 @@
 
 [🇮🇷 فارسی](../fa/reference.md){ .language-switcher }
 
+
 Use this reference when you need a concise view of the available options and generated files.
 
 ## Command options
