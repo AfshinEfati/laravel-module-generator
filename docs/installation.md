@@ -32,4 +32,4 @@ The command copies every stub to `resources/stubs/module-generator`, where you c
 
 ---
 
-[← Back to Configuration](../README.md#configuration)
+[← Back to Overview](index.md)

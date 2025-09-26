@@ -25,58 +25,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-      - name: Build documentation site
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install markdown
-          python - <<'PY'
-import pathlib
-import shutil
-import markdown
+          python -m pip install -r requirements.txt
 
-repo_root = pathlib.Path(__file__).resolve().parents[2]
-docs_dir = repo_root / "docs"
-readme = repo_root / "README.md"
-site_dir = repo_root / "site"
+      - name: Build documentation site
+        run: mkdocs build --strict
 
-if site_dir.exists():
-    shutil.rmtree(site_dir)
-
-site_dir.mkdir(parents=True, exist_ok=True)
-
-index_html = markdown.markdown(readme.read_text(encoding="utf-8"))
-(site_dir / "index.html").write_text(
-    "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><title>Laravel Module Generator</title></head><body>"
-    + index_html
-    + "</body></html>",
-    encoding="utf-8",
-)
-
-if docs_dir.exists():
-    for md_file in docs_dir.rglob("*.md"):
-        rel_path = md_file.relative_to(docs_dir)
-        target = site_dir / rel_path.with_suffix(".html")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        html_content = markdown.markdown(md_file.read_text(encoding="utf-8"))
-        target.write_text(
-            "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><title>"
-            + md_file.stem.title()
-            + "</title></head><body>"
-            + html_content
-            + "</body></html>",
-            encoding="utf-8",
-        )
-
-    for asset in docs_dir.rglob("*"):
-        if asset.is_file() and asset.suffix.lower() != ".md":
-            rel_path = asset.relative_to(docs_dir)
-            destination = site_dir / rel_path
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(asset, destination)
-PY
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
