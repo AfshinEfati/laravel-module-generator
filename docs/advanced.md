@@ -1,53 +1,42 @@
 # Advanced Features
 
-## Test Generation
+## Feature test internals
 
-The generator ships with an opinionated feature test scaffold that mirrors end-to-end CRUD flows. Activate it with the [`--tests` option](../README.md#usage) whenever you run `php artisan make:module`, or rely on the short `-t` alias for quick toggling.
+The feature test generator builds a metadata map that drives every assertion. It exports inferred fillable fields, casts, foreign keys, and enum values into the test class so you can expand coverage quickly.【F:src/Generators/TestGenerator.php†L11-L157】
 
-> **Tip:** The generated scenarios run against the database connection already configured in your `.env`, so you can reuse your existing testing stack without pulling in extra packages or drivers.
+Key behaviours:
 
-Each suite exercises the module through a mix of happy-path and failure-path checks:
+- Generates a predictable base URI (e.g., `/test-products`) and route name prefix for quick wiring.【F:src/Generators/TestGenerator.php†L28-L41】
+- Hydrates field metadata from migrations, inline schema definitions, or model `fillable` and `casts` properties.【F:src/Generators/TestGenerator.php†L43-L107】
+- Serialises nested metadata into arrays you can reuse in further assertions, reducing setup duplication.【F:src/Generators/TestGenerator.php†L83-L157】
 
-- Creates records with valid payloads to ensure repository and controller wiring works from request to persistence.
-- Sends malformed data to surface validation errors triggered by the generated Form Requests.
-- Attempts to fetch, update, or delete non-existent IDs to confirm `404 Not Found` handling.
-- Confirms successful update and delete operations, including JSON structure assertions when resources are enabled.
+## Migration metadata reuse
 
-```php
-// Example: generated test skeleton
-public function test_user_can_create_product()
-{
-    $payload = Product::factory()->make()->toArray();
+`MigrationFieldParser` is shared by DTO, resource, form request, and test generators. It analyses migration statements, including enums, decimal precision, and chained modifiers, to produce a canonical map of your table schema.【F:src/Support/MigrationFieldParser.php†L9-L213】
 
-    $this->postJson(route('products.store'), $payload)
-        ->assertCreated()
-        ->assertJsonFragment(['name' => $payload['name']]);
-}
-```
+The parser also resolves relationships and eager-load hints so generated resources include nested resources when available.【F:src/Support/MigrationFieldParser.php†L214-L325】【F:src/Generators/ResourceGenerator.php†L53-L128】
 
-For a deeper walkthrough of all command switches and short aliases, see the [Usage guide](../README.md#usage).
+## Status helper
 
-## Goli Date Helper
+Publishing the assets installs `App\Helpers\StatusHelper`, which centralises API response envelopes and normalises date/boolean fields. Resources call it automatically, but you can extend it to map domain-specific enumerations or add localisation hooks.【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】【F:src/Generators/ResourceGenerator.php†L77-L158】
 
-`Goli` is the built-in Jalali date toolkit exposed via the `goli()` helper and a dedicated service container binding. It gives you Carbon interoperability, digit localisation, and Gregorian ⇆ Jalali conversions out of the box.
+## Jalali tooling
 
-> **Note:** There is no need to pull in third-party libraries like Verta—the helper is bundled with the package. Review the [Installation instructions](../README.md#installation) if you skipped the service provider registration step.
-
-Common entry points include parsing, formatting, and bridging to Carbon macros:
+`ModuleGeneratorServiceProvider` binds the `goli()` helper and registers Carbon macros, giving you Jalali ↔ Gregorian conversions throughout your app and generated resources.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】 The `Goli` class provides parsing, formatting, digit localisation, and diff helpers that integrate with Carbon seamlessly.【F:src/Support/Goli.php†L1-L120】
 
 ```php
 use Efati\ModuleGenerator\Support\Goli;
 
-// via the global helper
-$formatted = goli(now())->format('Y/m/d');
-
-// resolve via the service container
-$goli = app(Goli::class, ['datetime' => '2024-03-20 12:00:00']);
-$jalali = $goli->toJalaliDateString();
-
-// Carbon macros registered by the service provider
-$diff = now()->toJalali()->diffForHumans();
-$fromJalali = \Carbon\Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
+goli(now())->format('Y/m/d');
+\Carbon\Carbon::fromJalali('1403/01/01 08:30:00');
 ```
 
-The helper accepts Jalali strings (with optional Persian digits), converts between calendars, and keeps all Carbon chaining capabilities intact. When you need raw arrays for storage or API responses, reach for the conversion helpers like `toArray()` or `toGregorian()`.
+## Customising stubs
+
+Published stubs live in `resources/stubs/module-generator` and are resolved before the package defaults. Update them to:
+
+- Inject traits (e.g., auditing, soft deletes) directly into generated models, repositories, or services.
+- Change controller response envelopes, logging, or exception handling to match your API style.
+- Add domain-specific interfaces or constructor signatures to DTOs and services.
+
+After editing stubs, rerun `make:module` with `--force` for existing modules to pick up the changes.【F:src/Commands/MakeModuleCommand.php†L117-L174】
