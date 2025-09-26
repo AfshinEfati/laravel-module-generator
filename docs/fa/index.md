@@ -16,6 +16,7 @@ hide:
     <div class="hero__actions">
       <a class="md-button md-button--primary" href="/fa/quickstart/">شروع سریع از خط فرمان</a>
       <a class="md-button md-button--secondary" href="/fa/installation/">نصب بسته</a>
+
       <a class="md-button" href="https://github.com/efati/laravel-module-generator" target="_blank" rel="noopener">⭐️ در گیت‌هاب</a>
     </div>
   </div>
@@ -97,10 +98,12 @@ hide:
 - تغییرات را در [تغییرات نسخه‌ها](/fa/changelog/) دنبال کنید.
 - با [راهنمای GitHub Pages](/fa/github-pages-setup/) مستندات را به‌صورت خودکار منتشر کنید.
 
+
 <div class="cta-banner">
   <h2>آمادهٔ ساخت ماژول بعدی هستید؟</h2>
   <p>بسته را نصب کنید، یک بار اسکیما را توضیح دهید و اجازه دهید ژنراتور در چند دقیقه ماژول لاراولی تست‌شده تحویل دهد.</p>
   <a class="md-button md-button--primary" href="/fa/installation/">نصب و پیکربندی</a>
+
 </div>
 
 </div>

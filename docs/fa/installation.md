@@ -49,4 +49,5 @@ php artisan vendor:publish --tag=module-generator-stubs
 
 پس از طی این مراحل می‌توانید به [راهنمای شروع سریع](/fa/quickstart/) بروید و اولین ماژول خود را بسازید.
 
+
 </div>

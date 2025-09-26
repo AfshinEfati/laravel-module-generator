@@ -46,3 +46,4 @@ Stubs are exported to `resources/stubs/module-generator` and override the packag
 - (Laravel 11) Keep `bootstrap/providers.php` tracked so provider auto-registration can be committed with each new module.
 
 With the prerequisites complete you can jump to the [quickstart guide](/en/quickstart/) for command recipes and inline schema examples.
+

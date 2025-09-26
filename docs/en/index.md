@@ -87,6 +87,7 @@ hide:
 - Browse [usage recipes](/en/usage/) for CRUD variations, DTO-only scenarios, and test strategies.
 - Dive into [advanced guides](/en/advanced/) to override stubs, register hooks, and wire custom generators.
 
+
 ## Explore the generated structure
 
 The reference section captures what is created on disk, how service providers are wired, and which CLI flags toggle each artifact.
@@ -95,8 +96,10 @@ The reference section captures what is created on disk, how service providers ar
 - Track changes in the [changelog](/en/changelog/) and subscribe to release notes.
 - Deploy the docs with the [GitHub Pages setup](/en/github-pages-setup/) workflow.
 
+
 <div class="cta-banner">
   <h2>Ready to scaffold your next module?</h2>
   <p>Install the package, describe your schema once, and let the generator deliver a consistent, testable Laravel module in minutes.</p>
   <a class="md-button md-button--primary" href="/en/installation/">Install &amp; configure</a>
+
 </div>

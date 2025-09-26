@@ -53,3 +53,4 @@ The command creates:
 - Review the [usage guide](/en/usage/) for flag combinations and recipes.
 - Explore [advanced customisation](/en/advanced/) to add hooks or entirely new generators.
 - Scan the [CLI reference](/en/reference/) when you need an at-a-glance list of options.
+

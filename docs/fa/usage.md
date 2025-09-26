@@ -78,4 +78,5 @@ phpunit --testsuite=Feature
 
 برای یادگیری شخصی‌سازی پیشرفته به [راهنمای پیشرفته](/fa/advanced/) مراجعه کنید.
 
+
 </div>
