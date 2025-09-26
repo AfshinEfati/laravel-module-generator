@@ -1,5 +1,7 @@
 # Laravel Module Generator
 
+[![Docs Deployment Status](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml)
+
 A Laravel package to generate fully structured modules (Model, Repository, Service, Interface, DTO, Controller, Form Requests, and Tests) with a single Artisan command.
 
 ## Features
@@ -187,6 +189,15 @@ The `toJalali()` macro returns a `Goli` instance, so you keep access to all Jala
 
 > Looking for a quick smoke test? Run `php tests/CarbonMacrosExample.php` to execute the same round-trip conversion showcased above.
 
+
+---
+
+## Release Checklist
+
+- [ ] Update `CHABELOG.md` with the latest changes.
+- [ ] Update docs.
+- [ ] Bump the release information in `version.md` if needed.
+- [ ] Create and push the release tag.
 
 ---
 
