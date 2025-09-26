@@ -1,5 +1,5 @@
-site_name: Laravel Module Generator Docs
-site_description: Documentation for the Laravel Module Generator package.
+site_name: Laravel Module Generator
+site_description: Opinionated scaffolding for modular Laravel applications.
 site_url: https://efati.github.io/laravel-module-generator/
 repo_name: efati/laravel-module-generator
 repo_url: https://github.com/efati/laravel-module-generator
@@ -15,9 +15,56 @@ nav:
       - GitHub Pages Setup: github-pages-setup.md
       - Information Architecture: ia.md
 theme:
-  name: readthedocs
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: lime
+    - scheme: slate
+      primary: indigo
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  font:
+    text: "Inter"
+    code: "Fira Code"
+  features:
+    - announce.dismiss
+    - navigation.expand
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - toc.follow
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
 markdown_extensions:
-  - toc:
-      permalink: true
-  - tables
   - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+    anchor_linenums: true
+    use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.superfences
+  - tables
+  - toc:
+    permalink: true
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/efati/laravel-module-generator
+      name: GitHub Repository
+extra_css:
+  - assets/stylesheets/extra.css
