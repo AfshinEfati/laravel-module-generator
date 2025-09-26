@@ -48,9 +48,7 @@ markdown_extensions:
   - def_list
   - footnotes
   - md_in_html
-  - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.emoji
   - pymdownx.highlight:
       anchor_linenums: true
       use_pygments: true
@@ -60,7 +58,7 @@ markdown_extensions:
   - pymdownx.superfences
   - tables
   - toc:
-    permalink: true
+      permalink: true
 extra:
   social:
     - icon: fontawesome/brands/github
