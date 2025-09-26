@@ -30,4 +30,4 @@
 - بازنویسی عمده برای پشتیبانی از Laravel 11 و namespace پویا.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/config/module-generator.php†L5-L53】
 - اتصال خودکار Service و Repository در Service Provider و تولید Provider اختصاصی.【F:src/Generators/ProviderGenerator.php†L9-L72】
 
-برای تاریخچه کامل و جزئیات تغییرات، فایل‌های [`CHABELOG.md`](../CHABELOG.md) و [`version.md`](../version.md) را بررسی کنید.
+برای تاریخچه کامل و جزئیات تغییرات، فایل‌های [`CHABELOG.md`](https://github.com/efati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/efati/laravel-module-generator/blob/main/version.md) را بررسی کنید.

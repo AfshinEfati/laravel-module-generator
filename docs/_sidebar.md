@@ -1,9 +1,0 @@
-- [Home](index.md)
-- Getting Started
-  - [Installation](installation.md)
-  - [Configuration](configuration.md)
-- [Usage](usage.md)
-- [Advanced Features](advanced.md)
-- References
-  - [Release Highlights](changelog.md)
-  - [GitHub Pages](github-pages-setup.md)
