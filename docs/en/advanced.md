@@ -7,7 +7,7 @@ Customise the generator beyond the defaults to match your organisation.
 
 ## Override stubs per artefact
 
-1. Publish the stubs: `php artisan vendor:publish --tag=module-generator-stubs`.
+1. Publish the stubs by running `php artisan vendor:publish`, selecting `Efati\ModuleGenerator\ModuleGeneratorServiceProvider`, and choosing the `module-generator-stubs` tag.
 2. Edit the templates in `resources/stubs/module-generator`.
 3. Re-run the generator with `--force` to apply your changes.
 

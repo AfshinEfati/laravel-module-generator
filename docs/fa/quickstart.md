@@ -18,11 +18,10 @@ composer require efati/laravel-module-generator
 ## ۲. انتشار تنظیمات و قالب‌ها (اختیاری)
 
 ```bash
-php artisan vendor:publish --tag=module-generator
-php artisan vendor:publish --tag=module-generator-stubs --force
+php artisan vendor:publish
 ```
 
-دستور اول فایل پیکربندی و کلاس‌های کمکی را منتشر می‌کند. دستور دوم قالب‌های پیش‌فرض را در مسیر `resources/stubs/module-generator` قرار می‌دهد تا بتوانید کنترلر، ریکوئست یا تست‌ها را شخصی‌سازی کنید. هر زمان تغییرات upstream را دریافت کردید دوباره دستور را اجرا کنید تا قالب‌ها همگام شوند.
+از فهرست، گزینهٔ `Efati\ModuleGenerator\ModuleGeneratorServiceProvider` و سپس تگ `module-generator` را برای انتشار فایل پیکربندی و کلاس‌های کمکی انتخاب کنید. دستور را دوباره اجرا کنید، همان سرویس‌پرووایدر را برگزینید و این بار تگ `module-generator-stubs` را انتخاب کنید (در صورت نیاز برای بازنویسی قالب‌های موجود، فلگ `--force` را اضافه کنید). قالب‌های کپی‌شده در `resources/stubs/module-generator` امکان شخصی‌سازی کنترلر، ریکوئست یا تست‌ها را فراهم می‌کنند و پس از دریافت تغییرات upstream می‌توانید آن‌ها را تازه‌سازی کنید.
 
 ## ۳. فقط یک بار اسکیما را توصیف کنید
 

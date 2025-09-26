@@ -30,18 +30,18 @@ Require the package and publish the base assets:
 
 ```bash
 composer require efati/laravel-module-generator
-php artisan vendor:publish --tag=module-generator
+php artisan vendor:publish
 ```
 
-Publishing with the `module-generator` tag installs base repository/service classes, the `StatusHelper`, and `config/module-generator.php` where you can adjust namespaces, paths, and feature toggles.【F:src/ModuleGeneratorServiceProvider.php†L29-L50】【F:src/config/module-generator.php†L5-L53】
+When prompted, choose `Efati\ModuleGenerator\ModuleGeneratorServiceProvider`, then select the `module-generator` tag. This installs the base repository/service classes, the `StatusHelper`, and `config/module-generator.php` where you can adjust namespaces, paths, and feature toggles.【F:src/ModuleGeneratorServiceProvider.php†L29-L50】【F:src/config/module-generator.php†L5-L53】
 
 To customise the stub templates used for every generated file, publish the dedicated stubs once:
 
 ```bash
-php artisan vendor:publish --tag=module-generator-stubs
+php artisan vendor:publish
 ```
 
-The stubs will be copied to `resources/stubs/module-generator`, allowing you to adapt method signatures, imports, or formatting to match your house style.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
+Pick the same service provider and choose the `module-generator-stubs` tag to copy the templates to `resources/stubs/module-generator`, letting you adapt method signatures, imports, or formatting to match your house style.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
 
 ## Quick start
 

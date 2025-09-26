@@ -24,10 +24,10 @@ composer require efati/laravel-module-generator
 ## ۲. انتشار پیکربندی و کلاس‌های کمکی
 
 ```bash
-php artisan vendor:publish --tag=module-generator
+php artisan vendor:publish
 ```
 
-این دستور موارد زیر را کپی می‌کند:
+در فهرست تعاملی، ابتدا گزینهٔ `Efati\ModuleGenerator\ModuleGeneratorServiceProvider` و سپس تگ `module-generator` را انتخاب کنید. این کار موارد زیر را کپی می‌کند:
 
 - `config/module-generator.php` – نام‌فضاها، مسیر خروجی و پیش‌فرض‌ها را اینجا تنظیم کنید.
 - کلاس‌های پایهٔ سرویس/ریپازیتوری و هِلپر `StatusHelper` که در کنترلرها و ریسورس‌ها استفاده می‌شود.
@@ -37,10 +37,10 @@ php artisan vendor:publish --tag=module-generator
 ## ۳. (اختیاری) انتشار قالب‌ها
 
 ```bash
-php artisan vendor:publish --tag=module-generator-stubs
+php artisan vendor:publish
 ```
 
-قالب‌ها در مسیر `resources/stubs/module-generator` قرار می‌گیرند و از این پس جایگزین نسخهٔ بسته می‌شوند. آن‌ها را ویرایش کنید تا تریت‌ها، لاگ یا استانداردهای نام‌گذاری سازمان شما اعمال شود.
+همان سرویس‌پرووایدر را انتخاب کنید و این بار تگ `module-generator-stubs` را برگزینید. قالب‌ها در مسیر `resources/stubs/module-generator` قرار می‌گیرند و از این پس جایگزین نسخهٔ بسته می‌شوند. آن‌ها را ویرایش کنید تا تریت‌ها، لاگ یا استانداردهای نام‌گذاری سازمان شما اعمال شود.
 
 ## ۴. آماده‌سازی محیط
 
