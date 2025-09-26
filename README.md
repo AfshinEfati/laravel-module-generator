@@ -1,20 +1,20 @@
 # Laravel Module Generator
 
-> Latest release: **v6.2.4**
-
 [![Docs Deployment Status](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml)
 
 A Laravel package to generate fully structured modules (Model, Repository, Service, Interface, DTO, Controller, Form Requests, and Tests) with a single Artisan command.
 
 ## Features
 
-- Generate **Repository**, **Service**, **Interfaces**, **DTO**, **Controller**, **API Resource**, **Form Requests**, and **CRUD Feature Tests** from a single `make:module` command.
-- Prime scaffolding metadata from existing migrations or inline `--fields` definitions, letting the generators infer fillable attributes, validation rules, casts, and eager-loadable relations before the Eloquent model exists.
-- Automatic binding of repositories/services, optional DTO pipelines, and API resource responses that normalise booleans and date fields through the bundled status helper.
-- Form Requests that convert `unique:` pipe rules into `Rule::unique(...)->ignore()` lookups during updates so validation plays nicely with route-model binding.
-- Generates CRUD Feature Tests that reuse your `.env` database connection instead of forcing SQLite and cover happy-path plus failure scenarios.
-- Publishable configuration & stubs to align namespaces, folder structure, and code style with your project conventions.
-- Compatible with Laravel 10 and Laravel 11 out of the box.
+- Generate **Model**, **Repository**, **Service**, **Interface**, **DTO**, **Controller**, **Form Requests**, and **Tests** in one command
+- Supports **API Resource** controllers
+- Dynamic namespace and path configuration via `config/module-generator.php`
+- Automatic binding of Repository and Service in Service Providers
+- Generates CRUD Feature Tests with both success and failure scenarios
+- Respects your existing `.env` database configuration for tests (no forced SQLite)
+- Ability to override stubs
+- Compatible with Laravel 10+ and Laravel 11
+- Built-in `goli()` helper for Jalali date handling (no external dependency)
 
 
 ---
@@ -203,22 +203,26 @@ The `toJalali()` macro returns a `Goli` instance, so you keep access to all Jala
 
 ## Version History
 
-### **v6.2.4**
-- Update Form Request generation to translate `unique:` pipe rules into `Rule::unique(...)->ignore()` calls, preventing false positives when editing existing records through route-model binding.
-- Normalise generated validation arrays so custom Rule instances are preserved alongside classic pipe notation.
-- Refined API resource output to continue formatting booleans and timestamps through the status helper utilities.
+### **v5.3**
+- Added short CLI aliases (`-a`, `-c`, `-r`, `-t`, etc.) for faster module generation.
+- Introduced safe overwrite behaviour: generators skip existing files unless `--force/-f` is provided.
+- Controllers now adapt to API vs. web mode, respecting DTO/resource toggles and returning sensible payloads when those artefacts are disabled.
+- Services fall back to array payloads when DTOs are skipped and can work without provider bindings when `--no-provider` is used.
 
-### **v6.1.0**
-- Resource generation now inspects both migrations and model relations to eager-load nested resources automatically.
-- Inline schema definitions passed via `--fields` are promoted into fillable arrays, casts, and relationship metadata for downstream generators.
+### **v5.2**
+- Added **full CRUD Feature Tests** with success & failure cases
+- Removed forced SQLite in tests (uses `.env` database settings)
+- Fixed **Form Requests** generation bug
+- Improved DTO integration in Controllers & Services
 
-### **v6.0.0**
-- Migration introspection was expanded to capture nullable/unique flags, enum values, and foreign key metadata so repositories, DTOs, resources, and tests share a consistent contract.
-- Added CLI ergonomics including inline schema parsing, granular opt-in/out flags for controllers/resources/tests/DTOs, and smarter fallbacks when a model class is missing.
+### v5.1
+- Bug fixes for Form Requests generation
+- Improved path handling in configuration
 
-### **v5.x**
-- Short CLI aliases, safer overwrite behaviour, API-aware controllers, and optional provider/DTO pipelines.
-- Feature test scaffolding with success & failure cases, `.env` database reuse, and DTO/Form Request integration improvements.
+### v5.0
+- Major refactor for Laravel 11 support
+- Dynamic namespace handling
+- Service & Repository auto-binding
 
 ---
 
