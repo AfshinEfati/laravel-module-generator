@@ -1,5 +1,6 @@
 name: Build and Deploy Docs
 
+
 on:
   push:
     branches:
@@ -19,6 +20,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -91,3 +93,4 @@ PY
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
