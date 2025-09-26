@@ -8,7 +8,7 @@
     "laravel/framework": ">=10.0"
   },
   "keywords": ["laravel", "module-generator", "repository", "service", "crud", "tests"],
-  "homepage": "https://github.com/AfshinEfati/laravel-module-generator",
+  "homepage": "https://afshinefati.github.io/laravel-module-generator/",
   "support": {
     "issues": "https://github.com/AfshinEfati/laravel-module-generator/issues",
     "source": "https://github.com/AfshinEfati/laravel-module-generator"
