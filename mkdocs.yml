@@ -1,8 +1,8 @@
 site_name: Laravel Module Generator
 site_description: Opinionated scaffolding for modular Laravel applications.
-site_url: https://efati.github.io/laravel-module-generator/
-repo_name: efati/laravel-module-generator
-repo_url: https://github.com/efati/laravel-module-generator
+site_url: https://afshinefati.github.io/laravel-module-generator/
+repo_name: AfshinEfati/laravel-module-generator
+repo_url: https://github.com/AfshinEfati/laravel-module-generator
 nav:
   - en:
       - Home: en/index.md
@@ -77,7 +77,7 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/efati/laravel-module-generator
+      link: https://github.com/AfshinEfati/laravel-module-generator
       name: GitHub Repository
 extra_css:
   - assets/stylesheets/extra.css

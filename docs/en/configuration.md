@@ -1,6 +1,7 @@
 # Configuration
 
-[🇮🇷 فارسی](/fa/configuration/){ .language-switcher }
+[🇮🇷 فارسی](../fa/configuration.md){ .language-switcher }
+
 
 Fine-tune the generator once so every teammate creates modules with the same structure.
 

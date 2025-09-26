@@ -1,6 +1,6 @@
 # Laravel Module Generator
 
-[![Docs Deployment Status](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml)
+[![Docs Deployment Status](https://github.com/AfshinEfati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/AfshinEfati/laravel-module-generator/actions/workflows/docs.yml)
 
 Generate complete, test-ready Laravel modules from a single Artisan command. The generator scaffolds models, repositories, services, interfaces, DTOs, controllers, API resources, form requests, feature tests, and supporting helpers so you can jump straight to business logic.
 
@@ -133,7 +133,7 @@ Previous release notes are archived in [`CHABELOG.md`](CHABELOG.md) and [`docs/c
 
 ## Resources
 
-- [Full documentation](https://efati.github.io/laravel-module-generator/) – landing page, configuration guide, and advanced topics.
+- [Full documentation](https://afshinefati.github.io/laravel-module-generator/) – landing page, configuration guide, and advanced topics.
 - [Usage reference](docs/usage.md) – option matrix, inline schema syntax, and command recipes.
 - [Advanced features](docs/advanced.md) – deep dive into test scaffolding, Jalali tooling, and stub customisation.
 

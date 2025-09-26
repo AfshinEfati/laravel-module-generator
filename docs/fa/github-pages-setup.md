@@ -1,8 +1,9 @@
 # راه‌اندازی GitHub Pages
 
-<div dir="rtl">
+<div dir="rtl" markdown="1">
 
-[🇬🇧 English](/en/github-pages-setup/){ .language-switcher }
+[🇬🇧 English](../en/github-pages-setup.md){ .language-switcher }
+
 
 این مخزن از قبل شامل گردش کار GitHub Actions برای ساخت و انتشار سایت MkDocs است. برای اطمینان از انتشار صحیح مراحل زیر را انجام دهید.
 

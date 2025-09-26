@@ -1,6 +1,7 @@
 # Advanced guides
 
-[🇮🇷 فارسی](/fa/advanced/){ .language-switcher }
+[🇮🇷 فارسی](../fa/advanced.md){ .language-switcher }
+
 
 Customise the generator beyond the defaults to match your organisation.
 
@@ -35,5 +36,5 @@ This keeps the core package intact while letting you layer additional behaviour 
 
 - Ensure `composer install --no-dev` runs before invoking `php artisan make:module` inside automated scripts.
 - Use the generated feature tests in your CI pipeline for confidence when regenerating modules.
-- Leverage the existing [GitHub Pages workflow](/en/github-pages-setup/) to publish documentation updates alongside code changes.
+- Leverage the existing [GitHub Pages workflow](github-pages-setup.md) to publish documentation updates alongside code changes.
 

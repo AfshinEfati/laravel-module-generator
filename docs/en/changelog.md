@@ -1,8 +1,9 @@
 # Changelog
 
-[🇮🇷 فارسی](/fa/changelog/){ .language-switcher }
+[🇮🇷 فارسی](../fa/changelog.md){ .language-switcher }
 
-A summary of notable releases for Laravel Module Generator. For the full history see [`CHABELOG.md`](https://github.com/efati/laravel-module-generator/blob/main/CHABELOG.md) and [`version.md`](https://github.com/efati/laravel-module-generator/blob/main/version.md).
+A summary of notable releases for Laravel Module Generator. For the full history see [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) and [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md).
+
 
 ## v6.2.4
 
