@@ -1,10 +1,10 @@
 # تغییرات نسخه‌ها
 
-<div dir="rtl">
+<div dir="rtl" markdown="1">
 
-[🇬🇧 English](/en/changelog/){ .language-switcher }
+[🇬🇧 English](../en/changelog.md){ .language-switcher }
 
-خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/efati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/efati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
+خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
 
 ## v6.2.4
 

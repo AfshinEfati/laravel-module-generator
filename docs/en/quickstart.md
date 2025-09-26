@@ -1,6 +1,6 @@
 # Quickstart
 
-[🇮🇷 فارسی](/fa/quickstart/){ .language-switcher }
+[🇮🇷 فارسی](../fa/quickstart.md){ .language-switcher }
 
 Follow this checklist to scaffold your first module in less than five minutes.
 
@@ -50,6 +50,6 @@ The command creates:
 
 ## Next steps
 
-- Review the [usage guide](/en/usage/) for flag combinations and recipes.
-- Explore [advanced customisation](/en/advanced/) to add hooks or entirely new generators.
-- Scan the [CLI reference](/en/reference/) when you need an at-a-glance list of options.
+- Review the [usage guide](usage.md) for flag combinations and recipes.
+- Explore [advanced customisation](advanced.md) to add hooks or entirely new generators.
+- Scan the [CLI reference](reference.md) when you need an at-a-glance list of options.

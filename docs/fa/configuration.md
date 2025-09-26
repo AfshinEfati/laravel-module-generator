@@ -1,8 +1,8 @@
 # پیکربندی
 
-<div dir="rtl"> 
+<div dir="rtl" markdown="1"> 
 
-[🇬🇧 English](/en/configuration/){ .language-switcher }
+[🇬🇧 English](../en/configuration.md){ .language-switcher }
 
 تنظیمات ژنراتور را یک‌بار انجام دهید تا همهٔ اعضای تیم ماژول‌ها را با ساختار یکسان بسازند.
 

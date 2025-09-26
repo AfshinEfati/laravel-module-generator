@@ -1,8 +1,8 @@
 # راهنمای مرجع CLI و فایل‌ها
 
-<div dir="rtl">
+<div dir="rtl" markdown="1">
 
-[🇬🇧 English](/en/reference/){ .language-switcher }
+[🇬🇧 English](../en/reference.md){ .language-switcher }
 
 هر زمان به نمای کلی گزینه‌ها و خروجی‌ها نیاز داشتید از این راهنما استفاده کنید.
 

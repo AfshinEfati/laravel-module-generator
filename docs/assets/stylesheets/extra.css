@@ -198,6 +198,26 @@
   background: rgba(79, 70, 229, 0.05);
 }
 
+.md-typeset .landing-grid {
+  margin-block: 2rem 3rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.md-typeset .landing-card {
+  padding: 1.75rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 38px -30px rgba(15, 23, 42, 0.45);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .landing-card {
+  background: rgba(30, 41, 59, 0.88);
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
 [data-md-color-scheme="slate"] .md-typeset .quickstart {
   background: rgba(79, 70, 229, 0.16);
   border-color: rgba(148, 163, 184, 0.28);
