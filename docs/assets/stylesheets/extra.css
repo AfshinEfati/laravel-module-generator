@@ -1,8 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
+
 :root {
   --md-primary-fg-color: #4c51bf;
   --md-primary-fg-color--light: #6574cd;
   --md-primary-fg-color--dark: #3c366b;
   --md-accent-fg-color: #a3e635;
+}
+
+.md-typeset,
+.md-nav__title,
+.md-nav__link,
+.md-header__title {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Vazirmatn', 'Inter', sans-serif;
+}
+
+[dir="rtl"] .md-typeset {
+  font-family: 'Vazirmatn', 'Inter', sans-serif;
+}
+
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.08);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.language-switcher::before {
+  content: '\1F310';
+}
+
+.md-typeset .badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 1rem 2rem;
+  align-items: center;
+}
+
+.md-typeset .badge-row a img {
+  height: 26px;
 }
 
 .md-typeset .hero {
@@ -142,6 +188,26 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
+}
+
+.md-typeset .cta-banner {
+  margin-block: 3rem 1.5rem;
+  padding: 2.25rem;
+  border-radius: 1.25rem;
+  border: 1px dashed rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(56, 189, 248, 0.08));
+  text-align: center;
+}
+
+.md-typeset .cta-banner h2 {
+  margin-top: 0;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+}
+
+.md-typeset .cta-banner .md-button {
+  margin-top: 1rem;
+  border-radius: 999px;
+  padding-inline: 1.8rem;
 }
 
 @media (min-width: 960px) {
