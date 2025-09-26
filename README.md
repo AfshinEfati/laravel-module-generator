@@ -2,6 +2,11 @@
 
 [![Docs Deployment Status](https://github.com/AfshinEfati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/AfshinEfati/laravel-module-generator/actions/workflows/docs.yml)
 
+## 📖 Documentation
+
+The full documentation and usage guide is available at:  
+👉 [Laravel Module Generator Docs](https://afshinefati.github.io/laravel-module-generator/)
+
 Generate complete, test-ready Laravel modules from a single Artisan command. The generator scaffolds models, repositories, services, interfaces, DTOs, controllers, API resources, form requests, feature tests, and supporting helpers so you can jump straight to business logic.
 
 > **Compatible with Laravel 10 & 11 · Requires PHP 8.1+**
