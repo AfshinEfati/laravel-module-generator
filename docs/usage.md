@@ -39,12 +39,6 @@ The `make:module` Artisan command scaffolds a fully structured Laravel module (m
 | `-fm` | `--from-migration`  |
 | `-f`  | `--force`           |
 
-## Schema-aware generation
-
-- Use `--fields="title:string|required, price:decimal:nullable"` to feed the generator inline metadata. Each field definition becomes part of the fillable array, validation rules, casts, and feature test payloads.
-- Pair `--from-migration` with a file path or keyword (for example, `--from-migration=products`) to let the generator parse columns, nullable/unique flags, enum values, and foreign keys directly from your migration.
-- When both options are provided, inline `--fields` metadata takes precedence; otherwise the generator falls back to migrations or an existing model to infer structure.
-
 ## Sample Scenarios
 
 ### API Module with Form Requests and Custom Controller Path
@@ -68,7 +62,7 @@ php artisan make:module Product --api --requests --controller=Admin --tests
 **Output highlights:**
 
 - Everything from the previous scenario.
-- Adds `tests/Feature/ProductCrudTest.php` with happy-path and failure-path scenarios. See the [Feature Tests](advanced.md#test-generation) section for details on how these tests are structured.
+- Adds `tests/Feature/ProductCrudTest.php` with happy-path and failure-path scenarios. See the [Feature Tests](../README.md#test-generation) section for details on how these tests are structured.
 
 ### Slim Module for Internal Services
 

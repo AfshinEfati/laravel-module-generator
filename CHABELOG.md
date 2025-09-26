@@ -2,36 +2,6 @@
 
 All notable changes to this package will be documented in this file.
 
-## [6.2.4] - 2025-11-12
-
-### ✨ Added
-- Form Request regeneration now converts `unique:` pipe rules into `Rule::unique()->ignore()` instances so update flows respect the current model.
-
-### 🔧 Changed
-- Normalised the generated validation arrays to keep `Rule` objects intact alongside classic pipe strings.
-- Resource responses continue to funnel boolean and datetime fields through `StatusHelper` formatting helpers for consistent API payloads.
-
-### 🛠 Fixed
-- Route-model bound updates no longer fail unique validation when editing existing records thanks to the new ignore logic.
-
-## [6.1.0] - 2025-09-18
-
-### ✨ Added
-- Resource generator inspects migration metadata and runtime relations to wire nested resources automatically.
-- Inline `--fields` metadata now powers fillable arrays, casts, validation rules, and relation hints across DTOs, resources, and tests.
-
-### 🔧 Changed
-- Schema parser improvements provide consistent type normalisation for rule building and casting.
-
-## [6.0.0] - 2025-07-01
-
-### ✨ Added
-- Migration parsing captures nullable, unique, enum, and foreign-key hints to drive validation and relation metadata.
-- CLI received granular opt-in/out switches plus inline schema parsing for generators.
-
-### 🔧 Changed
-- Improved fallbacks when the target Eloquent model does not exist yet by inferring table names and schema from migrations.
-
 ## [4.0.0] - 2025-06-04
 
 ### ✨ Added
