@@ -12,8 +12,8 @@ hide:
     <h1 class="hero__title">Ship consistent Laravel modules without the busywork</h1>
     <p class="hero__lead">Generate controllers, DTOs, services, repositories, requests, and tests from a single artisan command. Every module follows the same structure, so your team can focus on the domain.</p>
     <div class="hero__actions">
-      <a class="md-button md-button--primary" href="installation.md">Installation guide</a>
-      <a class="md-button md-button--secondary" href="quickstart.md">Run your first module</a>
+      <a class="md-button md-button--primary" href="installation/">Installation guide</a>
+      <a class="md-button md-button--secondary" href="quickstart/">Run your first module</a>
       <a class="md-button" href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener">View on GitHub</a>
 
     </div>
