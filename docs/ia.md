@@ -24,7 +24,8 @@
 ```
 Top Navigation (Desktop)
 ┌────────────────────────────────────────────────────────────┐
-│ Logo | Home | Installation | Configuration | Usage | Advanced Features | Changelog | FAQ | CTA Button: Get Started │
+│ Logo | Getting Started ▾ | Configuration | Usage | Advanced Features | Changelog | FAQ | CTA Button: Get Started │
+│             └ Installation                                 │
 └────────────────────────────────────────────────────────────┘
 
 Mobile Navigation (Drawer)
@@ -32,7 +33,8 @@ Mobile Navigation (Drawer)
 │ Logo    ☰    │
 ├──────────────┤
 │ Home          │
-│ Installation  │
+│ Getting Started │
+│   • Installation │
 │ Configuration │
 │ Usage         │
 │ Advanced Features │
