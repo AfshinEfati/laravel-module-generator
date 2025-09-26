@@ -2,7 +2,7 @@
 
 ## Test Generation
 
-The generator ships with an opinionated feature test scaffold that mirrors end-to-end CRUD flows. Activate it with the [`--tests` option](../README.md#usage) whenever you run `php artisan make:module`, or rely on the short `-t` alias for quick toggling.
+The generator ships with an opinionated feature test scaffold that mirrors end-to-end CRUD flows. Activate it with the [`--tests` option](usage.md) whenever you run `php artisan make:module`, or rely on the short `-t` alias for quick toggling.
 
 > **Tip:** The generated scenarios run against the database connection already configured in your `.env`, so you can reuse your existing testing stack without pulling in extra packages or drivers.
 
@@ -25,13 +25,13 @@ public function test_user_can_create_product()
 }
 ```
 
-For a deeper walkthrough of all command switches and short aliases, see the [Usage guide](../README.md#usage).
+For a deeper walkthrough of all command switches and short aliases, see the [Usage guide](usage.md).
 
 ## Goli Date Helper
 
 `Goli` is the built-in Jalali date toolkit exposed via the `goli()` helper and a dedicated service container binding. It gives you Carbon interoperability, digit localisation, and Gregorian ⇆ Jalali conversions out of the box.
 
-> **Note:** There is no need to pull in third-party libraries like Verta—the helper is bundled with the package. Review the [Installation instructions](../README.md#installation) if you skipped the service provider registration step.
+> **Note:** There is no need to pull in third-party libraries like Verta—the helper is bundled with the package. Review the [Installation instructions](installation.md) if you skipped the service provider registration step.
 
 Common entry points include parsing, formatting, and bridging to Carbon macros:
 
@@ -51,3 +51,7 @@ $fromJalali = \Carbon\Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
 ```
 
 The helper accepts Jalali strings (with optional Persian digits), converts between calendars, and keeps all Carbon chaining capabilities intact. When you need raw arrays for storage or API responses, reach for the conversion helpers like `toArray()` or `toGregorian()`.
+
+## Update-safe validation
+
+When you generate Form Requests, update rules automatically convert any `unique:table,column` strings into `Rule::unique()->ignore()` calls using the route parameter (model instance or scalar ID). This keeps validation accurate when editing existing records and avoids duplicate key errors during PATCH/PUT requests—even when your routes leverage implicit binding.

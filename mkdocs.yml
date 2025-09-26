@@ -1,13 +1,19 @@
 site_name: Laravel Module Generator Docs
 site_description: Documentation for the Laravel Module Generator package.
-site_url: https://example.com/
-repo_name: laravel-module-generator
-repo_url: https://github.com/example/laravel-module-generator
+site_url: https://efati.github.io/laravel-module-generator/
+repo_name: efati/laravel-module-generator
+repo_url: https://github.com/efati/laravel-module-generator
 nav:
-  - Home: index.md
-  - Guides:
+  - Overview: index.md
+  - Getting Started:
+      - Installation: installation.md
+      - Usage: usage.md
+  - Advanced:
+      - Advanced Features: advanced.md
+  - Reference:
+      - Release Highlights: changelog.md
       - GitHub Pages Setup: github-pages-setup.md
-      - Intelligent Assistant: ia.md
+      - IA Blueprint: ia.md
 theme:
   name: readthedocs
 markdown_extensions:
