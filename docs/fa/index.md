@@ -10,11 +10,13 @@ hide:
 
 <div class="hero">
   <div class="hero__content">
+    <span class="hero__eyebrow">نسخه ۶ ژنراتور ماژول لاراول</span>
     <h1 class="hero__title">ساخت ماژول‌های منسجم لاراول در چند دقیقه</h1>
     <p class="hero__lead">با یک بار تعریف اسکیما، DTO، فرم‌ریکوئست، ریسورس، تست و سرویس‌پرووایدر را تولید کنید تا هر ماژول با ساختار یکنواخت و آمادهٔ انتشار ساخته شود.</p>
     <div class="hero__actions">
-      <a class="md-button md-button--primary" href="quickstart/">شروع سریع از خط فرمان</a>
-      <a class="md-button md-button--secondary" href="installation/">نصب بسته</a>
+      <a class="md-button md-button--primary" href="/fa/quickstart/">شروع سریع از خط فرمان</a>
+      <a class="md-button md-button--secondary" href="/fa/installation/">نصب بسته</a>
+
       <a class="md-button" href="https://github.com/efati/laravel-module-generator" target="_blank" rel="noopener">⭐️ در گیت‌هاب</a>
     </div>
   </div>
@@ -83,23 +85,25 @@ hide:
 
 ## گردش کار را یاد بگیرید
 
-- چک‌لیست [نصب](installation.md) را مرور کنید و فایل‌های قابل پیکربندی را منتشر نمایید.
-- با [راهنمای شروع سریع](quickstart.md) اولین ماژول کامل خود را بسازید.
-- در [راهنمای استفاده](usage.md) دستورهای پرکاربرد، سناریوهای DTO و استراتژی تست را ببینید.
-- در [راهنمای پیشرفته](advanced.md) روش شخصی‌سازی قالب‌ها، هوک‌ها و ژنراتورهای اختصاصی را یاد بگیرید.
+- چک‌لیست [نصب](/fa/installation/) را مرور کنید و فایل‌های قابل پیکربندی را منتشر نمایید.
+- با [راهنمای شروع سریع](/fa/quickstart/) اولین ماژول کامل خود را بسازید.
+- در [راهنمای استفاده](/fa/usage/) دستورهای پرکاربرد، سناریوهای DTO و استراتژی تست را ببینید.
+- در [راهنمای پیشرفته](/fa/advanced/) روش شخصی‌سازی قالب‌ها، هوک‌ها و ژنراتورهای اختصاصی را یاد بگیرید.
 
 ## ساختار خروجی را بررسی کنید
 
 بخش مرجع توضیح می‌دهد چه فایل‌هایی ساخته می‌شود، سرویس‌پرووایدر چگونه سیم‌کشی می‌شود و هر فلگ چه خروجی‌ای فعال می‌کند.
 
-- [راهنمای مرجع CLI و فایل‌ها](reference.md) را برای مشاهدهٔ سریع گزینه‌ها مطالعه کنید.
-- تغییرات را در [تغییرات نسخه‌ها](changelog.md) دنبال کنید.
-- با [راهنمای GitHub Pages](github-pages-setup.md) مستندات را به‌صورت خودکار منتشر کنید.
+- [راهنمای مرجع CLI و فایل‌ها](/fa/reference/) را برای مشاهدهٔ سریع گزینه‌ها مطالعه کنید.
+- تغییرات را در [تغییرات نسخه‌ها](/fa/changelog/) دنبال کنید.
+- با [راهنمای GitHub Pages](/fa/github-pages-setup/) مستندات را به‌صورت خودکار منتشر کنید.
+
 
 <div class="cta-banner">
   <h2>آمادهٔ ساخت ماژول بعدی هستید؟</h2>
   <p>بسته را نصب کنید، یک بار اسکیما را توضیح دهید و اجازه دهید ژنراتور در چند دقیقه ماژول لاراولی تست‌شده تحویل دهد.</p>
-  <a class="md-button md-button--primary" href="installation/">نصب و پیکربندی</a>
+  <a class="md-button md-button--primary" href="/fa/installation/">نصب و پیکربندی</a>
+
 </div>
 
 </div>

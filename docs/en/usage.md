@@ -74,4 +74,4 @@ The generated feature tests target the database connection defined in `.env`. Ru
 phpunit --testsuite=Feature
 ```
 
-Use the [advanced guides](advanced.md) when you need to hook into lifecycle events, override base classes, or build custom generators.
+Use the [advanced guides](/en/advanced/) when you need to hook into lifecycle events, override base classes, or build custom generators.

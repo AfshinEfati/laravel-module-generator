@@ -8,11 +8,12 @@ hide:
 
 <div class="hero">
   <div class="hero__content">
+    <span class="hero__eyebrow">Laravel Module Generator v6</span>
     <h1 class="hero__title">Build cohesive Laravel modules in minutes</h1>
     <p class="hero__lead">Scaffold DTOs, form requests, resources, tests, and providers from a single schema so every module ships with production-ready defaults and identical structure.</p>
     <div class="hero__actions">
-      <a class="md-button md-button--primary" href="quickstart/">Start from the terminal</a>
-      <a class="md-button md-button--secondary" href="installation/">Install the package</a>
+      <a class="md-button md-button--primary" href="/en/quickstart/">Start from the terminal</a>
+      <a class="md-button md-button--secondary" href="/en/installation/">Install the package</a>
       <a class="md-button" href="https://github.com/efati/laravel-module-generator" target="_blank" rel="noopener">Star on GitHub</a>
     </div>
   </div>
@@ -81,21 +82,24 @@ hide:
 
 ## Learn the workflow
 
-- Understand the [installation](installation.md) checklist and publish configurable assets.
-- Follow the [quickstart guide](quickstart.md) to create your first feature-complete module.
-- Browse [usage recipes](usage.md) for CRUD variations, DTO-only scenarios, and test strategies.
-- Dive into [advanced guides](advanced.md) to override stubs, register hooks, and wire custom generators.
+- Understand the [installation](/en/installation/) checklist and publish configurable assets.
+- Follow the [quickstart guide](/en/quickstart/) to create your first feature-complete module.
+- Browse [usage recipes](/en/usage/) for CRUD variations, DTO-only scenarios, and test strategies.
+- Dive into [advanced guides](/en/advanced/) to override stubs, register hooks, and wire custom generators.
+
 
 ## Explore the generated structure
 
 The reference section captures what is created on disk, how service providers are wired, and which CLI flags toggle each artifact.
 
-- Review the [CLI & file reference](reference.md) for every option and output path.
-- Track changes in the [changelog](changelog.md) and subscribe to release notes.
-- Deploy the docs with the [GitHub Pages setup](github-pages-setup.md) workflow.
+- Review the [CLI & file reference](/en/reference/) for every option and output path.
+- Track changes in the [changelog](/en/changelog/) and subscribe to release notes.
+- Deploy the docs with the [GitHub Pages setup](/en/github-pages-setup/) workflow.
+
 
 <div class="cta-banner">
   <h2>Ready to scaffold your next module?</h2>
   <p>Install the package, describe your schema once, and let the generator deliver a consistent, testable Laravel module in minutes.</p>
-  <a class="md-button md-button--primary" href="installation/">Install &amp; configure</a>
+  <a class="md-button md-button--primary" href="/en/installation/">Install &amp; configure</a>
+
 </div>

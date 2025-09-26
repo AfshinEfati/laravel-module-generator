@@ -76,6 +76,7 @@ php artisan make:module Invoice --fields="number:string, total:decimal(12,2), du
 phpunit --testsuite=Feature
 ```
 
-برای یادگیری شخصی‌سازی پیشرفته به [راهنمای پیشرفته](advanced.md) مراجعه کنید.
+برای یادگیری شخصی‌سازی پیشرفته به [راهنمای پیشرفته](/fa/advanced/) مراجعه کنید.
+
 
 </div>
