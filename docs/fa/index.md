@@ -14,8 +14,8 @@ hide:
     <h1 class="hero__title">بدون کار تکراری ماژول‌های منسجم بسازید</h1>
     <p class="hero__lead">با یک دستور آرتیزان، کنترلر، DTO، سرویس، ریپازیتوری، ریسورس و تست‌های لازم را تولید کنید. ساختار هر ماژول یکسان می‌ماند و تیم روی منطق کسب‌وکار تمرکز می‌کند.</p>
     <div class="hero__actions">
-      <a class="md-button md-button--primary" href="installation.md">راهنمای نصب</a>
-      <a class="md-button md-button--secondary" href="quickstart.md">اولین ماژول را بسازید</a>
+      <a class="md-button md-button--primary" href="installation/">راهنمای نصب</a>
+      <a class="md-button md-button--secondary" href="quickstart/">اولین ماژول را بسازید</a>
       <a class="md-button" href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener">مشاهده در گیت‌هاب</a>
 
     </div>

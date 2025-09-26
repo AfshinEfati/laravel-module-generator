@@ -9,7 +9,7 @@
 
 ## بازنویسی قالب هر خروجی
 
-1. قالب‌ها را با `php artisan vendor:publish --tag=module-generator-stubs` منتشر کنید.
+1. دستور `php artisan vendor:publish` را اجرا کنید، گزینهٔ `Efati\ModuleGenerator\ModuleGeneratorServiceProvider` را انتخاب کرده و تگ `module-generator-stubs` را برگزینید.
 2. فایل‌های موجود در `resources/stubs/module-generator` را ویرایش کنید.
 3. برای اعمال تغییرات دستور را با فلگ `--force` دوباره اجرا کنید.
 

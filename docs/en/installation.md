@@ -22,10 +22,10 @@ Composer registers `ModuleGeneratorServiceProvider`, which exposes the `make:mod
 ## 2. Publish configuration and helpers
 
 ```bash
-php artisan vendor:publish --tag=module-generator
+php artisan vendor:publish
 ```
 
-This command copies:
+When the interactive prompt appears, select `Efati\ModuleGenerator\ModuleGeneratorServiceProvider` and then the `module-generator` tag. This copies:
 
 - `config/module-generator.php` – adjust namespaces, paths, and default toggles here.
 - Base repository/service classes plus the `StatusHelper` helper used by generated controllers and resources.
@@ -35,10 +35,10 @@ Keep the configuration file under version control so every environment shares th
 ## 3. (Optional) Publish stub templates
 
 ```bash
-php artisan vendor:publish --tag=module-generator-stubs
+php artisan vendor:publish
 ```
 
-Stubs are exported to `resources/stubs/module-generator` and override the package defaults on every generation run. Update them to inject traits, logging, or naming conventions that suit your organisation.
+Choose the same service provider and pick the `module-generator-stubs` tag. Stubs are exported to `resources/stubs/module-generator` and override the package defaults on every generation run. Update them to inject traits, logging, or naming conventions that suit your organisation.
 
 ## 4. Prepare the environment
 

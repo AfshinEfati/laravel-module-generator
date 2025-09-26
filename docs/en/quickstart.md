@@ -15,11 +15,10 @@ MkDocs build automation is already configured in the repository, so installing t
 ## 2. Publish configuration and stubs (optional)
 
 ```bash
-php artisan vendor:publish --tag=module-generator
-php artisan vendor:publish --tag=module-generator-stubs --force
+php artisan vendor:publish
 ```
 
-The first command publishes the configuration file and helper classes. The second copies the default stubs into `resources/stubs/module-generator` so you can customise controllers, requests, or tests. Re-run the command whenever you pull upstream changes to keep local stubs aligned.
+From the provider list pick `Efati\ModuleGenerator\ModuleGeneratorServiceProvider`, then choose the `module-generator` tag to publish the configuration and helper classes. Run the command again, select the same provider, and choose the `module-generator-stubs` tag (add `--force` if you need to overwrite existing templates). The exported stubs in `resources/stubs/module-generator` let you customise controllers, requests, or tests and can be refreshed after pulling upstream changes.
 
 ## 3. Describe the schema once
 
