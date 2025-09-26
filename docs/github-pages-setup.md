@@ -1,23 +1,23 @@
-# GitHub Pages Deployment Settings
+# GitHub Pages Deployment
 
-This project does not configure GitHub Pages automatically. Follow these steps in the GitHub repository settings to publish the documentation or demo site manually.
+مستندات این مخزن با استفاده از MkDocs ساخته می‌شود و از طریق گردش‌کار GitHub Actions (`.github/workflows/docs.yml`) روی GitHub Pages منتشر می‌گردد.
 
-## 1. Configure the publishing source
-1. Open the repository on GitHub and select **Settings**.
-2. In the sidebar, choose **Pages**.
-3. Under **Build and deployment**, pick the preferred publishing source:
-   - **Deploy from a branch** if you want GitHub to serve static files directly from a branch.
-   - **GitHub Actions** if you have a workflow that builds the site before deploying.
+## نحوه کار گردش‌کار
+1. در هر `push` به شاخه `main` یا اجرای دستی، اکشن `docs.yml` اجرا می‌شود.
+2. اکشن پکیج‌های پایتون (از جمله MkDocs) را با استفاده از `requirements.txt` نصب می‌کند و دستور `mkdocs build --strict` را اجرا می‌کند.【F:.github/workflows/docs.yml†L24-L45】
+3. خروجی `site/` به عنوان آرتیفکت بارگذاری و سپس توسط `actions/deploy-pages` روی GitHub Pages منتشر می‌شود.【F:.github/workflows/docs.yml†L46-L64】
 
-## 2. Prepare the `gh-pages` branch (branch deployments)
-If you opt to deploy from a branch and want to keep the Pages content separate from your main branch:
-1. Create the `gh-pages` branch locally or on GitHub.
-2. Push any static site artifacts to the `gh-pages` branch.
-3. Return to **Settings → Pages** and select `gh-pages` as the branch.
-4. Review the **Required deployments** section to ensure there are no blocking checks that must pass before Pages can deploy.
+## آماده‌سازی مخزن
+- مطمئن شوید گزینه **Pages → Source → GitHub Actions** در تنظیمات مخزن فعال است.
+- اگر از دامنه سفارشی استفاده می‌کنید، فایل `CNAME` را داخل پوشه `docs/` یا ریشه سایت قرار دهید تا MkDocs آن را کپی کند.
+- در صورت نیاز به پلاگین یا تم سفارشی MkDocs، وابستگی آن را به `requirements.txt` اضافه کنید تا گردش‌کار آن را نصب کند.【F:requirements.txt†L1-L1】
 
-## 3. Domain and HTTPS settings
-1. (Optional) Provide a custom domain under **Custom domain**. GitHub will start DNS verification immediately.
-2. Enable **Enforce HTTPS** so visitors are redirected to the secure version once the TLS certificate is issued.
+## اجرای محلی
+برای پیش‌نمایش مستندات قبل از Push:
 
-After saving your changes, GitHub Pages will deploy automatically. Monitor the deployment status banner at the top of the **Pages** screen for confirmation or troubleshooting details.
+```bash
+pip install -r requirements.txt
+mkdocs serve
+```
+
+سرویس در آدرس `http://127.0.0.1:8000` در دسترس خواهد بود و با هر ذخیره‌سازی فایل، به‌روزرسانی زنده انجام می‌شود.

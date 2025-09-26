@@ -1,7 +1,9 @@
-- [Home](../README.md)
-- [Installation](../README.md#installation)
-- [Configuration](../README.md#configuration)
-- [Usage](../README.md#usage)
-- Resources
+- [Home](index.md)
+- Getting Started
+  - [Installation](installation.md)
+  - [Configuration](configuration.md)
+- [Usage](usage.md)
+- [Advanced Features](advanced.md)
+- References
   - [Release Highlights](changelog.md)
-  - [GitHub Pages Setup](github-pages-setup.md)
+  - [GitHub Pages](github-pages-setup.md)
