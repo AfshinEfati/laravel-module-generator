@@ -4,10 +4,10 @@ Welcome to the documentation hub for the **Laravel Module Generator** package. T
 
 ## Highlights in v6.2.4
 
-- Schema-aware generation that combines migration introspection and inline `--fields` definitions to hydrate DTOs, validation rules, API resources, and feature tests with a single source of truth.【F:src/Commands/MakeModuleCommand.php†L47-L170】【F:src/Support/MigrationFieldParser.php†L9-L213】
-- Automatic provider registration that binds repositories and services as soon as they are generated, keeping your container in sync.【F:src/Generators/ProviderGenerator.php†L9-L72】
-- Bundled `StatusHelper` and Jalali-aware `Goli` toolkit for consistent API responses and Carbon interoperability out of the box.【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】【F:src/ModuleGeneratorServiceProvider.php†L14-L53】
-- Optional CRUD feature tests that reuse the same metadata to cover happy-path and failure-path scenarios.【F:src/Generators/TestGenerator.php†L11-L157】
+- Schema-aware generation that combines migration introspection and inline `--fields` definitions to hydrate DTOs, validation rules, API resources, and feature tests with a single source of truth.
+- Automatic provider registration that binds repositories and services as soon as they are generated, keeping your container in sync.
+- Bundled `StatusHelper` and Jalali-aware `Goli` toolkit for consistent API responses and Carbon interoperability out of the box.
+- Optional CRUD feature tests that reuse the same metadata to cover happy-path and failure-path scenarios.
 
 ## Quick start
 
@@ -17,7 +17,7 @@ php artisan vendor:publish --tag=module-generator
 php artisan make:module Product --api --requests --tests --from-migration=database/migrations/2024_05_01_000000_create_products_table.php
 ```
 
-Use `--fields="name:string:unique, price:decimal(10,2)"` when a migration does not exist yet—the inline schema DSL unlocks the same rich metadata for DTOs, resources, and tests.【F:src/Support/SchemaParser.php†L9-L138】
+Use `--fields="name:string:unique, price:decimal(10,2)"` when a migration does not exist yet—the inline schema DSL unlocks the same rich metadata for DTOs, resources, and tests.
 
 ## Next steps
 

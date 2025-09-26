@@ -4,13 +4,13 @@
 
 ## نحوه کار گردش‌کار
 1. در هر `push` به شاخه `main` یا اجرای دستی، اکشن `docs.yml` اجرا می‌شود.
-2. اکشن پکیج‌های پایتون (از جمله MkDocs) را با استفاده از `requirements.txt` نصب می‌کند و دستور `mkdocs build --strict` را اجرا می‌کند.【F:.github/workflows/docs.yml†L24-L45】
-3. خروجی `site/` به عنوان آرتیفکت بارگذاری و سپس توسط `actions/deploy-pages` روی GitHub Pages منتشر می‌شود.【F:.github/workflows/docs.yml†L46-L64】
+2. اکشن پکیج‌های پایتون (از جمله MkDocs) را با استفاده از `requirements.txt` نصب می‌کند و دستور `mkdocs build --strict` را اجرا می‌کند.
+3. خروجی `site/` به عنوان آرتیفکت بارگذاری و سپس توسط `actions/deploy-pages` روی GitHub Pages منتشر می‌شود.
 
 ## آماده‌سازی مخزن
 - مطمئن شوید گزینه **Pages → Source → GitHub Actions** در تنظیمات مخزن فعال است.
 - اگر از دامنه سفارشی استفاده می‌کنید، فایل `CNAME` را داخل پوشه `docs/` یا ریشه سایت قرار دهید تا MkDocs آن را کپی کند.
-- در صورت نیاز به پلاگین یا تم سفارشی MkDocs، وابستگی آن را به `requirements.txt` اضافه کنید تا گردش‌کار آن را نصب کند.【F:requirements.txt†L1-L1】
+- در صورت نیاز به پلاگین یا تم سفارشی MkDocs، وابستگی آن را به `requirements.txt` اضافه کنید تا گردش‌کار آن را نصب کند.
 
 ## اجرای محلی
 برای پیش‌نمایش مستندات قبل از Push:
