@@ -10,3 +10,4 @@ Welcome to the official documentation hub for the **Laravel Module Generator** p
 ## Contributing
 
 We welcome improvements! Update the documentation within this site and submit a pull request so everyone can benefit from your insights.
+
