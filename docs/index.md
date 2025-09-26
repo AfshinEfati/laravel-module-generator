@@ -1,13 +1,30 @@
 # Laravel Module Generator
 
-Welcome to the official documentation hub for the **Laravel Module Generator** package. This site aggregates setup instructions, usage notes, and supporting guides to help you integrate and extend the generator in your Laravel projects.
+Welcome to the documentation hub for the **Laravel Module Generator** package. The guides in this site explain how to scaffold opinionated Laravel modules, customise the generated code, and keep the workflow aligned with your team’s conventions.
 
-## Getting Started
+## Highlights in v6.2.4
 
-- Review the [GitHub Pages setup guide](github-pages-setup.md) to publish your documentation.
-- Explore the [Intelligent Assistant guide](ia.md) for automating module scaffolding workflows.
+- Schema-aware generation that combines migration introspection and inline `--fields` definitions to hydrate DTOs, validation rules, API resources, and feature tests with a single source of truth.【F:src/Commands/MakeModuleCommand.php†L47-L170】【F:src/Support/MigrationFieldParser.php†L9-L213】
+- Automatic provider registration that binds repositories and services as soon as they are generated, keeping your container in sync.【F:src/Generators/ProviderGenerator.php†L9-L72】
+- Bundled `StatusHelper` and Jalali-aware `Goli` toolkit for consistent API responses and Carbon interoperability out of the box.【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】【F:src/ModuleGeneratorServiceProvider.php†L14-L53】
+- Optional CRUD feature tests that reuse the same metadata to cover happy-path and failure-path scenarios.【F:src/Generators/TestGenerator.php†L11-L157】
 
-## Contributing
+## Quick start
 
-We welcome improvements! Update the documentation within this site and submit a pull request so everyone can benefit from your insights.
+```bash
+composer require efati/laravel-module-generator
+php artisan vendor:publish --tag=module-generator
+php artisan make:module Product --api --requests --tests --from-migration=database/migrations/2024_05_01_000000_create_products_table.php
+```
 
+Use `--fields="name:string:unique, price:decimal(10,2)"` when a migration does not exist yet—the inline schema DSL unlocks the same rich metadata for DTOs, resources, and tests.【F:src/Support/SchemaParser.php†L9-L138】
+
+## Next steps
+
+- [Installation](installation.md) – requirements, publishing assets, and environment preparation.
+- [Configuration](configuration.md) – customise namespaces, default toggles, and stub overrides.
+- [Usage](usage.md) – option reference, inline schema recipes, and command examples.
+- [Advanced features](advanced.md) – test scaffolding, Jalali tooling, and extending the generator.
+- [Changelog](changelog.md) – release notes for the 6.x series.
+
+Need to ship the docs? See the [GitHub Pages guide](github-pages-setup.md) for details on the automated workflow.

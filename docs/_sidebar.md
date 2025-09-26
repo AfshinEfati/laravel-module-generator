@@ -1,7 +1,0 @@
-- [Home](../README.md)
-- [Installation](../README.md#installation)
-- [Configuration](../README.md#configuration)
-- [Usage](../README.md#usage)
-- Resources
-  - [Release Highlights](changelog.md)
-  - [GitHub Pages Setup](github-pages-setup.md)

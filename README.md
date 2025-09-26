@@ -2,229 +2,140 @@
 
 [![Docs Deployment Status](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/efati/laravel-module-generator/actions/workflows/docs.yml)
 
-A Laravel package to generate fully structured modules (Model, Repository, Service, Interface, DTO, Controller, Form Requests, and Tests) with a single Artisan command.
+Generate complete, test-ready Laravel modules from a single Artisan command. The generator scaffolds models, repositories, services, interfaces, DTOs, controllers, API resources, form requests, feature tests, and supporting helpers so you can jump straight to business logic.
 
-## Features
+> **Compatible with Laravel 10 & 11 · Requires PHP 8.1+**
 
-- Generate **Model**, **Repository**, **Service**, **Interface**, **DTO**, **Controller**, **Form Requests**, and **Tests** in one command
-- Supports **API Resource** controllers
-- Dynamic namespace and path configuration via `config/module-generator.php`
-- Automatic binding of Repository and Service in Service Providers
-- Generates CRUD Feature Tests with both success and failure scenarios
-- Respects your existing `.env` database configuration for tests (no forced SQLite)
-- Ability to override stubs
-- Compatible with Laravel 10+ and Laravel 11
-- Built-in `goli()` helper for Jalali date handling (no external dependency)
+## Why this package?
 
+- **Schema-aware scaffolding** – infer metadata from existing migrations or inline `--fields` definitions to pre-fill DTOs, validation rules, casts, and test payloads.【F:src/Commands/MakeModuleCommand.php†L47-L130】【F:src/Support/MigrationFieldParser.php†L9-L213】
+- **End-to-end module wiring** – repositories, services, and providers are generated together and the provider is auto-registered in your application bootstrap or `config/app.php`.【F:src/Generators/RepositoryGenerator.php†L9-L64】【F:src/Generators/ProviderGenerator.php†L9-L72】
+- **Resource-rich APIs out of the box** – controllers, resources, and the bundled `StatusHelper` format dates, booleans, and relations consistently using the Jalali-aware `Goli` helper.【F:src/Generators/ControllerGenerator.php†L1-L126】【F:src/Generators/ResourceGenerator.php†L9-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+- **Opinionated feature tests** – optional CRUD tests exercise success and failure flows using the metadata gathered from migrations or schema definitions.【F:src/Commands/MakeModuleCommand.php†L132-L170】【F:src/Generators/TestGenerator.php†L11-L107】
+- **First-class Jalali tooling** – the service provider binds the `goli()` helper and Carbon macros so Persian calendars are available anywhere in your app without external packages.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Support/Goli.php†L1-L200】
 
----
+## Requirements
+
+- PHP 8.1 or newer
+- Laravel framework 10.x or 11.x
 
 ## Installation
 
+Require the package and publish the base assets:
+
 ```bash
 composer require efati/laravel-module-generator
+php artisan vendor:publish --tag=module-generator
 ```
 
----
+Publishing with the `module-generator` tag installs base repository/service classes, the `StatusHelper`, and `config/module-generator.php` where you can adjust namespaces, paths, and feature toggles.【F:src/ModuleGeneratorServiceProvider.php†L29-L50】【F:src/config/module-generator.php†L5-L53】
 
-## Configuration
-
-Publish the configuration file:
-
-```bash
-php artisan vendor:publish --tag=module-generator-config
-```
-
-This will create `config/module-generator.php` where you can adjust:
-
-- **Namespace paths** for models, repositories, services, controllers, DTOs, and tests
-- **Default controller path** (e.g., `App\Http\Controllers\Api\V1`)
-- **Enable/Disable** generation of tests, form requests, DTOs, etc.
-
-### Customising generator stubs
-
-If your team follows specific coding standards you can publish and edit the generator stubs:
+To customise the stub templates used for every generated file, publish the dedicated stubs once:
 
 ```bash
 php artisan vendor:publish --tag=module-generator-stubs
 ```
 
-All stub files will be copied to `resources/stubs/module-generator`. The generators always look for a published stub first, so
-any changes you make there (naming conventions, imports, method bodies, docblocks, etc.) will be reflected in the next
-generation run. The package uses simple placeholders such as `{{ namespace }}`, `{{ class }}` or `{{ store_argument }}` inside
-the stub files—leave these intact and only change the surrounding structure to keep the dynamic parts working.
+The stubs will be copied to `resources/stubs/module-generator`, allowing you to adapt method signatures, imports, or formatting to match your house style.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
 
----
+## Quick start
 
-## Usage
-
-### Create a module
+Generate a fully wired Product module that targets your API stack, infers validation rules from an existing migration, and creates feature tests:
 
 ```bash
-php artisan make:module ModelName [options]
+php artisan make:module Product --api --requests --tests --from-migration=database/migrations/2024_05_01_000000_create_products_table.php
 ```
 
-### Options (long form)
-
-| Option                | Description |
-|-----------------------|-------------|
-| `--api`               | Generate an API-flavoured controller (default path: `Http/Controllers/Api/V1`) |
-| `--controller=Subdir` | Place controller inside a subdirectory (forces controller generation) |
-| `--requests`          | Generate Form Requests for Store/Update |
-| `--tests`             | Force CRUD Feature Test generation |
-| `--no-controller`     | Skip controller generation |
-| `--no-resource`       | Skip API Resource generation |
-| `--no-dto`            | Skip DTO generation |
-| `--no-test`           | Skip Feature Test generation |
-| `--no-provider`       | Skip provider creation and auto-registration |
-| `--from-migration=`   | Provide a migration path or keyword to infer fields when the model class does not exist yet |
-| `--force`             | Overwrite existing files (default is to skip and warn) |
-| `--fields=`           | Inline schema definition so generators can infer fillable fields, validation rules, and test payloads before the Eloquent model exists |
-
-### Short aliases
-
-| Alias | Long option         |
-|-------|---------------------|
-| `-a`  | `--api`             |
-| `-c`  | `--controller`      |
-| `-r`  | `--requests`        |
-| `-t`  | `--tests`           |
-| `-nc` | `--no-controller`   |
-| `-nr` | `--no-resource`     |
-| `-nd` | `--no-dto`          |
-| `-nt` | `--no-test`         |
-| `-np` | `--no-provider`     |
-| `-fm` | `--from-migration`  |
-| `-f`  | `--force`           |
-
----
-
-### Example
+No migration yet? Prime the generator with inline schema metadata instead:
 
 ```bash
-php artisan make:module Product --api --requests --controller=Admin --tests
+php artisan make:module Product --api --requests --tests \
+  --fields="name:string:unique, price:decimal(10,2), is_active:boolean"
 ```
 
-This will generate:
+Both approaches feed consistent metadata to the DTO, Form Request, Resource, and Test generators so every layer speaks the same language.【F:src/Commands/MakeModuleCommand.php†L47-L130】【F:src/Support/MigrationFieldParser.php†L214-L325】
 
-- **Model**: `app/Models/Product.php`
-- **Repository**: `app/Repositories/Eloquent/ProductRepository.php`
-- **Repository Interface**: `app/Repositories/Contracts/ProductRepositoryInterface.php`
-- **Service**: `app/Services/ProductService.php`
-- **Service Interface**: `app/Services/Contracts/ProductServiceInterface.php`
-- **DTO**: `app/DTOs/ProductDTO.php`
-- **Controller**: `app/Http/Controllers/Api/V1/Admin/ProductController.php`
-- **Form Requests**: `app/Http/Requests/StoreProductRequest.php` & `UpdateProductRequest.php`
-- **Feature Tests**: `tests/Feature/ProductCrudTest.php`
+## Command options
 
-> Tip: rerunning the generator without `--force` will skip existing files and list the skipped paths in the console output.
+| Option | Alias | Description |
+| --- | --- | --- |
+| `--api` | `-a` | Generate an API-oriented controller that targets the configured API namespace. |
+| `--controller=Subdir` | `-c` | Place the controller inside a subfolder (forces controller generation). |
+| `--requests` | `-r` | Generate `Store` and `Update` form requests. |
+| `--tests` | `-t` | Force CRUD feature test generation. |
+| `--no-controller` | `-nc` | Skip controller generation. |
+| `--no-resource` | `-nr` | Skip API Resource generation. |
+| `--no-dto` | `-nd` | Skip DTO generation. |
+| `--no-test` | `-nt` | Skip feature tests. |
+| `--no-provider` | `-np` | Skip provider creation and automatic registration. |
+| `--from-migration=` | `-fm` | Provide a migration path or keyword to infer fields and relations. |
+| `--fields=` | – | Inline schema definition (comma-separated) for modules without migrations. |
+| `--force` | `-f` | Overwrite existing files instead of skipping them. |
 
-> New in v4: you can prime the generator with a migration when the Eloquent model class is not ready yet:
->
-> ```bash
-> php artisan make:module Product --from-migration=database/migrations/2024_05_01_000000_create_products_table.php
-> ```
->
-> The command will scan the migration, infer columns, nullable/unique flags, and foreign keys, then feed that metadata to the DTO, FormRequest, Resource, and Feature Test generators.
+Default behaviours (controller/resource/DTO/test/provider toggles) can be tuned in `config/module-generator.php` so recurring preferences are applied automatically.【F:src/config/module-generator.php†L37-L52】
 
+## Schema-aware generation
 
----
+The generator inspects your codebase to build an accurate picture of each module:
 
-## Test Generation
+- **Migration parser** – `--from-migration` locates migrations matching the model name, extracts columns, relations, casts, and validation constraints, and shares them across the generated artefacts.【F:src/Support/MigrationFieldParser.php†L9-L213】【F:src/Support/MigrationFieldParser.php†L214-L325】
+- **Inline schema DSL** – `--fields="title:string:nullable, user_id:foreign=users.id"` accepts multiple modifiers (nullable, unique, foreign keys) and produces the same metadata without a migration file.【F:src/Support/SchemaParser.php†L9-L138】【F:src/Commands/MakeModuleCommand.php†L92-L130】
+- **Model fallbacks** – when migrations or schema hints are missing, the generators inspect your Eloquent model for fillable fields, casts, and relationships before falling back to sensible defaults.【F:src/Generators/ResourceGenerator.php†L53-L110】【F:src/Generators/TestGenerator.php†L59-L107】
 
-When using `--tests`, the package will:
+## Generated components
 
-- Use the database connection defined in `.env`
-- Run CRUD operations with **valid data** and **invalid data** scenarios
-- Test for `404 Not Found` when accessing non-existent records
-- Test validation errors from Form Requests
-- Test successful creation, update, and deletion
+Running `make:module` produces a cohesive stack tailored to your configuration:
 
----
+- Repository interface and eloquent implementation with base class inheritance.【F:src/Generators/RepositoryGenerator.php†L9-L64】
+- Service interface and implementation with optional provider binding.【F:src/Commands/MakeModuleCommand.php†L117-L150】
+- DTO class hydrated from migration or schema metadata.【F:src/Commands/MakeModuleCommand.php†L113-L118】
+- Controller (API or web) that plugs DTOs, resources, and form requests together.【F:src/Commands/MakeModuleCommand.php†L100-L142】
+- API Resource that formats dates, booleans, and eager-loaded relations through the shared `StatusHelper`.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+- Form Requests with `store`/`update` rule sets and localized validation messages (when enabled).【F:src/Commands/MakeModuleCommand.php†L142-L151】【F:src/Support/MigrationFieldParser.php†L106-L157】
+- Feature tests seeded with inferred fillable data, route stubs, and foreign key expectations.【F:src/Generators/TestGenerator.php†L11-L107】
 
-## Goli Date Helper
+## Feature test scaffolding
 
-The package now ships with an in-house Jalali toolkit exposed via the `goli()` helper and the `Goli` class, so you can
-drop the third-party Verta dependency and reuse the converter anywhere in your project.
+Enable `--tests` (or configure it as the default) to scaffold CRUD feature tests that:
+
+- Assert success and failure paths for create, update, show, and delete operations.
+- Leverage the inferred field metadata to generate payloads, validation cases, and relationship checks.
+- Mount routes against a dedicated test URI segment so you can wire them to your preferred router quickly.
+
+Tests honour your configured database connection—there is no forced SQLite driver, so they run against the environment you already maintain.【F:src/Generators/TestGenerator.php†L19-L44】【F:src/Commands/MakeModuleCommand.php†L132-L170】
+
+## Jalali date tooling
+
+`ModuleGeneratorServiceProvider` binds a singleton-friendly `goli()` helper and Carbon macros so Jalali ↔ Gregorian conversions are available everywhere, including generated resources and helpers.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Stubs/Helpers/StatusHelper.php†L29-L76】
 
 ```php
 use Efati\ModuleGenerator\Support\Goli;
 
-// via the global helper autoloaded by composer
 $goli = goli(now())->format('Y/m/d');
-
-// resolving an instance directly or from the service container binding
-$goli = Goli::instance('2024-03-20 12:00:00')->toJalaliDateString();
-$resolved = app(Goli::class, ['datetime' => now()]);
-
-// human readable differences with optional Persian digits
-$diff = goli('2024-03-20')->diffForHumans();          // "5 روز پیش"
-$diffFuture = goli('2025-03-20')->diffForHumans(null, true); // "۱ سال بعد"
+$fromJalali = \Carbon\Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
 ```
 
-Key capabilities include:
+## Customising the output
 
-- parsing Jalali date strings (with optional Persian/Arabic digits) via `goli()` or `Goli::parseJalali()`
-- converting Jalali dates to Gregorian and vice versa, including array helpers and timezone awareness
-- formatting output with automatic Persian digit localisation when desired
-- seamless Carbon interoperability for chained date operations
-- resolving new instances through the Laravel container using the `goli` binding
+- **Configuration** – adjust namespaces, paths, and default toggles in `config/module-generator.php` once, then regenerate modules with your preferred directory structure.【F:src/config/module-generator.php†L5-L52】
+- **Stubs** – edit the published stubs in `resources/stubs/module-generator` to enforce house styles, add traits, tweak imports, or change response envelopes.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
+- **Providers** – if you disable provider generation, remember to bind repositories/services manually in your application container.【F:src/Commands/MakeModuleCommand.php†L119-L131】
 
-### Carbon Jalali Macros
+## Release highlights
 
-When the service provider boots it registers two Carbon macros, giving you an instant bridge between `Carbon` and `Goli`:
+### v6.2.4
+- Inline schema parsing via `--fields` now understands nullability, unique constraints, and foreign keys, feeding the metadata to DTOs, resources, and tests.【F:src/Support/SchemaParser.php†L9-L138】【F:src/Commands/MakeModuleCommand.php†L92-L130】
+- Migration introspection builds cast maps, fillable arrays, validation rules, and relation metadata shared across all generated classes.【F:src/Support/MigrationFieldParser.php†L9-L213】【F:src/Support/MigrationFieldParser.php†L214-L325】
+- Provider generation auto-registers the binding in `bootstrap/providers.php` or `config/app.php`, removing manual steps after scaffolding.【F:src/Generators/ProviderGenerator.php†L37-L72】
+- Resources format date and boolean fields through the bundled `StatusHelper`, and eager-loaded relations automatically resolve to companion resources.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
 
-```php
-use Carbon\Carbon;
+Previous release notes are archived in [`CHABELOG.md`](CHABELOG.md) and [`docs/changelog.md`](docs/changelog.md).
 
-$jalaliNow = Carbon::now('Asia/Tehran')->toJalali();
-echo $jalaliNow->format('Y/m/d H:i'); // 1402/12/29 16:45 for example output
+## Resources
 
-$gregorian = Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
-echo $gregorian->format('Y-m-d H:i'); // 2024-03-20 08:30
-```
-
-The `toJalali()` macro returns a `Goli` instance, so you keep access to all Jalali helpers (digit localisation, formatting helpers, etc.).
-`fromJalali()` gives you a regular `Carbon` instance back for further chaining. Both macros accept an optional timezone argument and are only registered once, so you can safely call the service provider multiple times (or invoke `ModuleGeneratorServiceProvider::registerCarbonMacros()` manually in a console script).
-
-> Looking for a quick smoke test? Run `php tests/CarbonMacrosExample.php` to execute the same round-trip conversion showcased above.
-
-
----
-
-## Release Checklist
-
-- [ ] Update `CHABELOG.md` with the latest changes.
-- [ ] Update docs.
-- [ ] Bump the release information in `version.md` if needed.
-- [ ] Create and push the release tag.
-
----
-
-## Version History
-
-### **v5.3**
-- Added short CLI aliases (`-a`, `-c`, `-r`, `-t`, etc.) for faster module generation.
-- Introduced safe overwrite behaviour: generators skip existing files unless `--force/-f` is provided.
-- Controllers now adapt to API vs. web mode, respecting DTO/resource toggles and returning sensible payloads when those artefacts are disabled.
-- Services fall back to array payloads when DTOs are skipped and can work without provider bindings when `--no-provider` is used.
-
-### **v5.2**
-- Added **full CRUD Feature Tests** with success & failure cases
-- Removed forced SQLite in tests (uses `.env` database settings)
-- Fixed **Form Requests** generation bug
-- Improved DTO integration in Controllers & Services
-
-### v5.1
-- Bug fixes for Form Requests generation
-- Improved path handling in configuration
-
-### v5.0
-- Major refactor for Laravel 11 support
-- Dynamic namespace handling
-- Service & Repository auto-binding
-
----
+- [Full documentation](https://efati.github.io/laravel-module-generator/) – landing page, configuration guide, and advanced topics.
+- [Usage reference](docs/usage.md) – option matrix, inline schema syntax, and command recipes.
+- [Advanced features](docs/advanced.md) – deep dive into test scaffolding, Jalali tooling, and stub customisation.
 
 ## License
 
