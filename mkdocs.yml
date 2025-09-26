@@ -1,0 +1,17 @@
+site_name: Laravel Module Generator Docs
+site_description: Documentation for the Laravel Module Generator package.
+site_url: https://example.com/
+repo_name: laravel-module-generator
+repo_url: https://github.com/example/laravel-module-generator
+nav:
+  - Home: index.md
+  - Guides:
+      - GitHub Pages Setup: github-pages-setup.md
+      - Intelligent Assistant: ia.md
+theme:
+  name: readthedocs
+markdown_extensions:
+  - toc:
+      permalink: true
+  - tables
+  - admonition
