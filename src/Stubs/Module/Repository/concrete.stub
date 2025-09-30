@@ -4,7 +4,7 @@ namespace {{ namespace }};
 
 {{ uses }}
 
-class {{ class }} extends BaseRepository implements {{ interface }}
+class {{ class }} extends {{ base_class }} implements {{ interface }}
 {
     public function __construct({{ model }} $model)
     {

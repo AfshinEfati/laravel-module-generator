@@ -4,7 +4,7 @@ namespace {{ namespace }};
 
 {{ uses }}
 
-class {{ class }} extends BaseService implements {{ interface }}
+class {{ class }} extends {{ base_class }} implements {{ interface }}
 {
     public function __construct({{ repository_type_hint }} $repository)
     {
