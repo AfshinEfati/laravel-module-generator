@@ -54,6 +54,51 @@ class MigrationFieldParser
                 $args  = self::splitArguments($argsString);
                 $chain = self::parseChain($chainString);
 
+                if ($methodLower === 'foreign') {
+                    $targetColumns = self::extractConstraintColumns($args);
+
+                    foreach ($targetColumns as $target) {
+                        if (!isset($fields[$target])) {
+                            $fields[$target] = [
+                                'name'         => $target,
+                                'method'       => 'foreign',
+                                'type'         => 'integer',
+                                'cast'         => 'int',
+                                'length'       => null,
+                                'scale'        => null,
+                                'nullable'     => false,
+                                'unique'       => false,
+                                'default'      => null,
+                                'enum'         => null,
+                                'auto_managed' => false,
+                                'foreign'      => null,
+                            ];
+                        }
+
+                        $columnMeta = $fields[$target];
+                        $foreign    = self::buildForeignMetadata($methodLower, $args, $chain, $columnMeta, $target);
+
+                        if ($foreign) {
+                            $fields[$target]['foreign'] = $foreign;
+
+                            $relationKey = $foreign['relation'] ?? Str::camel(self::stripIdSuffix($target));
+
+                            if (!isset($relations[$relationKey])) {
+                                $relations[$relationKey] = [
+                                    'name'          => $relationKey,
+                                    'type'          => $foreign['type'],
+                                    'foreign_key'   => $target,
+                                    'table'         => $foreign['table'] ?? null,
+                                    'references'    => $foreign['references'] ?? 'id',
+                                    'related_model' => $foreign['related'] ?? Str::studly(self::stripIdSuffix($target)),
+                                ];
+                            }
+                        }
+                    }
+
+                    continue;
+                }
+
                 $columns = self::resolveColumns($methodLower, $args);
 
                 foreach ($columns as $column) {
@@ -245,6 +290,10 @@ class MigrationFieldParser
     {
         $columns = [];
 
+        if (self::isNonColumnDefinition($method)) {
+            return $columns;
+        }
+
         switch ($method) {
             case 'timestamps':
             case 'timestampstz':
@@ -306,6 +355,12 @@ class MigrationFieldParser
     {
         if (!empty($args)) {
             $first = $args[0];
+            if (is_string($first)) {
+                $trimmed = trim($first);
+                if (str_starts_with($trimmed, '[') && str_ends_with($trimmed, ']')) {
+                    return null;
+                }
+            }
             $trim  = self::trimQuotes($first);
             if ($trim !== null) {
                 return $trim;
@@ -384,7 +439,7 @@ class MigrationFieldParser
 
     private static function buildForeignMetadata(string $method, array $args, array $chain, array $column, string $columnName): ?array
     {
-        $isForeignMethod = in_array($method, ['foreignid', 'foreignidfor', 'foreignuuid', 'foreignulid'], true);
+        $isForeignMethod = in_array($method, ['foreignid', 'foreignidfor', 'foreignuuid', 'foreignulid', 'foreign'], true);
         $chainDefines    = self::chainHas($chain, 'constrained') || self::chainHas($chain, 'references');
 
         if (!$isForeignMethod && !$chainDefines) {
@@ -435,6 +490,55 @@ class MigrationFieldParser
         }
 
         return $foreign;
+    }
+
+    private static function extractConstraintColumns(array $args): array
+    {
+        if (empty($args)) {
+            return [];
+        }
+
+        $first = $args[0];
+
+        if (is_string($first)) {
+            $trimmed = trim($first);
+            if (str_starts_with($trimmed, '[') && str_ends_with($trimmed, ']')) {
+                return self::parseArrayValues($trimmed);
+            }
+
+            $column = self::trimQuotes($first);
+            return $column !== null ? [$column] : [];
+        }
+
+        if (is_array($first)) {
+            $columns = [];
+            foreach ($first as $value) {
+                $column = is_string($value) ? self::trimQuotes($value) : null;
+                if ($column) {
+                    $columns[] = $column;
+                }
+            }
+            return $columns;
+        }
+
+        return [];
+    }
+
+    private static function isNonColumnDefinition(string $method): bool
+    {
+        return in_array($method, [
+            'index',
+            'primary',
+            'unique',
+            'fulltext',
+            'spatialindex',
+            'dropindex',
+            'dropunique',
+            'dropforeign',
+            'dropprimary',
+            'dropcolumn',
+            'renamecolumn',
+        ], true);
     }
 
     private static function chainHas(array $chain, string $method): bool
