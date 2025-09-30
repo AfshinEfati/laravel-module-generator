@@ -5,6 +5,12 @@
 A summary of notable releases for Laravel Module Generator. For the full history see [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) and [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md).
 
 
+## v7.0.0
+
+- Generator output now honours the published base repository/service classes and interfaces, so any edits you make to the shared layer are reused automatically.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
+- Publishable assets (config, helper, base classes, stubs) are synchronised automatically whenever Artisan boots, removing the initial `vendor:publish` requirement.【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
+- Migration analysis captures fillable fields and `belongsTo` relations while ignoring index-only definitions, producing richer DTOs, resources, and tests.【F:src/Support/MigrationFieldParser.php†L9-L325】
+
 ## v6.2.4
 
 - Improved `--fields` parsing to capture nullable/unique modifiers and inline foreign keys.

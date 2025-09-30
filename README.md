@@ -26,22 +26,27 @@ Generate complete, test-ready Laravel modules from a single Artisan command. The
 
 ## Installation
 
-Require the package and publish the base assets:
+Require the package and let the generator mirror its base assets automatically during console boot:
 
 ```bash
 composer require efati/laravel-module-generator
-php artisan vendor:publish
 ```
 
-When prompted, choose `Efati\ModuleGenerator\ModuleGeneratorServiceProvider`, then select the `module-generator` tag. This installs the base repository/service classes, the `StatusHelper`, and `config/module-generator.php` where you can adjust namespaces, paths, and feature toggles.【F:src/ModuleGeneratorServiceProvider.php†L29-L50】【F:src/config/module-generator.php†L5-L53】
+The service provider copies the default repositories, services, helper, and configuration into your application whenever the package runs in the console, so there is no extra publish command required after installation.【F:src/ModuleGeneratorServiceProvider.php†L31-L68】【F:src/config/module-generator.php†L5-L53】
 
-To customise the stub templates used for every generated file, publish the dedicated stubs once:
+Need to refresh the assets after making manual edits or upgrading? Re-run the publish command and pick the `module-generator` tag to overwrite the files.
 
 ```bash
-php artisan vendor:publish
+php artisan vendor:publish --provider="Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider" --tag=module-generator
 ```
 
-Pick the same service provider and choose the `module-generator-stubs` tag to copy the templates to `resources/stubs/module-generator`, letting you adapt method signatures, imports, or formatting to match your house style.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
+To customise the stub templates used for every generated file, publish the dedicated stubs when you need them:
+
+```bash
+php artisan vendor:publish --provider="Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider" --tag=module-generator-stubs
+```
+
+This copies the templates to `resources/stubs/module-generator`, letting you adapt method signatures, imports, or formatting to match your house style. Leave them unpublished if the defaults already suit your project.【F:src/ModuleGeneratorServiceProvider.php†L41-L68】
 
 ## Quick start
 
@@ -128,11 +133,10 @@ $fromJalali = \Carbon\Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
 
 ## Release highlights
 
-### v6.2.4
-- Inline schema parsing via `--fields` now understands nullability, unique constraints, and foreign keys, feeding the metadata to DTOs, resources, and tests.【F:src/Support/SchemaParser.php†L9-L138】【F:src/Commands/MakeModuleCommand.php†L92-L130】
-- Migration introspection builds cast maps, fillable arrays, validation rules, and relation metadata shared across all generated classes.【F:src/Support/MigrationFieldParser.php†L9-L213】【F:src/Support/MigrationFieldParser.php†L214-L325】
-- Provider generation auto-registers the binding in `bootstrap/providers.php` or `config/app.php`, removing manual steps after scaffolding.【F:src/Generators/ProviderGenerator.php†L37-L72】
-- Resources format date and boolean fields through the bundled `StatusHelper`, and eager-loaded relations automatically resolve to companion resources.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+### v7.x
+- Base repository/service classes and interfaces are resolved from your published copies so generator output honours any customisations you make to the shared layer.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
+- Publishable assets (config, helpers, base classes, and stubs) are mirrored automatically during console execution, removing the mandatory `vendor:publish` step after installation.【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
+- Migration parsing now extracts concrete fillable fields and `belongsTo` relations while ignoring index-only definitions, producing richer DTOs, resources, and tests out of the box.【F:src/Support/MigrationFieldParser.php†L9-L325】
 
 Previous release notes are archived in [`CHABELOG.md`](CHABELOG.md) and [`docs/changelog.md`](docs/changelog.md).
 

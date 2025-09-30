@@ -1,6 +1,12 @@
 # Changelog
 
-All notable changes to this package are documented here. The current release line is **v6.2.x**.
+All notable changes to this package are documented here. The current release line is **v7.x**.
+
+## [7.0.0] - 2025-07-05
+### ✨ Added
+- Base class discovery ensures generated repositories and services extend/implement the versions you have published into your application, so local modifications propagate automatically.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
+- Automatic asset mirroring copies config, helper, base classes, and stub resources into the host app whenever Artisan runs, eliminating the initial `vendor:publish` prompt.【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
+- Migration parsing now captures concrete fillable fields alongside `belongsTo` relations while skipping index-only statements, feeding richer metadata to DTOs, resources, and tests.【F:src/Support/MigrationFieldParser.php†L9-L325】
 
 ## [6.2.4] - 2025-06-04
 ### ✨ Added
