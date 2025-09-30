@@ -1,5 +1,4 @@
-// version 6.2.4 summary
-// - Inline schema DSL with nullable/unique/foreign key awareness【F:src/Support/SchemaParser.php†L9-L138】
-// - Migration parser shares validation/cast metadata across generators【F:src/Support/MigrationFieldParser.php†L9-L213】
-// - Provider auto-registration for repositories & services【F:src/Generators/ProviderGenerator.php†L37-L72】
-// - Resources normalise dates/booleans via StatusHelper & Goli helper【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+// version 7.0.0 summary
+// - BaseClassLocator honours published repository/service base classes & interfaces in generated modules【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
+// - Service provider auto-mirrors publishable assets (config, helpers, bases, stubs) when running in console【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
+// - Migration parser builds fillable arrays & belongsTo relations while ignoring indexes-only definitions【F:src/Support/MigrationFieldParser.php†L9-L325】

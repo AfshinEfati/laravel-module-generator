@@ -7,6 +7,12 @@
 خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
 
 
+## v7.0.0
+
+- خروجی ژنراتورها اکنون از کلاس‌ها و اینترفیس‌های بیس منتشرشده در پروژه استفاده می‌کند و هر تغییری که در لایهٔ مشترک داده‌اید به صورت خودکار اعمال می‌شود.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
+- دارایی‌های قابل پابلیش (کانفیگ، هِلپر، کلاس‌های بیس و استاب‌ها) هنگام اجرای آرتیزان به طور خودکار در برنامهٔ میزبان کپی می‌شوند و دیگر نیازی به اجرای اولیهٔ `vendor:publish` نیست.【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
+- پارس مایگریشن فیلدهای fillable و رابطه‌های `belongsTo` را استخراج می‌کند و استیتمنت‌های صرفاً ایندکس را نادیده می‌گیرد تا DTO، ریسورس و تست‌های دقیق‌تری بسازد.【F:src/Support/MigrationFieldParser.php†L9-L325】
+
 ## v6.2.4
 
 - بهبود پردازش `--fields` برای پشتیبانی از `nullable`، `unique` و کلیدهای خارجی درون‌خطی.
