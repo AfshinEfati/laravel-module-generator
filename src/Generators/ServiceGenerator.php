@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\BaseClassLocator;
 use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 
@@ -31,6 +32,9 @@ class ServiceGenerator
         $dtoFqcn           = "{$baseNamespace}\\DTOs\\{$name}DTO";
         $modelFqcn         = "{$baseNamespace}\\Models\\{$name}";
 
+        $baseService = BaseClassLocator::baseService($baseNamespace);
+        $baseServiceInterface = BaseClassLocator::baseServiceInterface($baseNamespace);
+
         $serviceInterfacePath = $contractPath . "/{$name}ServiceInterface.php";
         $serviceConcretePath  = $servicePath . "/{$name}Service.php";
 
@@ -39,6 +43,7 @@ class ServiceGenerator
         // Interface generation
         $interfaceUses = [
             $modelFqcn,
+            $baseServiceInterface['fqcn'],
         ];
         if ($usesDto) {
             $interfaceUses[] = $dtoFqcn;
@@ -69,6 +74,7 @@ class ServiceGenerator
             'model'         => $name,
             'store_method'  => $interfaceStoreMethod,
             'update_method' => $interfaceUpdateMethod,
+            'base_interface' => $baseServiceInterface['class'],
         ]);
 
         $results[$serviceInterfacePath] = self::writeFile($serviceInterfacePath, $interfaceContent, $force);
@@ -76,7 +82,7 @@ class ServiceGenerator
         // Service generation
         $serviceUses = [
             $baseNamespace . '\\Services\\Contracts\\' . $name . 'ServiceInterface',
-            $baseNamespace . '\\Services\\BaseService',
+            $baseService['fqcn'],
             $modelFqcn,
         ];
 
@@ -136,6 +142,7 @@ class ServiceGenerator
             'model'                 => $name,
             'store_method'          => $serviceStoreMethod,
             'update_method'         => $serviceUpdateMethod,
+            'base_class'            => $baseService['class'],
         ]);
 
         $results[$serviceConcretePath] = self::writeFile($serviceConcretePath, $serviceContent, $force);

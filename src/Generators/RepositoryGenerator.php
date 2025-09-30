@@ -2,6 +2,7 @@
 
 namespace Efati\ModuleGenerator\Generators;
 
+use Efati\ModuleGenerator\Support\BaseClassLocator;
 use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 
@@ -29,8 +30,11 @@ class RepositoryGenerator
         $contractClass      = $name . 'RepositoryInterface';
         $contractFile       = $contractPath . "/{$contractClass}.php";
 
+        $baseRepositoryInterface = BaseClassLocator::baseRepositoryInterface($baseNamespace);
+
         $contractUses = [
             $modelFqcn,
+            $baseRepositoryInterface['fqcn'],
         ];
 
         $contract = Stub::render('Repository/contract', [
@@ -38,6 +42,7 @@ class RepositoryGenerator
             'uses'      => self::buildUses($contractUses),
             'interface' => $contractClass,
             'model'     => $name,
+            'base_interface' => $baseRepositoryInterface['class'],
         ]);
 
         $results[$contractFile] = self::writeFile($contractFile, $contract, $force);
@@ -46,9 +51,11 @@ class RepositoryGenerator
         $eloquentClass     = $name . 'Repository';
         $eloquentFile      = $eloquentPath . "/{$eloquentClass}.php";
 
+        $baseRepository = BaseClassLocator::baseRepository($baseNamespace);
+
         $concreteUses = [
             $contractNamespace . '\\' . $contractClass,
-            $baseNamespace . '\\Repositories\\Eloquent\\BaseRepository',
+            $baseRepository['fqcn'],
             $modelFqcn,
         ];
 
@@ -58,6 +65,7 @@ class RepositoryGenerator
             'class'     => $eloquentClass,
             'interface' => $contractClass,
             'model'     => $name,
+            'base_class' => $baseRepository['class'],
         ]);
 
         $results[$eloquentFile] = self::writeFile($eloquentFile, $concrete, $force);
