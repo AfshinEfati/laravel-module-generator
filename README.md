@@ -15,7 +15,7 @@ Generate complete, test-ready Laravel modules from a single Artisan command. The
 
 - **Schema-aware scaffolding** – infer metadata from existing migrations or inline `--fields` definitions to pre-fill DTOs, validation rules, casts, and test payloads.【F:src/Commands/MakeModuleCommand.php†L47-L130】【F:src/Support/MigrationFieldParser.php†L9-L213】
 - **End-to-end module wiring** – repositories, services, and providers are generated together and the provider is auto-registered in your application bootstrap or `config/app.php`.【F:src/Generators/RepositoryGenerator.php†L9-L64】【F:src/Generators/ProviderGenerator.php†L9-L72】
-- **Resource-rich APIs out of the box** – controllers, resources, and the bundled `StatusHelper` format dates, booleans, and relations consistently using the Jalali-aware `Goli` helper.【F:src/Generators/ControllerGenerator.php†L1-L126】【F:src/Generators/ResourceGenerator.php†L9-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+- **Resource-rich APIs out of the box** – controllers, resources, and the bundled `ApiResponseHelper` format dates, booleans, and relations consistently using the Jalali-aware `Goli` helper.【F:src/Generators/ControllerGenerator.php†L1-L126】【F:src/Generators/ResourceGenerator.php†L9-L158】【F:src/Stubs/Helpers/ApiResponseHelper.php†L1-L83】
 - **Opinionated feature tests** – optional CRUD tests exercise success and failure flows using the metadata gathered from migrations or schema definitions.【F:src/Commands/MakeModuleCommand.php†L132-L170】【F:src/Generators/TestGenerator.php†L11-L107】
 - **First-class Jalali tooling** – the service provider binds the `goli()` helper and Carbon macros so Persian calendars are available anywhere in your app without external packages.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Support/Goli.php†L1-L200】
 
@@ -100,7 +100,7 @@ Running `make:module` produces a cohesive stack tailored to your configuration:
 - Service interface and implementation with optional provider binding.【F:src/Commands/MakeModuleCommand.php†L117-L150】
 - DTO class hydrated from migration or schema metadata.【F:src/Commands/MakeModuleCommand.php†L113-L118】
 - Controller (API or web) that plugs DTOs, resources, and form requests together.【F:src/Commands/MakeModuleCommand.php†L100-L142】
-- API Resource that formats dates, booleans, and eager-loaded relations through the shared `StatusHelper`.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+- API Resource that formats dates, booleans, and eager-loaded relations through the shared `ApiResponseHelper`.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/ApiResponseHelper.php†L1-L83】
 - Form Requests with `store`/`update` rule sets and localized validation messages (when enabled).【F:src/Commands/MakeModuleCommand.php†L142-L151】【F:src/Support/MigrationFieldParser.php†L106-L157】
 - Feature tests seeded with inferred fillable data, route stubs, and foreign key expectations.【F:src/Generators/TestGenerator.php†L11-L107】
 
@@ -116,7 +116,7 @@ Tests honour your configured database connection—there is no forced SQLite dri
 
 ## Jalali date tooling
 
-`ModuleGeneratorServiceProvider` binds a singleton-friendly `goli()` helper and Carbon macros so Jalali ↔ Gregorian conversions are available everywhere, including generated resources and helpers.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Stubs/Helpers/StatusHelper.php†L29-L76】
+`ModuleGeneratorServiceProvider` binds a singleton-friendly `goli()` helper and Carbon macros so Jalali ↔ Gregorian conversions are available everywhere, including generated resources and helpers.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Stubs/Helpers/ApiResponseHelper.php†L29-L76】
 
 ```php
 use Efati\ModuleGenerator\Support\Goli;

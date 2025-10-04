@@ -28,7 +28,7 @@ class ControllerGenerator
 
         $modelFqcn     = "{$baseNamespace}\\Models\\{$name}";
         $serviceFqcn   = "{$baseNamespace}\\Services\\{$name}Service";
-        $helperFqcn    = "{$baseNamespace}\\Helpers\\StatusHelper";
+        $helperFqcn    = "{$baseNamespace}\\Helpers\\ApiResponseHelper";
         $resourceFqcn  = "{$baseNamespace}\\Http\\Resources\\{$name}Resource";
         $dtoFqcn       = "{$baseNamespace}\\DTOs\\{$name}DTO";
         $storeReqFqcn  = "{$baseNamespace}\\Http\\Requests\\Store{$name}Request";
@@ -130,21 +130,21 @@ class ControllerGenerator
         $indexBody = implode("\n", [
             '        $data = $this->service->index();',
             $usesResource
-                ? "        return StatusHelper::successResponse({$name}Resource::collection(\$data), 'success');"
-                : "        return StatusHelper::successResponse(\$data, 'success');",
+            ? "        return ApiResponseHelper::successResponse({$name}Resource::collection(\$data), 'success');"
+            : "        return ApiResponseHelper::successResponse(\$data, 'success');",
         ]);
 
         $modelVariable = '$' . $nameLc;
 
         $resourceSingle = $usesResource
-            ? "        return StatusHelper::successResponse(new {$name}Resource({$modelVariable}), 'success');"
-            : "        return StatusHelper::successResponse({$modelVariable}, 'success');";
+            ? "        return ApiResponseHelper::successResponse(new {$name}Resource({$modelVariable}), 'success');"
+            : "        return ApiResponseHelper::successResponse({$modelVariable}, 'success');";
         $resourceUpdated = $usesResource
-            ? "        return StatusHelper::successResponse(new {$name}Resource({$modelVariable}), 'updated');"
-            : "        return StatusHelper::successResponse({$modelVariable}, 'updated');";
+            ? "        return ApiResponseHelper::successResponse(new {$name}Resource({$modelVariable}), 'updated');"
+            : "        return ApiResponseHelper::successResponse({$modelVariable}, 'updated');";
         $resourceCreated = $usesResource
-            ? "        return StatusHelper::successResponse(new {$name}Resource(\$model), 'created', 201);"
-            : "        return StatusHelper::successResponse(\$model, 'created', 201);";
+            ? "        return ApiResponseHelper::successResponse(new {$name}Resource(\$model), 'created', 201);"
+            : "        return ApiResponseHelper::successResponse(\$model, 'created', 201);";
 
         return Stub::render('Controller/api', [
             'namespace'           => $namespace,

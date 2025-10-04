@@ -13,6 +13,48 @@ interface {{ interface }} extends {{ base_interface }}
 
     public function show(int|string $id): ?{{ model }};
 
+    public function findDynamic(
+        array $where = [],
+        array $with = [],
+        array $whereNot = [],
+        array $whereIn = [],
+        array $whereNotIn = [],
+        array $whereBetween = [],
+        array $whereNotBetween = [],
+        array $whereNull = [],
+        array $whereNotNull = [],
+        array $orWhere = [],
+        array $orWhereIn = [],
+        array $orWhereNotIn = [],
+        array $orWhereBetween = [],
+        array $orWhereNotBetween = [],
+        array $orWhereNull = [],
+        array $orWhereNotNull = [],
+        array $whereRaw = [],
+        array $orWhereRaw = []
+    ): ?{{ model }};
+
+    public function getByDynamic(
+        array $where = [],
+        array $with = [],
+        array $whereNot = [],
+        array $whereIn = [],
+        array $whereNotIn = [],
+        array $whereBetween = [],
+        array $whereNotBetween = [],
+        array $whereNull = [],
+        array $whereNotNull = [],
+        array $orWhere = [],
+        array $orWhereIn = [],
+        array $orWhereNotIn = [],
+        array $orWhereBetween = [],
+        array $orWhereNotBetween = [],
+        array $orWhereNull = [],
+        array $orWhereNotNull = [],
+        array $whereRaw = [],
+        array $orWhereRaw = []
+    ): \Illuminate\Support\Collection;
+
 {{ store_method }}
 {{ update_method }}
     public function destroy(int|string $id): bool;

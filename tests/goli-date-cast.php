@@ -72,7 +72,7 @@ $cases = [
         'minute' => 59,
         'second' => 59,
     ],
-    'goli-instance' => Goli::parseJalali('1403-01-05 18:00:00'),
+    'goli-instance' => Goli::parseGoli('1403-01-05 18:00:00'),
 ];
 
 foreach ($cases as $label => $input) {

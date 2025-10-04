@@ -2,7 +2,7 @@
 
 namespace Efati\ModuleGenerator\Support;
 
-use Carbon\Carbon;
+use Carbon\Carbon as CarbonDate;
 use DateTimeInterface;
 use DateTimeZone;
 use InvalidArgumentException;
@@ -58,7 +58,7 @@ class Goli implements JsonSerializable
     ];
 
     /**
-     * Day names in Persian (Carbon::dayOfWeek order, Sunday first).
+     * Day names in Persian (CarbonDate::dayOfWeek order, Sunday first).
      *
      * @var array<int, string>
      */
@@ -73,7 +73,7 @@ class Goli implements JsonSerializable
     ];
 
     /**
-     * Short day names in Persian (Carbon::dayOfWeek order, Sunday first).
+     * Short day names in Persian (CarbonDate::dayOfWeek order, Sunday first).
      *
      * @var array<int, string>
      */
@@ -145,20 +145,20 @@ class Goli implements JsonSerializable
 
     private const HUMAN_DIFF_NOW = 'همین حالا';
 
-    protected Carbon $datetime;
+    protected CarbonDate $datetime;
 
     /**
-     * @param  Carbon|DateTimeInterface|int|string|array<int|string, mixed>|self|null  $datetime
+     * @param  CarbonDate|DateTimeInterface|int|string|array<int|string, mixed>|self|null  $datetime
      */
     public function __construct(
-        Carbon|DateTimeInterface|int|string|array|self|null $datetime = null,
+        CarbonDate|DateTimeInterface|int|string|array|self|null $datetime = null,
         DateTimeZone|string|null $timezone = null
     ) {
         $this->datetime = static::parseDateTime($datetime, $timezone);
     }
 
     public static function instance(
-        Carbon|DateTimeInterface|int|string|array|self|null $datetime = null,
+        CarbonDate|DateTimeInterface|int|string|array|self|null $datetime = null,
         DateTimeZone|string|null $timezone = null
     ): self {
         return new self($datetime, $timezone);
@@ -166,22 +166,22 @@ class Goli implements JsonSerializable
 
     public static function now(DateTimeZone|string|null $timezone = null): self
     {
-        return new self(Carbon::now(static::normalizeTimezone($timezone)));
+        return new self(CarbonDate::now(static::normalizeTimezone($timezone)));
     }
 
     public static function parse(
-        Carbon|DateTimeInterface|int|string|array|self|null $datetime = null,
+        CarbonDate|DateTimeInterface|int|string|array|self|null $datetime = null,
         DateTimeZone|string|null $timezone = null
     ): self {
         return new self($datetime, $timezone);
     }
 
-    public static function parseJalali(string $datetime, DateTimeZone|string|null $timezone = null): self
+    public static function parseGoli(string $datetime, DateTimeZone|string|null $timezone = null): self
     {
         $tz = static::normalizeTimezone($timezone);
         $normalized = static::latinNumbers($datetime);
 
-        $carbon = static::tryParseJalaliString($normalized, $tz);
+        $carbon = static::tryParseGoliString($normalized, $tz);
 
         if ($carbon === null) {
             throw new InvalidArgumentException('Unable to parse Jalali datetime string.');
@@ -199,14 +199,14 @@ class Goli implements JsonSerializable
         int $second = 0,
         DateTimeZone|string|null $timezone = null
     ): self {
-        [$gy, $gm, $gd] = static::jalaliToGregorian($year, $month, $day);
+        [$gy, $gm, $gd] = static::goliToGregorian($year, $month, $day);
 
-        return new self(Carbon::create($gy, $gm, $gd, $hour, $minute, $second, static::normalizeTimezone($timezone)));
+        return new self(CarbonDate::create($gy, $gm, $gd, $hour, $minute, $second, static::normalizeTimezone($timezone)));
     }
 
     public static function fromTimestamp(int $timestamp, DateTimeZone|string|null $timezone = null): self
     {
-        return new self(Carbon::createFromTimestamp($timestamp, static::normalizeTimezone($timezone)));
+        return new self(CarbonDate::createFromTimestamp($timestamp, static::normalizeTimezone($timezone)));
     }
 
     public function copy(): self
@@ -214,7 +214,7 @@ class Goli implements JsonSerializable
         return new self($this->datetime->copy());
     }
 
-    public function toCarbon(): Carbon
+    public function toCarbon(): CarbonDate
     {
         return $this->datetime->copy();
     }
@@ -242,16 +242,16 @@ class Goli implements JsonSerializable
         return $this;
     }
 
-    public function setJalaliDate(int $year, int $month, int $day): self
+    public function setGoliDate(int $year, int $month, int $day): self
     {
-        [$gy, $gm, $gd] = static::jalaliToGregorian($year, $month, $day);
+        [$gy, $gm, $gd] = static::goliToGregorian($year, $month, $day);
 
         $this->datetime->setDate($gy, $gm, $gd);
 
         return $this;
     }
 
-    public function setJalaliDateTime(
+    public function setGoliDateTime(
         int $year,
         int $month,
         int $day,
@@ -259,7 +259,7 @@ class Goli implements JsonSerializable
         int $minute = 0,
         int $second = 0
     ): self {
-        [$gy, $gm, $gd] = static::jalaliToGregorian($year, $month, $day);
+        [$gy, $gm, $gd] = static::goliToGregorian($year, $month, $day);
 
         $this->datetime->setDate($gy, $gm, $gd);
         $this->datetime->setTime($hour, $minute, $second);
@@ -286,7 +286,7 @@ class Goli implements JsonSerializable
      */
     public function format(string $format, bool $convertNumbers = false): string
     {
-        $jalali = $this->getJalaliDateParts();
+        $jalali = $this->getGoliDateParts();
         $result = '';
         $length = strlen($format);
 
@@ -309,19 +309,19 @@ class Goli implements JsonSerializable
         return $this->datetime->format($format);
     }
 
-    public function toJalaliDateString(bool $convertNumbers = false): string
+    public function toGoliDateString(bool $convertNumbers = false): string
     {
         return $this->format('Y-m-d', $convertNumbers);
     }
 
-    public function toJalaliDateTimeString(bool $convertNumbers = false): string
+    public function toGoliDateTimeString(bool $convertNumbers = false): string
     {
         return $this->format('Y-m-d H:i:s', $convertNumbers);
     }
 
-    public function toJalaliArray(bool $withTime = false): array
+    public function toGoliArray(bool $withTime = false): array
     {
-        $jalali = $this->getJalaliDateParts();
+        $jalali = $this->getGoliDateParts();
 
         if ($withTime) {
             $jalali['hour'] = (int) $this->datetime->format('H');
@@ -342,9 +342,9 @@ class Goli implements JsonSerializable
         return $this->datetime->toIso8601String();
     }
 
-    public function diffForHumans(?Carbon $other = null, bool $persianDigits = false): string
+    public function diffForHumans(?CarbonDate $other = null, bool $persianDigits = false): string
     {
-        $reference = $other ? $other->copy() : Carbon::now($this->datetime->getTimezone());
+        $reference = $other ? $other->copy() : CarbonDate::now($this->datetime->getTimezone());
 
         if ($other !== null) {
             $reference->setTimezone($this->datetime->getTimezone());
@@ -402,15 +402,15 @@ class Goli implements JsonSerializable
     public function __get(string $name): mixed
     {
         if ($name === 'year') {
-            return $this->getJalaliDateParts()['year'];
+            return $this->getGoliDateParts()['year'];
         }
 
         if ($name === 'month') {
-            return $this->getJalaliDateParts()['month'];
+            return $this->getGoliDateParts()['month'];
         }
 
         if ($name === 'day') {
-            return $this->getJalaliDateParts()['day'];
+            return $this->getGoliDateParts()['day'];
         }
 
         return $this->datetime->$name;
@@ -420,7 +420,7 @@ class Goli implements JsonSerializable
     {
         $result = $this->datetime->$name(...$arguments);
 
-        if ($result instanceof Carbon) {
+        if ($result instanceof CarbonDate) {
             return new self($result);
         }
 
@@ -437,7 +437,7 @@ class Goli implements JsonSerializable
         return strtr($value, self::PERSIAN_TO_LATIN_DIGITS);
     }
 
-    public static function jalaliToGregorian(int $year, int $month, int $day): array
+    public static function goliToGregorian(int $year, int $month, int $day): array
     {
         if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
             throw new InvalidArgumentException('Invalid Jalali date provided.');
@@ -493,7 +493,7 @@ class Goli implements JsonSerializable
         return [$gy, $gm, $gd];
     }
 
-    public static function gregorianToJalali(int $year, int $month, int $day): array
+    public static function gregorianToGoli(int $year, int $month, int $day): array
     {
         if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
             throw new InvalidArgumentException('Invalid Gregorian date provided.');
@@ -530,7 +530,7 @@ class Goli implements JsonSerializable
         return [$jy, $jm, $jd];
     }
 
-    public static function isLeapJalaliYear(int $year): bool
+    public static function isLeapGoliYear(int $year): bool
     {
         $mod = $year % 33;
         return in_array($mod, [1, 5, 9, 13, 17, 22, 26, 30], true);
@@ -548,9 +548,9 @@ class Goli implements JsonSerializable
     /**
      * @return array{year:int, month:int, day:int}
      */
-    protected function getJalaliDateParts(): array
+    protected function getGoliDateParts(): array
     {
-        [$year, $month, $day] = static::gregorianToJalali(
+        [$year, $month, $day] = static::gregorianToGoli(
             (int) $this->datetime->format('Y'),
             (int) $this->datetime->format('n'),
             (int) $this->datetime->format('j')
@@ -574,14 +574,14 @@ class Goli implements JsonSerializable
             'j' => (string) $jalali['day'],
             'F' => self::MONTH_NAMES[$jalali['month']] ?? '',
             'M' => self::SHORT_MONTH_NAMES[$jalali['month']] ?? '',
-            't' => (string) $this->jalaliMonthLength($jalali['year'], $jalali['month']),
-            'L' => static::isLeapJalaliYear($jalali['year']) ? '1' : '0',
+            't' => (string) $this->goliMonthLength($jalali['year'], $jalali['month']),
+            'L' => static::isLeapGoliYear($jalali['year']) ? '1' : '0',
             'w' => (string) $this->datetime->dayOfWeek,
             'N' => (string) ($this->datetime->dayOfWeek === 0 ? 7 : $this->datetime->dayOfWeek),
             'D' => self::SHORT_DAY_NAMES[$this->datetime->dayOfWeek] ?? '',
             'l' => self::DAY_NAMES[$this->datetime->dayOfWeek] ?? '',
             'W' => $this->datetime->format('W'),
-            'z' => (string) $this->jalaliDayOfYear($jalali['month'], $jalali['day']),
+            'z' => (string) $this->goliDayOfYear($jalali['month'], $jalali['day']),
             'a' => strtolower($this->datetime->format('A')),
             'A' => $this->datetime->format('A'),
             'g' => $this->datetime->format('g'),
@@ -601,7 +601,7 @@ class Goli implements JsonSerializable
         };
     }
 
-    protected function jalaliMonthLength(int $year, int $month): int
+    protected function goliMonthLength(int $year, int $month): int
     {
         if ($month <= 6) {
             return 31;
@@ -611,10 +611,10 @@ class Goli implements JsonSerializable
             return 30;
         }
 
-        return static::isLeapJalaliYear($year) ? 30 : 29;
+        return static::isLeapGoliYear($year) ? 30 : 29;
     }
 
-    protected function jalaliDayOfYear(int $month, int $day): int
+    protected function goliDayOfYear(int $month, int $day): int
     {
         if ($month <= 6) {
             return ($month - 1) * 31 + ($day - 1);
@@ -624,12 +624,12 @@ class Goli implements JsonSerializable
     }
 
     /**
-     * @param  Carbon|DateTimeInterface|int|string|array<int|string, mixed>|self|null  $datetime
+     * @param  CarbonDate|DateTimeInterface|int|string|array<int|string, mixed>|self|null  $datetime
      */
     protected static function parseDateTime(
-        Carbon|DateTimeInterface|int|string|array|self|null $datetime,
+        CarbonDate|DateTimeInterface|int|string|array|self|null $datetime,
         DateTimeZone|string|null $timezone
-    ): Carbon {
+    ): CarbonDate {
         $tz = static::normalizeTimezone($timezone);
 
         if ($datetime instanceof self) {
@@ -637,45 +637,45 @@ class Goli implements JsonSerializable
             return $tz === null ? $carbon : $carbon->setTimezone($tz);
         }
 
-        if ($datetime instanceof Carbon) {
+        if ($datetime instanceof CarbonDate) {
             $carbon = $datetime->copy();
             return $tz === null ? $carbon : $carbon->setTimezone($tz);
         }
 
         if ($datetime instanceof DateTimeInterface) {
-            $carbon = Carbon::instance($datetime);
+            $carbon = CarbonDate::instance($datetime);
             return $tz === null ? $carbon : $carbon->setTimezone($tz);
         }
 
         if ($datetime === null) {
-            return Carbon::now($tz);
+            return CarbonDate::now($tz);
         }
 
         if (is_int($datetime) || (is_string($datetime) && is_numeric($datetime))) {
-            return Carbon::createFromTimestamp((int) $datetime, $tz);
+            return CarbonDate::createFromTimestamp((int) $datetime, $tz);
         }
 
         if (is_array($datetime)) {
-            return static::createFromJalaliArray($datetime, $tz);
+            return static::createFromGoliArray($datetime, $tz);
         }
 
         if (is_string($datetime)) {
             $normalized = static::latinNumbers($datetime);
 
-            if ($parsed = static::tryParseJalaliString($normalized, $tz)) {
+            if ($parsed = static::tryParseGoliString($normalized, $tz)) {
                 return $parsed;
             }
 
-            return Carbon::parse($normalized, $tz);
+            return CarbonDate::parse($normalized, $tz);
         }
 
-        return Carbon::parse((string) $datetime, $tz);
+        return CarbonDate::parse((string) $datetime, $tz);
     }
 
     /**
      * @param  array<int|string, mixed>  $input
      */
-    protected static function createFromJalaliArray(array $input, DateTimeZone|string|null $timezone): Carbon
+    protected static function createFromGoliArray(array $input, DateTimeZone|string|null $timezone): CarbonDate
     {
         $year = $input['year'] ?? $input['y'] ?? $input[0] ?? null;
         $month = $input['month'] ?? $input['m'] ?? $input[1] ?? 1;
@@ -695,12 +695,12 @@ class Goli implements JsonSerializable
         $minute = (int) static::latinNumbers((string) $minute);
         $second = (int) static::latinNumbers((string) $second);
 
-        [$gy, $gm, $gd] = static::jalaliToGregorian($year, $month, $day);
+        [$gy, $gm, $gd] = static::goliToGregorian($year, $month, $day);
 
-        return Carbon::create($gy, $gm, $gd, $hour, $minute, $second, $timezone);
+        return CarbonDate::create($gy, $gm, $gd, $hour, $minute, $second, $timezone);
     }
 
-    protected static function tryParseJalaliString(string $value, DateTimeZone|string|null $timezone): ?Carbon
+    protected static function tryParseGoliString(string $value, DateTimeZone|string|null $timezone): ?CarbonDate
     {
         $value = trim($value);
 
@@ -739,8 +739,8 @@ class Goli implements JsonSerializable
             }
         }
 
-        [$gy, $gm, $gd] = static::jalaliToGregorian($year, $month, $day);
+        [$gy, $gm, $gd] = static::goliToGregorian($year, $month, $day);
 
-        return Carbon::create($gy, $gm, $gd, $hour, $minute, $second, $timezone);
+        return CarbonDate::create($gy, $gm, $gd, $hour, $minute, $second, $timezone);
     }
 }

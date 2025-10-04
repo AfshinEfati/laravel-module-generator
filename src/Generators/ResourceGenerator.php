@@ -28,7 +28,7 @@ class ResourceGenerator
         $filePath  = $resourcePath . "/{$className}.php";
 
         $modelFqcn  = "{$baseNamespace}\\Models\\{$name}";
-        $helperFqcn = "{$baseNamespace}\\Helpers\\StatusHelper";
+        $helperFqcn = "{$baseNamespace}\\Helpers\\ApiResponseHelper";
 
         $fillable  = self::resolveFillable($modelFqcn, $fields);
         $casts     = self::resolveCasts($modelFqcn, $fields);
@@ -151,9 +151,9 @@ class ResourceGenerator
         foreach ($fillable as $field) {
             $castType = self::normalizeCast($casts[$field] ?? null);
             if ($castType === 'datetime' || $castType === 'date' || Str::endsWith($field, ['_at'])) {
-                $body[] = "            '{$field}' => StatusHelper::formatDates(\$this->{$field}),";
+                $body[] = "            '{$field}' => ApiResponseHelper::formatDates(\$this->{$field}),";
             } elseif ($castType === 'boolean' || $castType === 'bool' || Str::startsWith($field, ['is_', 'has_'])) {
-                $body[] = "            '{$field}' => StatusHelper::getStatus((bool) \$this->{$field}),";
+                $body[] = "            '{$field}' => ApiResponseHelper::getStatus((bool) \$this->{$field}),";
             } else {
                 $body[] = "            '{$field}' => \$this->{$field},";
             }

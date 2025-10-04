@@ -31,7 +31,7 @@ class {{ class }}
 {{ update_payload }}
         $updated = $this->service->update(${{ model_variable }}->id, {{ update_argument }});
         if (!$updated) {
-            return StatusHelper::errorResponse('update failed', 422);
+            return ApiResponseHelper::errorResponse('update failed', 422);
         }
         ${{ model_variable }}->refresh();
 {{ relations_load }}
@@ -42,7 +42,7 @@ class {{ class }}
     {
         $deleted = $this->service->destroy(${{ model_variable }}->id);
         return $deleted
-            ? StatusHelper::successResponse(null, 'deleted', 204)
-            : StatusHelper::errorResponse('delete failed', 422);
+            ? ApiResponseHelper::successResponse(null, 'deleted', 204)
+            : ApiResponseHelper::errorResponse('delete failed', 422);
     }
 }

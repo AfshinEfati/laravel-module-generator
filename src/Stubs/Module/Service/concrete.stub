@@ -26,6 +26,92 @@ class {{ class }} extends {{ base_class }} implements {{ interface }}
         return parent::show($id);
     }
 
+    public function findDynamic(
+        array $where = [],
+        array $with = [],
+        array $whereNot = [],
+        array $whereIn = [],
+        array $whereNotIn = [],
+        array $whereBetween = [],
+        array $whereNotBetween = [],
+        array $whereNull = [],
+        array $whereNotNull = [],
+        array $orWhere = [],
+        array $orWhereIn = [],
+        array $orWhereNotIn = [],
+        array $orWhereBetween = [],
+        array $orWhereNotBetween = [],
+        array $orWhereNull = [],
+        array $orWhereNotNull = [],
+        array $whereRaw = [],
+        array $orWhereRaw = []
+    ): ?{{ model }} {
+        /** @var {{ model }}|null */
+        return parent::findDynamic(
+            $where,
+            $with,
+            $whereNot,
+            $whereIn,
+            $whereNotIn,
+            $whereBetween,
+            $whereNotBetween,
+            $whereNull,
+            $whereNotNull,
+            $orWhere,
+            $orWhereIn,
+            $orWhereNotIn,
+            $orWhereBetween,
+            $orWhereNotBetween,
+            $orWhereNull,
+            $orWhereNotNull,
+            $whereRaw,
+            $orWhereRaw,
+        );
+    }
+
+    public function getByDynamic(
+        array $where = [],
+        array $with = [],
+        array $whereNot = [],
+        array $whereIn = [],
+        array $whereNotIn = [],
+        array $whereBetween = [],
+        array $whereNotBetween = [],
+        array $whereNull = [],
+        array $whereNotNull = [],
+        array $orWhere = [],
+        array $orWhereIn = [],
+        array $orWhereNotIn = [],
+        array $orWhereBetween = [],
+        array $orWhereNotBetween = [],
+        array $orWhereNull = [],
+        array $orWhereNotNull = [],
+        array $whereRaw = [],
+        array $orWhereRaw = []
+    ): \Illuminate\Support\Collection {
+        /** @var \Illuminate\Support\Collection */
+        return parent::getByDynamic(
+            $where,
+            $with,
+            $whereNot,
+            $whereIn,
+            $whereNotIn,
+            $whereBetween,
+            $whereNotBetween,
+            $whereNull,
+            $whereNotNull,
+            $orWhere,
+            $orWhereIn,
+            $orWhereNotIn,
+            $orWhereBetween,
+            $orWhereNotBetween,
+            $orWhereNull,
+            $orWhereNotNull,
+            $whereRaw,
+            $orWhereRaw,
+        );
+    }
+
 {{ store_method }}
 {{ update_method }}
     public function destroy(int|string $id): bool

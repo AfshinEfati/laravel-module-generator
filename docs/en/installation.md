@@ -28,7 +28,7 @@ php artisan vendor:publish
 When the interactive prompt appears, select `Efati\ModuleGenerator\ModuleGeneratorServiceProvider` and then the `module-generator` tag. This copies:
 
 - `config/module-generator.php` – adjust namespaces, paths, and default toggles here.
-- Base repository/service classes plus the `StatusHelper` helper used by generated controllers and resources.
+- Base repository/service classes plus the `ApiResponseHelper` helper used by generated controllers and resources.
 
 Keep the configuration file under version control so every environment shares the same structure.
 
@@ -47,4 +47,3 @@ Choose the same service provider and pick the `module-generator-stubs` tag. Stub
 - (Laravel 11) Keep `bootstrap/providers.php` tracked so provider auto-registration can be committed with each new module.
 
 With the prerequisites complete you can jump to the [quickstart guide](quickstart.md) for command recipes and inline schema examples.
-

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Services\Contracts\BaseServiceInterface;
 use BadMethodCallException;
+use Illuminate\Support\Collection;
 
 abstract class BaseService implements BaseServiceInterface
 {
@@ -45,6 +46,91 @@ abstract class BaseService implements BaseServiceInterface
     public function destroy(int|string $id): bool
     {
         return (bool) $this->callRepository('delete', [$id]);
+    }
+
+    public function findDynamic(
+        array $where = [],
+        array $with = [],
+        array $whereNot = [],
+        array $whereIn = [],
+        array $whereNotIn = [],
+        array $whereBetween = [],
+        array $whereNotBetween = [],
+        array $whereNull = [],
+        array $whereNotNull = [],
+        array $orWhere = [],
+        array $orWhereIn = [],
+        array $orWhereNotIn = [],
+        array $orWhereBetween = [],
+        array $orWhereNotBetween = [],
+        array $orWhereNull = [],
+        array $orWhereNotNull = [],
+        array $whereRaw = [],
+        array $orWhereRaw = []
+    ): mixed {
+        return $this->callRepository('findDynamic', [
+            $where,
+            $with,
+            $whereNot,
+            $whereIn,
+            $whereNotIn,
+            $whereBetween,
+            $whereNotBetween,
+            $whereNull,
+            $whereNotNull,
+            $orWhere,
+            $orWhereIn,
+            $orWhereNotIn,
+            $orWhereBetween,
+            $orWhereNotBetween,
+            $orWhereNull,
+            $orWhereNotNull,
+            $whereRaw,
+            $orWhereRaw,
+        ]);
+    }
+
+    public function getByDynamic(
+        array $where = [],
+        array $with = [],
+        array $whereNot = [],
+        array $whereIn = [],
+        array $whereNotIn = [],
+        array $whereBetween = [],
+        array $whereNotBetween = [],
+        array $whereNull = [],
+        array $whereNotNull = [],
+        array $orWhere = [],
+        array $orWhereIn = [],
+        array $orWhereNotIn = [],
+        array $orWhereBetween = [],
+        array $orWhereNotBetween = [],
+        array $orWhereNull = [],
+        array $orWhereNotNull = [],
+        array $whereRaw = [],
+        array $orWhereRaw = []
+    ): Collection {
+        /** @var Collection */
+        return $this->callRepository('getByDynamic', [
+            $where,
+            $with,
+            $whereNot,
+            $whereIn,
+            $whereNotIn,
+            $whereBetween,
+            $whereNotBetween,
+            $whereNull,
+            $whereNotNull,
+            $orWhere,
+            $orWhereIn,
+            $orWhereNotIn,
+            $orWhereBetween,
+            $orWhereNotBetween,
+            $orWhereNull,
+            $orWhereNotNull,
+            $whereRaw,
+            $orWhereRaw,
+        ]);
     }
 
     public function __call(string $method, array $parameters): mixed

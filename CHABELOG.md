@@ -15,7 +15,7 @@ All notable changes to this package are documented here. The current release lin
 
 ### 🔧 Changed
 - Provider generation now auto-registers bindings in `bootstrap/providers.php` or `config/app.php`, removing manual steps after scaffolding.【F:src/Generators/ProviderGenerator.php†L37-L72】
-- API Resources call `StatusHelper` to normalise date/boolean fields and resolve eager-loaded relations to dedicated resources.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+- API Resources call `ApiResponseHelper` to normalise date/boolean fields and resolve eager-loaded relations to dedicated resources.【F:src/Generators/ResourceGenerator.php†L77-L158】【F:src/Stubs/Helpers/ApiResponseHelper.php†L1-L83】
 
 ### 🛠 Fixed
 - Harmonised generator output when using inline schema data versus migration-derived metadata so validation, DTOs, and tests stay in sync.【F:src/Commands/MakeModuleCommand.php†L92-L151】
@@ -23,7 +23,7 @@ All notable changes to this package are documented here. The current release lin
 ## [6.2.0] - 2025-05-12
 ### ✨ Added
 - Migration parsing engine and inline schema DSL that share metadata across DTOs, form requests, resources, and feature tests.【F:src/Commands/MakeModuleCommand.php†L47-L138】【F:src/Support/MigrationFieldParser.php†L9-L213】【F:src/Support/SchemaParser.php†L9-L138】
-- Bundled Jalali tooling (`goli()` helper and Carbon macros) plus `StatusHelper` response utilities for generated controllers and resources.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Stubs/Helpers/StatusHelper.php†L1-L83】
+- Bundled Jalali tooling (`goli()` helper and Carbon macros) plus `ApiResponseHelper` response utilities for generated controllers and resources.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Stubs/Helpers/ApiResponseHelper.php†L1-L83】
 - Feature test generator that seeds CRUD scenarios with inferred metadata and honours the project’s configured database connection.【F:src/Generators/TestGenerator.php†L11-L157】【F:src/Generators/TestGenerator.php†L19-L44】
 
 ### 🔧 Changed

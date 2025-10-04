@@ -40,7 +40,7 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
             __DIR__ . '/Stubs/BaseService.php'              => app_path('Services/BaseService.php'),
             __DIR__ . '/Stubs/BaseServiceInterface.php'     => app_path('Services/Contracts/BaseServiceInterface.php'),
             __DIR__ . '/config/module-generator.php'        => config_path('module-generator.php'),
-            __DIR__ . '/Stubs/Helpers/StatusHelper.php'     => app_path('Helpers/StatusHelper.php'),
+            __DIR__ . '/Stubs/Helpers/ApiResponseHelper.php' => app_path('Helpers/ApiResponseHelper.php'),
         ];
 
         $this->publishes($defaultPublishables, 'module-generator');

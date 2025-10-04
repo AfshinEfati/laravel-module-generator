@@ -7,7 +7,7 @@ use DateTimeInterface;
 use Efati\ModuleGenerator\Support\Goli;
 use Illuminate\Http\JsonResponse;
 
-class StatusHelper
+class ApiResponseHelper
 {
     public static function successResponse(mixed $data = null, string $message = 'success', int $code = 200): JsonResponse
     {
