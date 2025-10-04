@@ -12,6 +12,7 @@ use Efati\ModuleGenerator\Generators\TestGenerator;
 use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
+use Efati\ModuleGenerator\Generators\ActionGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
 
@@ -29,6 +30,8 @@ class MakeModuleCommand extends Command
                             {--nd|no-dto : Do not generate DTO}
                             {--nt|no-test : Do not generate feature test}
                             {--np|no-provider : Do not generate provider}
+                            {--actions : Generate Actions for the module}
+                            {--no-actions : Skip generating Actions}
                             {--fm|from-migration= : Migration file path or hint for inferring fields}
                             {--fields= : Inline schema definition for modules without migrations}
                             {--f|force : Overwrite existing files}';
@@ -82,6 +85,14 @@ class MakeModuleCommand extends Command
         $withProvider = (bool) ($defaults['with_provider'] ?? true);
         if ($this->input->hasParameterOption(['--no-provider', '--np', '-np'])) {
             $withProvider = false;
+        }
+
+        $withActions = (bool) ($defaults['with_actions'] ?? false);
+        if ($this->input->hasParameterOption(['--actions'])) {
+            $withActions = true;
+        }
+        if ($this->input->hasParameterOption(['--no-actions'])) {
+            $withActions = false;
         }
 
         $modelFqcn       = $baseNamespace . '\\Models\\' . $name;
@@ -147,6 +158,17 @@ class MakeModuleCommand extends Command
             $this->reportResults('Resource', $resourceResults);
         }
 
+        if ($withActions) {
+            $actionResults = ActionGenerator::generate(
+                name: $name,
+                baseNamespace: $baseNamespace,
+                usesDto: $withDTO,
+                force: $force
+            );
+
+            $this->reportResults('Action', $actionResults);
+        }
+
         if ($withProvider) {
             $providerResults = ProviderGenerator::generateAndRegister($name, $baseNamespace, $force);
             $this->reportResults('Provider', $providerResults);
@@ -163,7 +185,8 @@ class MakeModuleCommand extends Command
                 withRequests: $withRequests,
                 usesDto: $withDTO,
                 usesResource: $withResource,
-                force: $force
+                force: $force,
+                withActions: $withActions
             );
             $this->reportResults('Controller', $controllerResults);
         } else {

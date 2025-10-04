@@ -16,7 +16,8 @@ class ControllerGenerator
         bool $withRequests = false,
         bool $usesDto = true,
         bool $usesResource = true,
-        bool $force = false
+        bool $force = false,
+        bool $withActions = false
     ): array {
         $paths = config('module-generator.paths', []);
         $configuredRel = $paths['controller'] ?? ($paths['controllers'] ?? null);
@@ -34,40 +35,71 @@ class ControllerGenerator
         $storeReqFqcn  = "{$baseNamespace}\\Http\\Requests\\Store{$name}Request";
         $updateReqFqcn = "{$baseNamespace}\\Http\\Requests\\Update{$name}Request";
 
-        $relationsLoad = self::relationsLoadSnippet($modelFqcn);
+        $relationsLoad = self::relationsLoadSnippet($modelFqcn, $withActions ? 'model' : null);
         $namespace     = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
         $className     = "{$name}Controller";
+        $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
 
         if ($isApi) {
-            $content = self::buildApiController(
-                $name,
-                $namespace,
-                $modelFqcn,
-                $serviceFqcn,
-                $helperFqcn,
-                $resourceFqcn,
-                $dtoFqcn,
-                $storeReqFqcn,
-                $updateReqFqcn,
-                $withRequests,
-                $usesDto,
-                $usesResource,
-                $relationsLoad
-            );
+            $content = $withActions
+                ? self::buildApiControllerWithActions(
+                    $name,
+                    $namespace,
+                    $modelFqcn,
+                    $helperFqcn,
+                    $resourceFqcn,
+                    $dtoFqcn,
+                    $storeReqFqcn,
+                    $updateReqFqcn,
+                    $withRequests,
+                    $usesDto,
+                    $usesResource,
+                    $relationsLoad,
+                    $actionsNamespace
+                )
+                : self::buildApiController(
+                    $name,
+                    $namespace,
+                    $modelFqcn,
+                    $serviceFqcn,
+                    $helperFqcn,
+                    $resourceFqcn,
+                    $dtoFqcn,
+                    $storeReqFqcn,
+                    $updateReqFqcn,
+                    $withRequests,
+                    $usesDto,
+                    $usesResource,
+                    $relationsLoad
+                );
         } else {
-            $content = self::buildWebController(
-                $name,
-                $namespace,
-                $baseNamespace,
-                $modelFqcn,
-                $serviceFqcn,
-                $dtoFqcn,
-                $storeReqFqcn,
-                $updateReqFqcn,
-                $withRequests,
-                $usesDto,
-                $relationsLoad
-            );
+            $content = $withActions
+                ? self::buildWebControllerWithActions(
+                    $name,
+                    $namespace,
+                    $baseNamespace,
+                    $modelFqcn,
+                    $dtoFqcn,
+                    $storeReqFqcn,
+                    $updateReqFqcn,
+                    $withRequests,
+                    $usesDto,
+                    $relationsLoad,
+                    $actionsNamespace
+                )
+                : self::buildWebController(
+                    $name,
+                    $namespace,
+                    $baseNamespace,
+                    $modelFqcn,
+                    $serviceFqcn,
+                    $dtoFqcn,
+                    $storeReqFqcn,
+                    $updateReqFqcn,
+                    $withRequests,
+                    $usesDto,
+                    $relationsLoad
+                );
         }
 
         $target = $controllerPath . "/{$className}.php";
@@ -167,6 +199,102 @@ class ControllerGenerator
         ]);
     }
 
+    private static function buildApiControllerWithActions(
+        string $name,
+        string $namespace,
+        string $modelFqcn,
+        string $helperFqcn,
+        string $resourceFqcn,
+        string $dtoFqcn,
+        string $storeReqFqcn,
+        string $updateReqFqcn,
+        bool $withRequests,
+        bool $usesDto,
+        bool $usesResource,
+        string $relationsLoad,
+        string $actionsNamespace
+    ): string {
+        $imports = [
+            $modelFqcn,
+            $helperFqcn,
+            $actionsNamespace . '\\List' . $name . 'Action',
+            $actionsNamespace . '\\Show' . $name . 'Action',
+            $actionsNamespace . '\\Create' . $name . 'Action',
+            $actionsNamespace . '\\Update' . $name . 'Action',
+            $actionsNamespace . '\\Delete' . $name . 'Action',
+        ];
+
+        if ($usesResource) {
+            $imports[] = $resourceFqcn;
+        }
+        if ($usesDto) {
+            $imports[] = $dtoFqcn;
+        }
+        if (!$withRequests) {
+            $imports[] = 'Illuminate\\Http\\Request';
+        }
+        if ($withRequests) {
+            $imports[] = $storeReqFqcn;
+            $imports[] = $updateReqFqcn;
+        }
+
+        $usesBlock = self::buildUses($imports);
+        $nameLc    = lcfirst($name);
+
+        $requestStoreType  = $withRequests ? "Store{$name}Request" : 'Request';
+        $requestUpdateType = $withRequests ? "Update{$name}Request" : 'Request';
+
+        $payloadSource = $withRequests ? '$request->validated();' : '$request->all();';
+        $payloadInitStore = $usesDto
+            ? "        \$dto = {$name}DTO::fromRequest(\$request);"
+            : "        \$payload = {$payloadSource}";
+        $payloadInitUpdate = $usesDto
+            ? "        \$dto = {$name}DTO::fromRequest(\$request);"
+            : "        \$payload = {$payloadSource}";
+
+        $storeArgument  = $usesDto ? '$dto' : '$payload';
+        $updateArgument = $usesDto ? '$dto' : '$payload';
+
+        $indexBody = implode("\n", [
+            '        $data = ($this->listAction)();',
+            $usesResource
+            ? "        return ApiResponseHelper::successResponse({$name}Resource::collection(\$data), 'success');"
+            : "        return ApiResponseHelper::successResponse(\$data, 'success');",
+        ]);
+
+        $storeResponse = $usesResource
+            ? "        return ApiResponseHelper::successResponse(new {$name}Resource(\$model), 'created', 201);"
+            : "        return ApiResponseHelper::successResponse(\$model, 'created', 201);";
+
+        $showResponse = $usesResource
+            ? "        return ApiResponseHelper::successResponse(new {$name}Resource(\$model), 'success');"
+            : "        return ApiResponseHelper::successResponse(\$model, 'success');";
+
+        $updateResponse = $usesResource
+            ? "        return ApiResponseHelper::successResponse(new {$name}Resource(\$model), 'updated');"
+            : "        return ApiResponseHelper::successResponse(\$model, 'updated');";
+
+        return Stub::render('Controller/api-actions', [
+            'namespace'           => $namespace,
+            'uses'                => $usesBlock,
+            'class'               => $name . 'Controller',
+            'name'                => $name,
+            'index_body'          => $indexBody,
+            'store_request_type'  => $requestStoreType,
+            'store_payload'       => $payloadInitStore,
+            'store_argument'      => $storeArgument,
+            'store_response'      => $storeResponse,
+            'model_class'         => $name,
+            'model_variable'      => $nameLc,
+            'relations_load'      => $relationsLoad,
+            'show_response'       => $showResponse,
+            'update_request_type' => $requestUpdateType,
+            'update_payload'      => $payloadInitUpdate,
+            'update_argument'     => $updateArgument,
+            'update_response'     => $updateResponse,
+        ]);
+    }
+
     private static function buildWebController(
         string $name,
         string $namespace,
@@ -237,11 +365,83 @@ class ControllerGenerator
         ]);
     }
 
+    private static function buildWebControllerWithActions(
+        string $name,
+        string $namespace,
+        string $baseNamespace,
+        string $modelFqcn,
+        string $dtoFqcn,
+        string $storeReqFqcn,
+        string $updateReqFqcn,
+        bool $withRequests,
+        bool $usesDto,
+        string $relationsLoad,
+        string $actionsNamespace
+    ): string {
+        $imports = [
+            $modelFqcn,
+            "{$baseNamespace}\\Http\\Controllers\\Controller",
+            'Illuminate\\Http\\RedirectResponse',
+            'Illuminate\\Http\\Request',
+            'Illuminate\\View\\View',
+            $actionsNamespace . '\\List' . $name . 'Action',
+            $actionsNamespace . '\\Show' . $name . 'Action',
+            $actionsNamespace . '\\Create' . $name . 'Action',
+            $actionsNamespace . '\\Update' . $name . 'Action',
+            $actionsNamespace . '\\Delete' . $name . 'Action',
+        ];
+
+        if ($usesDto) {
+            $imports[] = $dtoFqcn;
+        }
+        if ($withRequests) {
+            $imports[] = $storeReqFqcn;
+            $imports[] = $updateReqFqcn;
+        }
+
+        $usesBlock = self::buildUses($imports);
+        $nameLc    = lcfirst($name);
+        $viewBase  = Str::kebab(Str::pluralStudly($name));
+        $routeName = $viewBase;
+
+        $requestStoreType  = $withRequests ? "Store{$name}Request" : 'Request';
+        $requestUpdateType = $withRequests ? "Update{$name}Request" : 'Request';
+
+        $payloadSource = $withRequests ? '$request->validated();' : '$request->all();';
+        $payloadInitStore = $usesDto
+            ? "        \$dto = {$name}DTO::fromRequest(\$request);"
+            : "        \$payload = {$payloadSource}";
+        $payloadInitUpdate = $usesDto
+            ? "        \$dto = {$name}DTO::fromRequest(\$request);"
+            : "        \$payload = {$payloadSource}";
+
+        $storeArgument  = $usesDto ? '$dto' : '$payload';
+        $updateArgument = $usesDto ? '$dto' : '$payload';
+
+        return Stub::render('Controller/web-actions', [
+            'namespace'           => $namespace,
+            'uses'                => $usesBlock,
+            'class'               => $name . 'Controller',
+            'view_base'           => $viewBase,
+            'route_name'          => $routeName,
+            'name'                => $name,
+            'store_request_type'  => $requestStoreType,
+            'store_payload'       => $payloadInitStore,
+            'store_argument'      => $storeArgument,
+            'model_class'         => $name,
+            'model_variable'      => $nameLc,
+            'relations_load'      => $relationsLoad,
+            'update_request_type' => $requestUpdateType,
+            'update_payload'      => $payloadInitUpdate,
+            'update_argument'     => $updateArgument,
+        ]);
+    }
+
     private static function buildUses(array $imports): string
     {
-        $imports = array_values(array_unique($imports));
+        $imports = array_values(array_unique(array_filter($imports)));
 
-        return 'use ' . implode(";\nuse ", $imports) . ';';
+        return $imports ? 'use ' . implode(";\nuse ", $imports) . ';' : '';
     }
 
     private static function controllerNamespace(string $baseNamespace, string $controllerRel, ?string $sub): string
@@ -255,7 +455,7 @@ class ControllerGenerator
         return $ns;
     }
 
-    private static function relationsLoadSnippet(string $modelFqcn): string
+    private static function relationsLoadSnippet(string $modelFqcn, ?string $variableOverride = null): string
     {
         if (!class_exists($modelFqcn)) {
             return "        // no relations loaded (model class not found)\n";
@@ -283,6 +483,9 @@ class ControllerGenerator
 
         $relationsList = "'" . implode("','", $relations) . "'";
         $varName = '$' . lcfirst(class_basename($modelFqcn));
+        if ($variableOverride !== null) {
+            $varName = '$' . ltrim($variableOverride, '$');
+        }
 
         return "        {$varName}->load([{$relationsList}]);\n";
     }

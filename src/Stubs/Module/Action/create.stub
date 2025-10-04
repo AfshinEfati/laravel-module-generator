@@ -1,0 +1,27 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ base_namespace }}\BaseAction;
+use {{ service_fqcn }};
+use {{ model_fqcn }};
+use Psr\Log\LoggerInterface;
+
+class Create{{ model_class }}Action extends BaseAction
+{
+    public function __construct(
+        private {{ service_class }} $service,
+        ?LoggerInterface $logger = null,
+    ) {
+        parent::__construct($logger);
+    }
+
+    /**
+     * @param  {{ payload_doc }}  $payload
+     */
+    protected function handle(mixed $payload): {{ model_class }}
+    {
+        /** @var {{ model_class }} */
+        return $this->service->store($payload);
+    }
+}
