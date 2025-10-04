@@ -7,6 +7,12 @@
 خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
 
 
+## v7.1.0
+
+- متدهای `findDynamic()` و `getByDynamic()` به کلاس‌های پایه و استاب‌ها اضافه شدند تا بدون نوشتن کوئری دستی بتوانید فیلترهای پیچیده را در ماژول‌ها استفاده کنید.【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/Module/Service/concrete.stub†L23-L120】
+- متدهای مربوط به تاریخ از نام‌های `parseGoli`، `toGoliDateString` و ... استفاده می‌کنند و کلاس Carbon با نام `CarbonDate` درون فایل ایمپورت شده تا تداخل نام‌گذاری از بین برود.【F:src/Support/Goli.php†L18-L720】
+- اسناد پروژه با بخش «آناتومی ماژول Product» و «راهنمای Goli» به‌روز شد تا مسیر یادگیری سریع‌تر شود.
+
 ## v7.0.0
 
 - خروجی ژنراتورها اکنون از کلاس‌ها و اینترفیس‌های بیس منتشرشده در پروژه استفاده می‌کند و هر تغییری که در لایهٔ مشترک داده‌اید به صورت خودکار اعمال می‌شود.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】

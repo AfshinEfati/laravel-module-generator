@@ -3,7 +3,7 @@
 [🇮🇷 فارسی](../fa/usage.md){ .language-switcher }
 
 
-Explore common command combinations and workflows for everyday development.
+Explore common command combinations and workflows for everyday development. For a full walkthrough of the generated files, see the [Product module anatomy](module-anatomy.md).
 
 ## Command overview
 
@@ -76,4 +76,3 @@ phpunit --testsuite=Feature
 ```
 
 Use the [advanced guides](advanced.md) when you need to hook into lifecycle events, override base classes, or build custom generators.
-

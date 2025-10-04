@@ -1,4 +1,4 @@
-// version 7.0.0 summary
-// - BaseClassLocator honours published repository/service base classes & interfaces in generated modules【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
-// - Service provider auto-mirrors publishable assets (config, helpers, bases, stubs) when running in console【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
-// - Migration parser builds fillable arrays & belongsTo relations while ignoring indexes-only definitions【F:src/Support/MigrationFieldParser.php†L9-L325】
+// version 7.1.0 summary
+// - Dynamic repository/service helpers (findDynamic & getByDynamic) available in base classes and generated contracts【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/BaseService.php†L21-L160】
+// - Goli helper renamed to parseGoli/toGoliDateString with CarbonDate alias to avoid namespace clashes【F:src/Support/Goli.php†L18-L720】
+// - Documentation expanded with module anatomy walkthrough & Goli guide

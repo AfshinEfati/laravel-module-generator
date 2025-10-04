@@ -40,6 +40,21 @@ app/Modules/{Module}/
 
 The generator also registers the service provider and, when tests are enabled, creates feature tests under `tests/Feature/Modules/{Module}`.
 
+## Base repository & service API
+
+Both base classes are published into your application the first time Artisan boots. They expose a consistent surface area regardless of the module you generate.
+
+| Class | Method | Description |
+| --- | --- | --- |
+| `BaseRepository` | `find(int|string $id)` | Looks up a model by primary key. |
+|  | `findDynamic(array ...$clauses)` | Builds a fluent query based on the arrays you pass (supports `where`, `orWhere`, `whereBetween`, `whereNull`, `whereRaw`, …) and returns the first match. |
+|  | `getByDynamic(array ...$clauses)` | Same signature as `findDynamic`, but returns an `Illuminate\Support\Collection` of all matching records. |
+|  | `buildDynamicQuery()` | Protected helper that you can reuse inside custom repository methods if you want to add additional clauses. |
+| `BaseService` | `index()` / `show()` / `store()` / `update()` / `destroy()` | Wrapper methods that proxy to the repository while normalising DTO payloads. |
+|  | `findDynamic()` / `getByDynamic()` | Delegate to the repository so higher layers never need to touch Eloquent directly. |
+
+If you publish and customise the base classes, the generator will automatically extend or implement your versions.
+
 ## Schema syntax cheatsheet
 
 | Example | Meaning |

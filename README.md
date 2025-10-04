@@ -121,8 +121,8 @@ Tests honour your configured database connection—there is no forced SQLite dri
 ```php
 use Efati\ModuleGenerator\Support\Goli;
 
-$goli = goli(now())->format('Y/m/d');
-$fromJalali = \Carbon\Carbon::fromJalali('1403/01/01 08:30:00', 'Asia/Tehran');
+$goli = goli(now())->toGoliDateString();
+$fromJalali = Goli::parseGoli('1403-01-01 08:30:00', 'Asia/Tehran');
 ```
 
 ## Customising the output
@@ -144,6 +144,8 @@ Previous release notes are archived in [`CHABELOG.md`](CHABELOG.md) and [`docs/c
 
 - [Full documentation](https://afshinefati.github.io/laravel-module-generator/) – landing page, configuration guide, and advanced topics.
 - [Usage reference](docs/usage.md) – option matrix, inline schema syntax, and command recipes.
+- [Module anatomy](docs/en/module-anatomy.md) – walk through every file generated for a Product module.
+- [Goli date helper guide](docs/en/goli-guide.md) – cookbook for parsing, formatting, and responding with Jalali dates.
 - [Advanced features](docs/advanced.md) – deep dive into test scaffolding, Jalali tooling, and stub customisation.
 
 ## License

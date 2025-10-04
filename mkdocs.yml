@@ -10,7 +10,10 @@ nav:
           - Quickstart: en/quickstart.md
           - Installation: en/installation.md
           - Configuration: en/configuration.md
-      - Usage: en/usage.md
+      - Usage:
+          - Usage guide: en/usage.md
+          - Module anatomy (Product sample): en/module-anatomy.md
+          - Goli date helper guide: en/goli-guide.md
       - Advanced guides: en/advanced.md
       - Reference:
           - CLI & file reference: en/reference.md
@@ -22,7 +25,10 @@ nav:
           - راه‌اندازی فوری: fa/quickstart.md
           - نصب: fa/installation.md
           - پیکربندی: fa/configuration.md
-      - کار با ابزار: fa/usage.md
+      - کار با ابزار:
+          - راهنمای استفاده: fa/usage.md
+          - آناتومی ماژول (نمونه Product): fa/module-anatomy.md
+          - راهنمای Goli: fa/goli-guide.md
       - راهنمای پیشرفته: fa/advanced.md
       - مرجع:
           - راهنمای مرجع: fa/reference.md

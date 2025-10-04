@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The current release line is **v7.x**.
 
+## [7.1.0] - 2025-08-20
+### ✨ Added
+- Dynamic repository/service helpers (`findDynamic`, `getByDynamic`) with stub updates so every generated module can issue complex filters out of the box.【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/Module/Repository/contract.stub†L12-L38】
+- Detailed documentation for the Product sample module and a Goli cookbook covering parsing, formatting, and helper integration.
+
+### 🔧 Changed
+- Renamed Jalali-facing APIs to the clearer `parseGoli`, `toGoliDateString`, etc., and alias Carbon imports to `CarbonDate` to avoid collisions.【F:src/Support/Goli.php†L18-L720】
+
 ## [7.0.0] - 2025-07-05
 ### ✨ Added
 - Base class discovery ensures generated repositories and services extend/implement the versions you have published into your application, so local modifications propagate automatically.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
