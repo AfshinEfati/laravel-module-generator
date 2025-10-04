@@ -1,4 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
+@font-face {
+  font-family: 'IranSans';
+  src: url('../fonts/iransans/iransans.woff2') format('woff2'),
+       url('../fonts/iransans/iransans.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fira Code Local';
+  src: url('../fonts/firracode/FiraCode-Regular.woff2') format('woff2'),
+       url('../fonts/firracode/FiraCode-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --lm-primary: #4338ca;
@@ -9,23 +25,38 @@
   --md-primary-fg-color--light: var(--lm-primary-light);
   --md-primary-fg-color--dark: var(--lm-primary-dark);
   --md-accent-fg-color: var(--lm-accent);
+  --font-sans-base: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans-fa: 'IranSans', 'Vazirmatn', 'Helvetica Neue', Arial, sans-serif;
+  --font-code: 'Fira Code Local', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 .md-typeset,
 .md-nav,
 .md-nav__title,
 .md-header__title {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans-base);
 }
 
-[dir="rtl"] {
+.md-typeset code,
+.md-typeset kbd,
+.md-typeset pre,
+.md-typeset samp,
+.md-typeset code * {
+  font-family: var(--font-code);
+  font-feature-settings: 'calt' 1, 'liga' 1;
+  font-variant-ligatures: contextual;
+}
+
+[dir="rtl"],
+html[lang="fa"],
+body[dir="rtl"] {
   direction: rtl;
   text-align: right;
-  font-family: 'Vazirmatn', 'Inter', sans-serif;
+  font-family: var(--font-sans-fa);
 }
 
 [dir="rtl"] .md-typeset {
-  font-family: 'Vazirmatn', 'Inter', sans-serif;
+  font-family: var(--font-sans-fa);
 }
 
 [dir="rtl"] .hero__eyebrow {
