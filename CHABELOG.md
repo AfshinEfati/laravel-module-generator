@@ -2,6 +2,12 @@
 
 All notable changes to this package are documented here. The current release line is **v7.x**.
 
+## [7.1.1] - 2025-08-26
+### 🔧 Changed
+- Generated controllers that rely on actions now reuse the bound model instance (`->getKey()`), preventing redundant queries before delegating to the action layer.
+- `BaseAction` logs the full exception object for richer diagnostics.
+- Documentation expanded with actionable examples for the action flag and `--no-actions` toggle.
+
 ## [7.1.0] - 2025-08-20
 ### ✨ Added
 - Dynamic repository/service helpers (`findDynamic`, `getByDynamic`) with stub updates so every generated module can issue complex filters out of the box.【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/Module/Repository/contract.stub†L12-L38】

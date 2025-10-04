@@ -5,6 +5,12 @@
 A summary of notable releases for Laravel Module Generator. For the full history see [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) and [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md).
 
 
+## v7.1.1
+
+- Controllers generated alongside the action layer now reuse the model instance provided by route-model binding (`->getKey()`), eliminating duplicate database lookups. The API/web stubs receive inline examples in the docs to highlight the pattern.
+- `BaseAction` logs the full exception object so stack traces appear in your logging channel, making production failures easier to diagnose.
+- Documentation refreshed: action workflow, optional `--no-actions`, and updated Product module walkthrough with practical snippets.
+
 ## v7.1.0
 
 - Added `findDynamic()` and `getByDynamic()` to the base repository/service classes and propagated the API to generated contracts so modules can express complex filters without hand-written queries.【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/Module/Service/concrete.stub†L23-L120】

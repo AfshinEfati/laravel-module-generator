@@ -7,6 +7,12 @@
 خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
 
 
+## v7.1.1
+
+- در کنترلرهای تولیدشده همراه با لایهٔ اکشن، شناسهٔ مدل از خود نمونهٔ دریافت‌شده (`->getKey()`) خوانده می‌شود؛ بنابراین کوئری تکراری به دیتابیس ارسال نمی‌گردد. مستندات نیز مثال‌های عملی این الگو را نمایش می‌دهد.
+- `BaseAction` هنگام بروز خطا، خود exception را در لاگ ثبت می‌کند تا پیام و استک کامل در دسترس باشد.
+- بخش‌های راهنما برای فلگ `--actions` و خروجی ماژول Product با نمونه‌کدهای جدید به‌روزرسانی شد.
+
 ## v7.1.0
 
 - متدهای `findDynamic()` و `getByDynamic()` به کلاس‌های پایه و استاب‌ها اضافه شدند تا بدون نوشتن کوئری دستی بتوانید فیلترهای پیچیده را در ماژول‌ها استفاده کنید.【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/Module/Service/concrete.stub†L23-L120】

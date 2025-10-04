@@ -130,6 +130,7 @@ $fromJalali = Goli::parseGoli('1403-01-01 08:30:00', 'Asia/Tehran');
 - **Configuration** – adjust namespaces, paths, and default toggles in `config/module-generator.php` once, then regenerate modules with your preferred directory structure.【F:src/config/module-generator.php†L5-L52】
 - **Stubs** – edit the published stubs in `resources/stubs/module-generator` to enforce house styles, add traits, tweak imports, or change response envelopes.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
 - **Providers** – if you disable provider generation, remember to bind repositories/services manually in your application container.【F:src/Commands/MakeModuleCommand.php†L119-L131】
+- **Action layer** – enable `--actions` to scaffold invokable use-case classes; controllers now call the actions with the bound model’s `getKey()` and `BaseAction` logs the full exception object for better observability.【F:src/Stubs/Module/Controller/api-actions.stub†L1-L49】【F:src/Stubs/Module/Action/base.stub†L1-L36】
 
 ## Release highlights
 

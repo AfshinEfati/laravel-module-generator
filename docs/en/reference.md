@@ -11,6 +11,7 @@ Use this reference when you need a concise view of the available options and gen
 | --- | --- |
 | `--api` | Generates an API controller with RESTful routes. |
 | `--requests` | Creates form requests for store/update actions with validation rules derived from the schema. |
+| `--actions` | Scaffolds use-case classes (List/Show/Create/Update/Delete) and rewires controllers to invoke them. |
 | `--dto` | Produces a Data Transfer Object that mirrors the fields passed to the command. |
 | `--resource` | Generates a Laravel API resource for consistent response formatting. |
 | `--tests` | Builds a feature test suite covering CRUD scenarios. |

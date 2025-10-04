@@ -13,6 +13,7 @@
 php artisan make:module {Name}
   {--api}
   {--requests}
+  {--actions}
   {--dto}
   {--resource}
   {--tests}
@@ -28,16 +29,33 @@ php artisan make:module {Name}
 
 ```bash
 php artisan make:module Invoice \
-  --api --dto --resource --requests --tests \
+  --api --actions --dto --resource --requests --tests \
   --fields="number:string:unique, issued_at:date, total:decimal(12,2)"
 ```
 
 خروجی این دستور:
 
 - کنترلر API با اکشن‌های کامل CRUD.
+- لایهٔ اکشن که هر مورد استفاده (List/Show/Create/Update/Delete) را در کلاس‌های مجزا اجرا می‌کند و در صورت خطا، اطلاعات کامل exception را در لاگ ثبت می‌کند.
 - فرم‌ریکوئست‌هایی که بر اساس اسکیما تعریف‌شده اعتبارسنجی می‌کنند.
 - کلاس‌های DTO و ریسورس با متادیتای مشترک.
 - تست فیچری برای سناریوهای موفق و شکست اعتبارسنجی.
+
+```php
+public function show(Invoice $invoice): mixed
+{
+    $model = ($this->showAction)($invoice->getKey());
+    if (!$model) {
+        return ApiResponseHelper::errorResponse('not found', 404);
+    }
+
+    $model->load(['customer', 'lines']);
+
+    return ApiResponseHelper::successResponse(new InvoiceResource($model), 'success');
+}
+```
+
+> در صورت تمایل می‌توانید با فلگ `--no-actions` این لایه را حذف کنید و کنترلر مستقیماً سرویس را صدا بزند.
 
 ## استفاده از مایگریشن به‌عنوان منبع اصلی
 

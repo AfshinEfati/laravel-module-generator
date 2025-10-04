@@ -28,7 +28,6 @@ class {{ class }} extends Controller
 
     public function store({{ store_request_type }} $request): RedirectResponse
     {
-        // @todo update validation rules and authorisation as needed.
 {{ store_payload }}
         ($this->createAction)({{ store_argument }});
 
@@ -38,7 +37,7 @@ class {{ class }} extends Controller
 
     public function show({{ model_class }} ${{ model_variable }}): View
     {
-        $model = ($this->showAction)(${{ model_variable }});
+        $model = ($this->showAction)(${{ model_variable }}->getKey());
         if (!$model) {
             abort(404);
         }
@@ -50,7 +49,7 @@ class {{ class }} extends Controller
 
     public function edit({{ model_class }} ${{ model_variable }}): View
     {
-        $model = ($this->showAction)(${{ model_variable }});
+        $model = ($this->showAction)(${{ model_variable }}->getKey());
         if (!$model) {
             abort(404);
         }
@@ -63,7 +62,7 @@ class {{ class }} extends Controller
     public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }}): RedirectResponse
     {
 {{ update_payload }}
-        $model = ($this->updateAction)(${{ model_variable }}->id, {{ update_argument }});
+        $model = ($this->updateAction)(${{ model_variable }}->getKey(), {{ update_argument }});
 
         if (!$model) {
             return redirect()->back()->withErrors('update failed.');
@@ -75,7 +74,7 @@ class {{ class }} extends Controller
 
     public function destroy({{ model_class }} ${{ model_variable }}): RedirectResponse
     {
-        ($this->deleteAction)(${{ model_variable }}->id);
+        ($this->deleteAction)(${{ model_variable }}->getKey());
 
         return redirect()->route('{{ route_name }}.index')
             ->with('status', '{{ name }} deleted.');

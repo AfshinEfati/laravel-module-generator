@@ -84,6 +84,39 @@ $latest = $productService->findDynamic(
 
 بدون نوشتن کوئری جدید می‌توانید ترکیبی از شرط‌های `where`، `orWhere`، `between` و ... را به سرویس بدهید و همان ساختار در همهٔ ماژول‌ها قابل استفاده است.
 
+## لایهٔ اکشن (اختیاری)
+
+با افزودن فلگ `--actions` همهٔ اکشن‌های کنترلر از طریق کلاس‌های اکشن مستقل اجرا می‌شوند.
+
+```bash
+php artisan make:module Product \
+  --api --actions --dto --resource --requests --tests \
+  --fields="name:string:unique, sku:string:unique, price:decimal(10,2), is_active:boolean"
+```
+
+در این حالت فایل‌های زیر ساخته می‌شود:
+
+- `Actions/BaseAction.php` با مدیریت لاگ و خطا.
+- اکشن‌های ماژول مثل `ListProductAction`، `ShowProductAction`، `CreateProductAction`، `UpdateProductAction` و `DeleteProductAction`.
+
+هر اکشن قابل فراخوانی (`__invoke`) است و می‌توانید آن را در job یا listener هم استفاده کنید. کنترلرها شناسهٔ مدل را با `getKey()` می‌گیرند تا دوباره از دیتابیس کوئری نشود:
+
+```php
+public function show(Product $product): mixed
+{
+    $model = ($this->showAction)($product->getKey());
+    if (!$model) {
+        return ApiResponseHelper::errorResponse('not found', 404);
+    }
+
+    $model->load(['category']);
+
+    return ApiResponseHelper::successResponse(new ProductResource($model), 'success');
+}
+```
+
+در صورت بروز خطا، `BaseAction` خود exception را به صورت کامل در لاگ تعیین‌شده ثبت می‌کند.
+
 ## کنترلر و پاسخ API
 
 کنترلر با کمک `ApiResponseHelper` خروجی را در قالبی استاندارد برمی‌گرداند؛ تاریخ‌ها و بولین‌ها نیز توسط `ProductResource` به شکل یکسان نمایش داده می‌شوند.

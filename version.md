@@ -1,4 +1,4 @@
-// version 7.1.0 summary
-// - Dynamic repository/service helpers (findDynamic & getByDynamic) available in base classes and generated contracts【F:src/Stubs/BaseRepository.php†L23-L160】【F:src/Stubs/BaseService.php†L21-L160】
-// - Goli helper renamed to parseGoli/toGoliDateString with CarbonDate alias to avoid namespace clashes【F:src/Support/Goli.php†L18-L720】
-// - Documentation expanded with module anatomy walkthrough & Goli guide
+// version 7.1.1 summary
+// - Controllers using the action layer now reuse route-bound models (->getKey()) before delegating, avoiding duplicate queries【F:src/Stubs/Module/Controller/api-actions.stub†L17-L49】【F:src/Stubs/Module/Controller/web-actions.stub†L17-L63】
+// - BaseAction logs the full exception context for better observability【F:src/Stubs/Module/Action/base.stub†L16-L33】
+// - Docs cover --actions/--no-actions usage with fresh code samples

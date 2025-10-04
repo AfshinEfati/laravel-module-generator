@@ -29,7 +29,7 @@ class {{ class }}
 
     public function show({{ model_class }} ${{ model_variable }}): mixed
     {
-        $model = ($this->showAction)(${{ model_variable }});
+        $model = ($this->showAction)(${{ model_variable }}->getKey());
         if (!$model) {
             return ApiResponseHelper::errorResponse('not found', 404);
         }
@@ -40,7 +40,7 @@ class {{ class }}
     public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
     {
 {{ update_payload }}
-        $model = ($this->updateAction)(${{ model_variable }}->id, {{ update_argument }});
+        $model = ($this->updateAction)(${{ model_variable }}->getKey(), {{ update_argument }});
         if (!$model) {
             return ApiResponseHelper::errorResponse('update failed', 422);
         }
@@ -50,7 +50,7 @@ class {{ class }}
 
     public function destroy({{ model_class }} ${{ model_variable }})
     {
-        $deleted = ($this->deleteAction)(${{ model_variable }}->id);
+        $deleted = ($this->deleteAction)(${{ model_variable }}->getKey());
         return $deleted
             ? ApiResponseHelper::successResponse(null, 'deleted', 204)
             : ApiResponseHelper::errorResponse('delete failed', 422);

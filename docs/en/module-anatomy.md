@@ -82,6 +82,34 @@ $latest = $productService->findDynamic(
 
 Both calls reuse the same helper under the hood, so you keep fluent access without hand-writing queries in each module.
 
+## Action layer (optional)
+
+Add the `--actions` flag to route all controller endpoints through dedicated action classes.
+
+```bash
+php artisan make:module Product \
+  --api --actions --dto --resource --requests --tests \
+  --fields="name:string:unique, sku:string:unique, price:decimal(10,2), is_active:boolean"
+```
+
+The generator produces `Actions/BaseAction.php` with centralised logging plus `Actions/Product/ListProductAction`, `ShowProductAction`, `CreateProductAction`, `UpdateProductAction`, and `DeleteProductAction`. Each action is invokable, so you can reuse them in jobs, commands, or listeners without duplicating service calls. Controllers call actions with `->getKey()` on the loaded model, avoiding extra database lookups:
+
+```php
+public function show(Product $product): mixed
+{
+    $model = ($this->showAction)($product->getKey());
+    if (!$model) {
+        return ApiResponseHelper::errorResponse('not found', 404);
+    }
+
+    $model->load(['category']);
+
+    return ApiResponseHelper::successResponse(new ProductResource($model), 'success');
+}
+```
+
+Whenever an exception escapes an action, `BaseAction` logs the full throwable so the stack trace ends up in your log channel of choice.
+
 ## Controller & API responses
 
 Controllers keep the payloads slim by leaning on `ApiResponseHelper`. The helper wraps responses in a predictable envelope and automatically formats Jalali-aware dates and booleans.

@@ -11,6 +11,7 @@ Explore common command combinations and workflows for everyday development. For 
 php artisan make:module {Name}
   {--api}
   {--requests}
+  {--actions}
   {--dto}
   {--resource}
   {--tests}
@@ -26,16 +27,49 @@ Use `php artisan make:module --help` for the full flag list and descriptions.
 
 ```bash
 php artisan make:module Invoice \
-  --api --dto --resource --requests --tests \
+  --api --actions --dto --resource --requests --tests \
   --fields="number:string:unique, issued_at:date, total:decimal(12,2)"
 ```
 
 What you get:
 
 - API controller with index/show/store/update/destroy actions.
+- Action layer (`ListInvoiceAction`, `ShowInvoiceAction`, etc.) that encapsulates each use-case, complete with error logging when something goes wrong.
 - Form requests that validate the schema supplied in `--fields`.
 - DTO and resource classes that share the same field metadata.
 - Feature tests that cover happy paths and validation failures.
+
+```php
+// app/Actions/Invoice/ShowInvoiceAction.php
+class ShowInvoiceAction extends BaseAction
+{
+    public function __construct(private InvoiceService $service) {}
+
+    protected function handle(mixed $modelOrId): ?Invoice
+    {
+        $id = $modelOrId instanceof Invoice ? $modelOrId->getKey() : $modelOrId;
+
+        return $this->service->show($id);
+    }
+}
+
+// app/Http/Controllers/Api/V1/InvoiceController.php (generated)
+public function show(Invoice $invoice): mixed
+{
+    $model = ($this->showAction)($invoice->getKey());
+    if (!$model) {
+        return ApiResponseHelper::errorResponse('not found', 404);
+    }
+
+    $model->load(['customer', 'lines']);
+
+    return ApiResponseHelper::successResponse(new InvoiceResource($model), 'success');
+}
+```
+
+> Actions are invokable (`__invoke`) so you can reuse them from jobs, event listeners, or console commands without going through the controller. The base action logs the full exception context whenever an error bubbles up.
+
+Need to stick with the traditional service-centric controller? Pass `--no-actions` (or set `with_actions` to `false` in the config) and the generator will wire controllers directly to the service again.
 
 ## Using migrations as the source of truth
 

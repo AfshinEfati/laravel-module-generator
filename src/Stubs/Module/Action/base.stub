@@ -27,8 +27,8 @@ abstract class BaseAction
             return $this->handle(...$arguments);
         } catch (Throwable $exception) {
             $this->logger->error('Action failed', [
-                'action' => static::class,
-                'message' => $exception->getMessage(),
+                'action'    => static::class,
+                'exception' => $exception,
             ]);
 
             throw $exception;

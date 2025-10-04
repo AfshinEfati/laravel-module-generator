@@ -21,7 +21,6 @@ class {{ class }} extends Controller
 
     public function store({{ store_request_type }} $request): RedirectResponse
     {
-        // @todo update validation rules and authorisation as needed.
 {{ store_payload }}
         $this->service->store({{ store_argument }});
 
