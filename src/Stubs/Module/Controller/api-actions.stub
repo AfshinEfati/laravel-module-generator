@@ -1,0 +1,58 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ uses }}
+
+class {{ class }}
+{
+    public function __construct(
+        public List{{ name }}Action $listAction,
+        public Show{{ name }}Action $showAction,
+        public Create{{ name }}Action $createAction,
+        public Update{{ name }}Action $updateAction,
+        public Delete{{ name }}Action $deleteAction,
+    ) {
+    }
+
+    public function index()
+    {
+{{ index_body }}
+    }
+
+    public function store({{ store_request_type }} $request)
+    {
+{{ store_payload }}
+        $model = ($this->createAction)({{ store_argument }});
+{{ store_response }}
+    }
+
+    public function show({{ model_class }} ${{ model_variable }}): mixed
+    {
+        $model = ($this->showAction)(${{ model_variable }});
+        if (!$model) {
+            return ApiResponseHelper::errorResponse('not found', 404);
+        }
+{{ relations_load }}
+{{ show_response }}
+    }
+
+    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
+    {
+{{ update_payload }}
+        $model = ($this->updateAction)(${{ model_variable }}->id, {{ update_argument }});
+        if (!$model) {
+            return ApiResponseHelper::errorResponse('update failed', 422);
+        }
+{{ relations_load }}
+{{ update_response }}
+    }
+
+    public function destroy({{ model_class }} ${{ model_variable }})
+    {
+        $deleted = ($this->deleteAction)(${{ model_variable }}->id);
+        return $deleted
+            ? ApiResponseHelper::successResponse(null, 'deleted', 204)
+            : ApiResponseHelper::errorResponse('delete failed', 422);
+    }
+}

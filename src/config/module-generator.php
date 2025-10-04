@@ -36,6 +36,7 @@ return [
         'controller'    => 'Http/Controllers/Api/V1',
         'resource'      => 'Http/Resources',   // ← قابل‌پیکربندی
         'form_request'  => 'Http/Requests',
+        'actions'       => 'Actions',
     ],
 
     /*
@@ -62,5 +63,13 @@ return [
         'with_resource'      => true,
         'with_dto'           => true,
         'with_provider'      => true,
+        'with_actions'       => false,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default logging channel for generated actions
+    |--------------------------------------------------------------------------
+    */
+    'logging_channel' => env('MODULE_GENERATOR_LOG_CHANNEL'),
 ];

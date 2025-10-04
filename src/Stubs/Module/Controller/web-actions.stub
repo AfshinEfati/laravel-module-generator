@@ -1,0 +1,83 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ uses }}
+
+class {{ class }} extends Controller
+{
+    public function __construct(
+        public List{{ name }}Action $listAction,
+        public Show{{ name }}Action $showAction,
+        public Create{{ name }}Action $createAction,
+        public Update{{ name }}Action $updateAction,
+        public Delete{{ name }}Action $deleteAction,
+    ) {
+    }
+
+    public function index(): View
+    {
+        $items = ($this->listAction)();
+        return view('{{ view_base }}.index', compact('items'));
+    }
+
+    public function create(): View
+    {
+        return view('{{ view_base }}.create');
+    }
+
+    public function store({{ store_request_type }} $request): RedirectResponse
+    {
+        // @todo update validation rules and authorisation as needed.
+{{ store_payload }}
+        ($this->createAction)({{ store_argument }});
+
+        return redirect()->route('{{ route_name }}.index')
+            ->with('status', '{{ name }} created.');
+    }
+
+    public function show({{ model_class }} ${{ model_variable }}): View
+    {
+        $model = ($this->showAction)(${{ model_variable }});
+        if (!$model) {
+            abort(404);
+        }
+{{ relations_load }}
+        ${{ model_variable }} = $model;
+
+        return view('{{ view_base }}.show', compact('{{ model_variable }}'));
+    }
+
+    public function edit({{ model_class }} ${{ model_variable }}): View
+    {
+        $model = ($this->showAction)(${{ model_variable }});
+        if (!$model) {
+            abort(404);
+        }
+{{ relations_load }}
+        ${{ model_variable }} = $model;
+
+        return view('{{ view_base }}.edit', compact('{{ model_variable }}'));
+    }
+
+    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }}): RedirectResponse
+    {
+{{ update_payload }}
+        $model = ($this->updateAction)(${{ model_variable }}->id, {{ update_argument }});
+
+        if (!$model) {
+            return redirect()->back()->withErrors('update failed.');
+        }
+
+        return redirect()->route('{{ route_name }}.show', $model)
+            ->with('status', '{{ name }} updated.');
+    }
+
+    public function destroy({{ model_class }} ${{ model_variable }}): RedirectResponse
+    {
+        ($this->deleteAction)(${{ model_variable }}->id);
+
+        return redirect()->route('{{ route_name }}.index')
+            ->with('status', '{{ name }} deleted.');
+    }
+}
