@@ -9,8 +9,8 @@ hide:
 <div class="hero">
   <div class="hero__content">
     <span class="hero__eyebrow">Laravel Module Generator</span>
-    <h1 class="hero__title">Ship consistent Laravel modules without the busywork</h1>
-    <p class="hero__lead">Generate controllers, DTOs, services, repositories, requests, and tests from a single artisan command. Every module follows the same structure, so your team can focus on the domain.</p>
+    <h1 class="hero__title">Scaffold Laravel modules in minutes</h1>
+    <p class="hero__lead">Generate controllers, DTOs, services, repositories, requests, and tests from a single Artisan command. Tailor every layer with your stubs while the structure stays predictable.</p>
     <div class="hero__actions">
       <a class="md-button md-button--primary" href="installation/">Installation guide</a>
       <a class="md-button md-button--secondary" href="quickstart/">Run your first module</a>
@@ -58,4 +58,3 @@ hide:
 - Follow the [installation checklist](installation.md) to publish configuration and stubs.
 - Use the [quickstart recipes](quickstart.md) for inline schemas or existing migrations.
 - Dive into [usage patterns](usage.md), [advanced guides](advanced.md), and the [CLI reference](reference.md) when you need more control.
-

@@ -11,8 +11,8 @@ hide:
 <div class="hero">
   <div class="hero__content">
     <span class="hero__eyebrow">Laravel Module Generator</span>
-    <h1 class="hero__title">بدون کار تکراری ماژول‌های منسجم بسازید</h1>
-    <p class="hero__lead">با یک دستور آرتیزان، کنترلر، DTO، سرویس، ریپازیتوری، ریسورس و تست‌های لازم را تولید کنید. ساختار هر ماژول یکسان می‌ماند و تیم روی منطق کسب‌وکار تمرکز می‌کند.</p>
+    <h1 class="hero__title">ماژول‌های لاراول را در چند دقیقه بسازید</h1>
+    <p class="hero__lead">با یک دستور آرتیزان کنترلر، DTO، سرویس، ریپازیتوری، ریسورس و تست ایجاد کنید. استاب‌ها را شخصی‌سازی کنید و مطمئن باشید خروجی هر ماژول قابل پیش‌بینی و هماهنگ است.</p>
     <div class="hero__actions">
       <a class="md-button md-button--primary" href="installation/">راهنمای نصب</a>
       <a class="md-button md-button--secondary" href="quickstart/">اولین ماژول را بسازید</a>
