@@ -6,8 +6,7 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "generate:og": "node scripts/generate-og-image.js"
+    "preview": "nuxt preview"
   },
   "dependencies": {
     "@nuxt/content": "^2.10.0",
@@ -20,7 +19,6 @@
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.38",
     "prettier": "^3.4.2",
-    "puppeteer": "^21.6.1",
     "tailwindcss": "^3.4.3"
   }
 }
