@@ -99,13 +99,13 @@ useHead({
     <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-3">
-          <NuxtLink to="/en/index" class="text-lg font-semibold text-primary-600">Laravel Module Generator</NuxtLink>
+          <NuxtLink :to="'/laravel-module-generator/en/index'" class="text-lg font-semibold text-primary-600">Laravel Module Generator</NuxtLink>
           <span class="hidden text-sm text-slate-500 sm:inline">Docs</span>
         </div>
         <nav class="flex items-center gap-4 text-sm font-medium text-slate-600">
-          <NuxtLink to="/en/index" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'en' }">English</NuxtLink>
+          <NuxtLink :to="'/laravel-module-generator/en/index'" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'en' }">English</NuxtLink>
           <span class="text-slate-300">·</span>
-          <NuxtLink to="/fa/index" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی</NuxtLink>
+          <NuxtLink :to="'/laravel-module-generator/fa/index'" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی</NuxtLink>
           <a href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-primary-500 hover:text-primary-600">
             <span>GitHub</span>
           </a>
@@ -122,7 +122,7 @@ useHead({
               <ul class="space-y-2" :class="{ 'text-right': isRtl }">
                 <li v-for="link in section.links" :key="link.path">
                   <NuxtLink
-                    :to="link.path"
+                    :to="'/laravel-module-generator' + link.path"
                     class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600"
                     :class="{
                       'bg-primary-100 text-primary-700 font-semibold': isActiveLink(link.path)
