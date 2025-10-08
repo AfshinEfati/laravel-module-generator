@@ -4,7 +4,7 @@ hide:
   - navigation
 ---
 
-[🇮🇷 فارسی](../fa/index.md){ .language-switcher }
+[🇮🇷 فارسی](../fa/){ .language-switcher }
 
 <div class="hero">
   <div class="hero__content">

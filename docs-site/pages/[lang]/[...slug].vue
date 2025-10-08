@@ -14,7 +14,11 @@ if (slugSegments.length === 0) {
   throw createError({ statusCode: 404, statusMessage: 'Document not found' })
 }
 
-const contentPath = `/${langParam}/${slugSegments.join('/')}`
+const normalizedSegments = slugSegments.length === 1 && slugSegments[0] === 'index'
+  ? []
+  : slugSegments
+
+const contentPath = `/${langParam}${normalizedSegments.length ? '/' + normalizedSegments.join('/') : ''}`
 
 const { data: doc } = await useAsyncData(`doc-${contentPath}`, () => queryContent(contentPath).findOne())
 

@@ -3,7 +3,7 @@ import { queryContent, createError } from '#imports'
 
 const route = useRoute()
 const langParam = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
-const contentPath = `/${langParam}/index`
+const contentPath = `/${langParam}`
 
 const { data: doc } = await useAsyncData(`doc-${contentPath}`, () => queryContent(contentPath).findOne())
 

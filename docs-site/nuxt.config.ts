@@ -13,8 +13,7 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/en/index': { redirect: '/en/index' },
-    '/fa/index': { redirect: '/fa/index' }
+    '/': { redirect: '/en' }
   },
   app: {
     head: {
@@ -35,7 +34,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/']
+      routes: ['/', '/en', '/fa']
     }
   },
   devtools: { enabled: false }

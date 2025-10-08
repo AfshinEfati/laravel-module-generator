@@ -114,8 +114,7 @@ useHead({
                     :class="{
                       'bg-primary-100 text-primary-700 font-semibold':
                         $route.path === link.path ||
-                        $route.path === `${link.path}/` ||
-                        $route.path === `${link.path}/index`
+                        $route.path === `${link.path}/`
                     }"
                   >
                     {{ link.title }}

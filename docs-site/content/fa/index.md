@@ -6,7 +6,7 @@ hide:
 
 <div dir="rtl" markdown="1">
 
-[🇬🇧 English](../en/index.md){ .language-switcher }
+[🇬🇧 English](../en/){ .language-switcher }
 
 <div class="hero">
   <div class="hero__content">
