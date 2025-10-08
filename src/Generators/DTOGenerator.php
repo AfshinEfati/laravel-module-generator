@@ -3,6 +3,7 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\ModelInspector;
 use Efati\ModuleGenerator\Support\Stub;
 
 use Illuminate\Support\Facades\File;
@@ -42,27 +43,7 @@ class DTOGenerator
     private static function getFillable(string $modelFqcn): array
 
     {
-        if (!class_exists($modelFqcn)) {
-            return [];
-        }
-
-        $model = new $modelFqcn();
-
-        if (method_exists($model, 'getFillable')) {
-            $fillable = (array) $model->getFillable();
-            if (!empty($fillable)) {
-                return array_values($fillable);
-            }
-        }
-
-        if (property_exists($model, 'fillable') && is_array($model->fillable)) {
-            $fillable = array_filter($model->fillable, fn ($value) => is_string($value) && $value !== '');
-            if (!empty($fillable)) {
-                return array_values($fillable);
-            }
-        }
-
-        return [];
+        return ModelInspector::extractFillable($modelFqcn);
     }
 
     private static function build(string $className, string $baseNamespace, array $fillable): string

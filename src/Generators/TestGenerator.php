@@ -3,6 +3,7 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\ModelInspector;
 use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -169,13 +170,7 @@ class TestGenerator
 
     private static function getFillable(string $modelFqcn): array
     {
-        if (!class_exists($modelFqcn)) {
-            return [];
-        }
-
-        $model = new $modelFqcn();
-
-        return method_exists($model, 'getFillable') ? $model->getFillable() : [];
+        return ModelInspector::extractFillable($modelFqcn);
     }
 
     private static function exportArray(array $arr): string
