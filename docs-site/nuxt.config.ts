@@ -1,5 +1,10 @@
 import { defineNuxtConfig } from 'nuxt/config'
 
+const baseURL =
+  process.env.NUXT_PUBLIC_BASE_URL ??
+  (process.env.NODE_ENV === 'production' ? '/laravel-module-generator/' : '/')
+const faviconHref = baseURL === '/' ? '/favicon.svg' : `${baseURL}favicon.svg`
+
 export default defineNuxtConfig({
   modules: ['@nuxt/content', '@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
@@ -16,10 +21,11 @@ export default defineNuxtConfig({
     '/': { redirect: '/en' }
   },
   app: {
+    baseURL,
     head: {
       titleTemplate: '%s · Laravel Module Generator',
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+        { rel: 'icon', type: 'image/svg+xml', href: faviconHref }
       ]
     }
   },
