@@ -27,7 +27,7 @@ export default <Partial<Config>>{
         }
       },
       fontFamily: {
-        sans: ['"IRANSans"', 'ui-sans-serif', 'system-ui'],
+        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"Fira Code"', 'ui-monospace', 'SFMono-Regular']
       },
       typography: ({ theme }) => ({
@@ -56,10 +56,12 @@ export default <Partial<Config>>{
             },
             pre: {
               fontFamily: theme('fontFamily.mono').join(', '),
-              backgroundColor: theme('colors.gray.950'),
-              color: theme('colors.gray.200'),
+              backgroundColor: theme('colors.gray.900'),
+              color: theme('colors.gray.100'),
               padding: theme('spacing.4'),
-              borderRadius: theme('borderRadius.lg')
+              borderRadius: theme('borderRadius.lg'),
+              borderWidth: '1px',
+              borderColor: theme('colors.gray.800')
             }
           }
         }
