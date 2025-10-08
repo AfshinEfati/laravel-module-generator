@@ -3,6 +3,7 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\ModelInspector;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -60,11 +61,7 @@ class ResourceGenerator
 
     private static function getFillable(string $modelFqcn): array
     {
-        if (!class_exists($modelFqcn)) {
-            return [];
-        }
-        $m = new $modelFqcn();
-        return method_exists($m, 'getFillable') ? $m->getFillable() : [];
+        return ModelInspector::extractFillable($modelFqcn);
     }
 
     private static function getModelCasts(string $modelFqcn): array
