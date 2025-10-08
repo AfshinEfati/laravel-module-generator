@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { queryContent } from '#content/server'
-import { createError } from '#imports'
+import { queryContent, createError } from '#imports'
 
 const route = useRoute()
 const langParam = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
