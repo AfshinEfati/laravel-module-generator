@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { queryContent } from '#content/server'
+
 import { createError } from 'h3'
 
 const route = useRoute()
