@@ -4,21 +4,16 @@ hide:
   - navigation
 ---
 
-[🇮🇷 فارسی](../fa/){ .language-switcher }
+[🇮🇷 فارسی](../fa/index.md){ .language-switcher }
 
-<div class="hero">
-  <div class="hero__content">
-    <span class="hero__eyebrow">Laravel Module Generator</span>
-    <h1 class="hero__title">Scaffold Laravel modules in minutes</h1>
-    <p class="hero__lead">Generate controllers, DTOs, services, repositories, requests, and tests from a single Artisan command. Tailor every layer with your stubs while the structure stays predictable.</p>
-    <div class="hero__actions">
-      <a class="md-button md-button--primary" href="installation/">Installation guide</a>
-      <a class="md-button md-button--secondary" href="quickstart/">Run your first module</a>
-      <a class="md-button" href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener">View on GitHub</a>
+## Scaffold Laravel modules in minutes
 
-    </div>
-  </div>
-</div>
+Generate controllers, DTOs, services, repositories, requests, and tests from a single Artisan command. Tailor every layer with your stubs while the structure stays predictable.
+
+### Jump right in
+- [Installation guide](installation.md)
+- [Run your first module](quickstart.md)
+- [View on GitHub](https://github.com/AfshinEfati/laravel-module-generator){target=_blank}
 
 ## Build modules that feel hand-crafted
 
