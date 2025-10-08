@@ -10,8 +10,9 @@ Fine-tune the generator once so every teammate creates modules with the same str
 The published `config/module-generator.php` file exposes the defaults that control namespace, output paths, and enabled generators. Review these sections after installation:
 
 - **`namespace`** – Sets the root namespace for generated classes. Align this with your domain layer (e.g. `App\Modules`).
-- **`paths`** – Controls where controllers, repositories, resources, and tests are stored. Map these to your preferred directory structure.
-- **`defaults`** – Toggles for enabling DTOs, resources, API controllers, tests, and policies globally. Command-line flags can override the defaults per module.
+- **`paths`** – Controls where controllers, repositories, resources, tests, and documentation files are stored. Adjust values such as `controller`, `resource`, and the new `docs` path if you keep Swagger docs outside `app/Docs`.
+- **`defaults`** – Toggles for enabling DTOs, resources, API controllers, tests, and policies globally. You can also seed `controller_middleware` here to attach middleware (for example `auth:sanctum`) to every generated API controller. Command-line flags still override the defaults per module.
+- **`swagger`** – Configure security schemes exposed in generated Swagger docs. Set the list of middleware names that imply authentication and describe the corresponding security scheme (type, scheme, bearer format, etc.).
 
 ## Stubs
 

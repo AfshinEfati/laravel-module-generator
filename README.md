@@ -142,7 +142,7 @@ $fromJalali = Goli::parseGoli('1403-01-01 08:30:00', 'Asia/Tehran');
 
 ## Customising the output
 
-- **Configuration** – adjust namespaces, paths (including `paths.docs` for Swagger output), and default toggles in `config/module-generator.php` once, then regenerate modules with your preferred directory structure.【F:src/config/module-generator.php†L5-L52】
+- **Configuration** – adjust namespaces, paths (including `paths.docs` for Swagger output), and default toggles in `config/module-generator.php`. Seed `controller_middleware` if every generated controller should register specific middleware (e.g. `auth:sanctum`), and describe security schemes under the `swagger.security` section so generated docs mirror your authentication model.【F:src/config/module-generator.php†L5-L90】
 - **Stubs** – edit the published stubs in `resources/stubs/module-generator` to enforce house styles, add traits, tweak imports, or change response envelopes.【F:src/ModuleGeneratorServiceProvider.php†L41-L49】
 - **Providers** – if you disable provider generation, remember to bind repositories/services manually in your application container.【F:src/Commands/MakeModuleCommand.php†L119-L131】
 - **Action layer** – enable `--actions` to scaffold invokable use-case classes; controllers now call the actions with the bound model’s `getKey()` and `BaseAction` logs the full exception object for better observability.【F:src/Stubs/Module/Controller/api-actions.stub†L1-L49】【F:src/Stubs/Module/Action/base.stub†L1-L36】

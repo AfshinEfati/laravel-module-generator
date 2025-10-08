@@ -504,6 +504,10 @@ class ControllerGenerator
         $normalizedControllerMiddleware = array_map('strtolower', array_map('trim', $controllerMiddleware));
         $requiresAuth = !empty(array_intersect($authMiddleware, $normalizedControllerMiddleware));
 
+        $securitySchemeExists = $defaultScheme !== '' && array_key_exists($defaultScheme, $configuredSchemes);
+        $securityEnabled = $requiresAuth && $securitySchemeExists;
+        $operationSecurity = $securityEnabled ? [$defaultScheme] : [];
+
         $operations = [
             [
                 'name'        => 'index',
@@ -515,7 +519,7 @@ class ControllerGenerator
                 'responses'   => [
                     ['code' => 200, 'description' => 'Successful response'],
                 ],
-                'security'    => $requiresAuth ? [$defaultScheme] : [],
+                'security'    => $operationSecurity,
             ],
             [
                 'name'        => 'store',
@@ -528,7 +532,7 @@ class ControllerGenerator
                     ['code' => 201, 'description' => 'Created'],
                     ['code' => 422, 'description' => 'Validation error'],
                 ],
-                'security'    => $requiresAuth ? [$defaultScheme] : [],
+                'security'    => $operationSecurity,
             ],
             [
                 'name'        => 'show',
@@ -541,7 +545,7 @@ class ControllerGenerator
                     ['code' => 200, 'description' => 'Successful response'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
-                'security'    => $requiresAuth ? [$defaultScheme] : [],
+                'security'    => $operationSecurity,
             ],
             [
                 'name'        => 'update',
@@ -555,7 +559,7 @@ class ControllerGenerator
                     ['code' => 422, 'description' => 'Validation error'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
-                'security'    => $requiresAuth ? [$defaultScheme] : [],
+                'security'    => $operationSecurity,
             ],
             [
                 'name'        => 'destroy',
@@ -568,7 +572,7 @@ class ControllerGenerator
                     ['code' => 204, 'description' => 'Deleted'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
-                'security'    => $requiresAuth ? [$defaultScheme] : [],
+                'security'    => $operationSecurity,
             ],
         ];
 
@@ -579,9 +583,9 @@ class ControllerGenerator
             'base_path'  => $basePath,
             'namespace'  => $baseNamespace,
             'security'   => [
-                'enabled' => $requiresAuth,
+                'enabled' => $securityEnabled,
                 'default' => $defaultScheme,
-                'schemes' => $configuredSchemes,
+                'schemes' => $securityEnabled ? $configuredSchemes : [],
             ],
         ];
     }

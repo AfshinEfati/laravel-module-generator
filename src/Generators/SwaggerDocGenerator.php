@@ -3,6 +3,7 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\Stub;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 
 class SwaggerDocGenerator
@@ -21,7 +22,7 @@ class SwaggerDocGenerator
             return;
         }
 
-        $paths = config('module-generator.paths', []);
+        $paths   = config('module-generator.paths', []);
         $docsRel = $paths['docs'] ?? 'Docs';
         $docsPath = app_path($docsRel);
         File::ensureDirectoryExists($docsPath);
@@ -33,16 +34,16 @@ class SwaggerDocGenerator
             return;
         }
 
-        $namespace = $baseNamespace . '\\Docs';
+        $namespace       = $baseNamespace . '\\Docs';
         $operationsBlock = self::buildOperations((string) $tag, $operations, $paramName);
         $securityBlock   = self::buildSecuritySchemes($security['schemes'] ?? [], (bool) ($security['enabled'] ?? false));
 
         $content = Stub::render('Doc/swagger', [
-            'namespace' => $namespace,
-            'class'     => $className,
-            'tag'       => $tag,
+            'namespace'        => $namespace,
+            'class'            => $className,
+            'tag'              => $tag,
             'security_schemes' => $securityBlock,
-            'operations'=> $operationsBlock,
+            'operations'       => $operationsBlock,
         ]);
 
         File::put($filePath, $content);
@@ -78,9 +79,9 @@ class SwaggerDocGenerator
         $summary    = (string) ($operation['summary'] ?? 'Endpoint');
         $name       = (string) ($operation['name'] ?? strtolower($method));
         $responses  = $operation['responses'] ?? [];
-        $security   = $operation['security'] ?? [];
         $hasBody    = (bool) ($operation['requestBody'] ?? false);
         $hasParam   = (bool) ($operation['pathParam'] ?? false);
+        $security   = $operation['security'] ?? [];
         $paramName  = $defaultParam ?? 'id';
 
         $entries = [];
@@ -171,36 +172,45 @@ class SwaggerDocGenerator
                 continue;
             }
 
+            $attributes = [
+                'securityScheme="' . addslashes($name) . '"',
+            ];
+
+            $type = Arr::get($definition, 'type');
+            if ($type) {
+                $attributes[] = 'type="' . addslashes((string) $type) . '"';
+            }
+
+            $scheme = Arr::get($definition, 'scheme');
+            if ($scheme) {
+                $attributes[] = 'scheme="' . addslashes((string) $scheme) . '"';
+            }
+
+            $bearer = Arr::get($definition, 'bearer_format');
+            if ($bearer) {
+                $attributes[] = 'bearerFormat="' . addslashes((string) $bearer) . '"';
+            }
+
+            $description = Arr::get($definition, 'description');
+            if ($description) {
+                $attributes[] = 'description="' . addslashes((string) $description) . '"';
+            }
+
             $lines = [];
             $lines[] = '    /**';
             $lines[] = '     * @OA\SecurityScheme(';
-            $lines[] = '     *     securityScheme="' . addslashes($name) . '",';
 
-            $type = $definition['type'] ?? null;
-            if ($type) {
-                $lines[] = '     *     type="' . addslashes((string) $type) . '",';
-            }
-
-            $scheme = $definition['scheme'] ?? null;
-            if ($scheme) {
-                $lines[] = '     *     scheme="' . addslashes((string) $scheme) . '",';
-            }
-
-            $bearer = $definition['bearer_format'] ?? null;
-            if ($bearer) {
-                $lines[] = '     *     bearerFormat="' . addslashes((string) $bearer) . '",';
-            }
-
-            $description = $definition['description'] ?? null;
-            if ($description) {
-                $lines[] = '     *     description="' . addslashes((string) $description) . '",';
+            $attributeCount = count($attributes);
+            foreach ($attributes as $index => $attribute) {
+                $suffix = $index === $attributeCount - 1 ? '' : ',';
+                $lines[] = '     *     ' . $attribute . $suffix;
             }
 
             $lines[] = '     * )';
             $lines[] = '     */';
 
             $methodName = preg_replace('/[^A-Za-z0-9_]/', '', ucfirst($name)) . 'Security';
-            if ($methodName === '') {
+            if ($methodName === 'Security') {
                 $methodName = 'SecurityScheme';
             }
 
