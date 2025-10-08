@@ -133,7 +133,7 @@ class MakeModuleCommand extends Command
         if (empty($parsedFields)) {
             if (is_string($migrationHint) && $migrationHint !== '') {
                 $parsed = MigrationFieldParser::parse($name, $migrationHint);
-            } elseif (!class_exists($modelFqcn)) {
+            } else {
                 $parsed = MigrationFieldParser::parse($name, null);
             }
 
@@ -147,6 +147,8 @@ class MakeModuleCommand extends Command
                 $this->warn('• Unable to extract fields from the provided migration hint.');
             } elseif (!$modelExists && empty($parsedFields)) {
                 $this->warn('• Model class not found and fields could not be inferred from migration. Some generators may use empty metadata.');
+            } elseif ($modelExists && empty($parsedFields)) {
+                $this->warn('• Unable to infer fields from database or migrations. Some generators may use empty metadata.');
             }
         }
 

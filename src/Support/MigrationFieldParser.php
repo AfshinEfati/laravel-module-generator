@@ -3,6 +3,9 @@
 namespace Efati\ModuleGenerator\Support;
 
 use Illuminate\Support\Str;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use FilesystemIterator;
 
 class MigrationFieldParser
 {
@@ -39,13 +42,13 @@ class MigrationFieldParser
         $tableName = null;
 
         foreach ($blocks as $block) {
-            [$tbl, $body] = $block;
+            [$tbl, $body, $variable] = $block;
 
             if (!$tableName) {
                 $tableName = $tbl;
             }
 
-            $statements = self::extractTableStatements($body);
+            $statements = self::extractTableStatements($body, $variable);
 
             foreach ($statements as $statement) {
                 [$method, $argsString, $chainString] = $statement;
@@ -263,20 +266,42 @@ class MigrationFieldParser
 
     private static function extractSchemaBlocks(string $code): array
     {
-        $pattern = '/Schema::(?:create|table)\s*\(\s*[\'\"]([^\'\"]+)[\'\"]\s*,\s*function\s*\([^)]*\)\s*\{([\s\S]*?)\}\s*\);/m';
+        $pattern = '/Schema::(?:(?:connection\s*\([^)]*\))\s*->\s*)?(?:create|table)\s*\(\s*[\'\"]([^\'\"]+)[\'\"]\s*,\s*function\s*\(([^)]*)\)\s*(?:use\s*\([^)]*\)\s*)?\{([\s\S]*?)\}\s*\);/m';
         preg_match_all($pattern, $code, $matches, PREG_SET_ORDER);
 
         $blocks = [];
         foreach ($matches as $match) {
-            $blocks[] = [$match[1], $match[2]];
+            $variable = self::detectBlueprintVariable($match[2]);
+            $blocks[] = [$match[1], $match[3], $variable];
         }
 
         return $blocks;
     }
 
-    private static function extractTableStatements(string $body): array
+    private static function detectBlueprintVariable(string $arguments): string
     {
-        $pattern = '/\$table->([a-zA-Z0-9_]+)\s*\((.*?)\)(.*?);/s';
+        $arguments = trim($arguments);
+
+        if ($arguments === '') {
+            return '$table';
+        }
+
+        // attempt to find last variable in parameter list
+        $parts = explode(',', $arguments);
+        $parts = array_reverse($parts);
+        foreach ($parts as $part) {
+            if (preg_match('/(\$[a-zA-Z_][a-zA-Z0-9_]*)/', $part, $match)) {
+                return $match[1];
+            }
+        }
+
+        return '$table';
+    }
+
+    private static function extractTableStatements(string $body, string $variable): array
+    {
+        $varPattern = preg_quote($variable, '/');
+        $pattern = '/' . $varPattern . '->([a-zA-Z0-9_]+)\s*\((.*?)\)(.*?);/s';
         preg_match_all($pattern, $body, $matches, PREG_SET_ORDER);
 
         $out = [];
@@ -705,51 +730,160 @@ class MigrationFieldParser
 
     private static function resolveMigrationPath(string $studly, ?string $hint): ?string
     {
-        $basePath = self::migrationsPath();
-        if (!is_dir($basePath)) {
-            return null;
-        }
+        $directories = self::candidateMigrationDirectories();
 
         if ($hint) {
-            $candidate = self::resolveHintPath($hint, $basePath);
+            $candidate = self::resolveHintPath($hint, $directories, $studly);
             if ($candidate) {
                 return $candidate;
             }
         }
 
-        $patterns = [
-            $basePath . DIRECTORY_SEPARATOR . '*'. $studly . '*.php',
-            $basePath . DIRECTORY_SEPARATOR . '*' . Str::snake(Str::pluralStudly($studly)) . '*.php',
-            $basePath . DIRECTORY_SEPARATOR . '*' . Str::snake(Str::singular($studly)) . '*.php',
-        ];
-
-        foreach ($patterns as $pattern) {
-            $files = glob($pattern);
-            if (!empty($files)) {
-                rsort($files);
-                return $files[0];
-            }
+        $match = self::scanForMigration($studly, $directories);
+        if ($match) {
+            return $match;
         }
 
         return null;
     }
 
-    private static function resolveHintPath(string $hint, string $basePath): ?string
+    /**
+     * @param  array<int, string>  $directories
+     */
+    private static function resolveHintPath(string $hint, array $directories, string $studly): ?string
     {
         if (is_file($hint)) {
             return realpath($hint) ?: $hint;
         }
 
-        $potential = $basePath . DIRECTORY_SEPARATOR . $hint;
-        if (is_file($potential)) {
-            return realpath($potential) ?: $potential;
+        if (is_dir($hint)) {
+            return self::scanForMigration($studly, [$hint]) ?: null;
         }
 
-        $pattern = $basePath . DIRECTORY_SEPARATOR . '*' . $hint . '*.php';
-        $files   = glob($pattern);
-        if (!empty($files)) {
-            rsort($files);
-            return $files[0];
+        foreach ($directories as $dir) {
+            $potential = $dir . DIRECTORY_SEPARATOR . $hint;
+            if (is_file($potential)) {
+                return realpath($potential) ?: $potential;
+            }
+            if (is_dir($potential)) {
+                $match = self::scanForMigration($studly, [$potential]);
+                if ($match) {
+                    return $match;
+                }
+            }
+        }
+
+        $match = self::scanForMigration($studly, $directories, $hint);
+        if ($match) {
+            return $match;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function candidateMigrationDirectories(): array
+    {
+        $dirs = [];
+
+        $default = self::migrationsPath();
+        if (is_dir($default)) {
+            $resolved = realpath($default);
+            $dirs[]   = $resolved ?: $default;
+        }
+
+        $configured = [];
+        if (function_exists('config')) {
+            $configured = config('module-generator.migration_paths', []);
+        }
+
+        if (is_string($configured)) {
+            $configured = [$configured];
+        }
+
+        if (is_array($configured)) {
+            foreach ($configured as $path) {
+                if (!is_string($path) || $path === '') {
+                    continue;
+                }
+
+                $normalized = self::normalizePath($path);
+                if ($normalized && is_dir($normalized)) {
+                    $resolved = realpath($normalized);
+                    $dirs[]   = $resolved ?: $normalized;
+                }
+            }
+        }
+
+        return array_values(array_unique($dirs));
+    }
+
+    private static function normalizePath(string $path): ?string
+    {
+        if (self::isAbsolutePath($path)) {
+            return $path;
+        }
+
+        if (function_exists('base_path')) {
+            return base_path($path);
+        }
+
+        return getcwd() . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
+    }
+
+    private static function isAbsolutePath(string $path): bool
+    {
+        if ($path === '') {
+            return false;
+        }
+
+        return str_starts_with($path, '/') ||
+            (strlen($path) > 1 && ctype_alpha($path[0]) && $path[1] === ':') ||
+            str_starts_with($path, '\\\\');
+    }
+
+    /**
+     * @param  array<int, string>  $directories
+     */
+    private static function scanForMigration(string $studly, array $directories, ?string $extraNeedle = null): ?string
+    {
+        $needles = array_filter([
+            $extraNeedle,
+            $studly,
+            Str::snake(Str::pluralStudly($studly)),
+            Str::snake(Str::singular($studly)),
+        ], static fn ($value) => is_string($value) && $value !== '');
+
+        if (empty($needles)) {
+            return null;
+        }
+
+        $lowerNeedles = array_map(static fn ($value) => strtolower($value), $needles);
+
+        foreach ($directories as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                if (!$file->isFile()) {
+                    continue;
+                }
+
+                $filename = strtolower($file->getFilename());
+
+                foreach ($lowerNeedles as $needle) {
+                    if ($needle !== '' && str_contains($filename, $needle)) {
+                        return $file->getPathname();
+                    }
+                }
+            }
         }
 
         return null;

@@ -141,13 +141,21 @@ class ResourceGenerator
         $uses = [
             'Illuminate\\Http\\Resources\\Json\\JsonResource',
             $helperFqcn,
+            $modelFqcn,
         ];
 
         $usesBlock = self::buildUses($uses);
-        $mixinDoc = "/**\n * @mixin \\\\{$modelFqcn}\n */";
+        $modelBasename = \class_basename($modelFqcn);
+        $mixinDoc = "/**\n * @mixin {$modelBasename}\n */";
 
         $body = [];
-        foreach ($fillable as $field) {
+
+        $resourceFields = $fillable;
+        if (!in_array('id', $resourceFields, true)) {
+            array_unshift($resourceFields, 'id');
+        }
+
+        foreach ($resourceFields as $field) {
             $castType = self::normalizeCast($casts[$field] ?? null);
             if ($castType === 'datetime' || $castType === 'date' || Str::endsWith($field, ['_at'])) {
                 $body[] = "            '{$field}' => ApiResponseHelper::formatDates(\$this->{$field}),";

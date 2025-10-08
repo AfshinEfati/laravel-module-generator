@@ -25,6 +25,9 @@ class FormRequestGenerator
         $reqPath = app_path($reqRel);
         File::ensureDirectoryExists($reqPath);
 
+        $requestFolder = $reqPath . DIRECTORY_SEPARATOR . $name;
+        File::ensureDirectoryExists($requestFolder);
+
         $modelFqcn  = $baseNamespace . '\\Models\\' . $name;
         $table      = self::guessTable($modelFqcn, $migrationTable);
         $routeParam = lcfirst($name);
@@ -32,11 +35,13 @@ class FormRequestGenerator
         [$storeRules, $updateRules] = self::buildRules($modelFqcn, $table, $fields);
 
 
-        $storeContent  = self::buildRequestClass('Store' . $name . 'Request', $baseNamespace, $storeRules, false, null, null);
-        $updateContent = self::buildRequestClass('Update' . $name . 'Request', $baseNamespace, $updateRules, true, $routeParam, $table);
+        $requestNamespace = $baseNamespace . '\\Http\\Requests\\' . $name;
 
-        $storeFile  = $reqPath . '/Store' . $name . 'Request.php';
-        $updateFile = $reqPath . '/Update' . $name . 'Request.php';
+        $storeContent  = self::buildRequestClass('Store' . $name . 'Request', $requestNamespace, $storeRules, false, null, null);
+        $updateContent = self::buildRequestClass('Update' . $name . 'Request', $requestNamespace, $updateRules, true, $routeParam, $table);
+
+        $storeFile  = $requestFolder . DIRECTORY_SEPARATOR . 'Store' . $name . 'Request.php';
+        $updateFile = $requestFolder . DIRECTORY_SEPARATOR . 'Update' . $name . 'Request.php';
 
         return [
             $storeFile  => self::writeFile($storeFile, $storeContent, $force),
@@ -188,7 +193,7 @@ class FormRequestGenerator
 
     private static function buildRequestClass(
         string $className,
-        string $baseNamespace,
+        string $requestNamespace,
         array $rules,
         bool $isUpdate,
         ?string $routeParam,
@@ -270,7 +275,7 @@ PHP;
                 : "        return [\n{$rulesStr}\n        ];";
         }
 
-        $ns = $baseNamespace . '\\Http\\Requests';
+        $ns = $requestNamespace;
 
         return Stub::render('FormRequest/request', [
             'namespace'  => $ns,
