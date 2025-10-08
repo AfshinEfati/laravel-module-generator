@@ -2,6 +2,18 @@
 
 All notable changes to this package are documented here. The current release line is **v7.x**.
 
+## [7.1.6] - 2025-09-14
+### ✨ Added
+- Optional `--swagger` flag generates OpenAPI annotations (tag, CRUD endpoints, request/response skeletons) for API controllers, with safeguards that warn when `swagger-php`/`l5-swagger` is missing.【F:src/Commands/MakeModuleCommand.php†L37-L113】【F:src/Generators/ControllerGenerator.php†L20-L512】【F:src/Stubs/Module/Controller/api.stub†L1-L45】【F:src/Stubs/Module/Controller/api-actions.stub†L1-L54】
+
+### 🔧 Changed
+- Runtime model inspection now falls back to migration parsing for every module so DTOs, resources, requests, and tests always receive full field metadata; resources import the model, annotate with `@mixin ModelName`, and always expose the primary `id`.【F:src/Commands/MakeModuleCommand.php†L99-L170】【F:src/Generators/ResourceGenerator.php†L34-L207】【F:src/Support/ModelInspector.php†L23-L78】
+- Form requests are generated inside `Http/Requests/{Module}` namespaces/directories, keeping large projects organised without manual moves.【F:src/Generators/FormRequestGenerator.php†L19-L205】
+- Controller generators reference the nested request namespace so imports remain valid when requests are grouped per module.【F:src/Generators/ControllerGenerator.php†L29-L105】
+
+### 🛠 Fixed
+- Resource mixins previously rendered doubled namespace slashes and omitted the `id` field when models lacked `$fillable`; swagger annotations automatically disable themselves when the library is absent, preventing fatal errors during generation.【F:src/Generators/ResourceGenerator.php†L34-L207】【F:src/Commands/MakeModuleCommand.php†L102-L112】
+
 ## [7.1.1] - 2025-08-26
 ### 🔧 Changed
 - Generated controllers that rely on actions now reuse the bound model instance (`->getKey()`), preventing redundant queries before delegating to the action layer.

@@ -10,6 +10,7 @@ Get up and running with Laravel Module Generator by following the checklist belo
 - PHP 8.1 or newer
 - Laravel 10.x or 11.x (service providers are auto-discovered)
 - Database connection configured for running generated feature tests
+- (Optional for Swagger annotations) Install `darkaonline/l5-swagger` **or** `zircote/swagger-php` if you plan to use the `--swagger` flag.
 
 ## 1. Require the package
 

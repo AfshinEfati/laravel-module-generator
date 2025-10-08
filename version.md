@@ -1,4 +1,4 @@
-// version 7.1.1 summary
-// - Controllers using the action layer now reuse route-bound models (->getKey()) before delegating, avoiding duplicate queries【F:src/Stubs/Module/Controller/api-actions.stub†L17-L49】【F:src/Stubs/Module/Controller/web-actions.stub†L17-L63】
-// - BaseAction logs the full exception context for better observability【F:src/Stubs/Module/Action/base.stub†L16-L33】
-// - Docs cover --actions/--no-actions usage with fresh code samples
+// version 7.1.6 summary
+// - Added optional --swagger flag that scaffolds OpenAPI annotations and auto-imports OA namespace while warning if swagger-php is missing.【F:src/Commands/MakeModuleCommand.php†L37-L113】【F:src/Generators/ControllerGenerator.php†L20-L512】
+// - Runtime metadata fallback now guarantees DTO/resource/request generation even when models lack $fillable, and resources always expose the primary id with clean mixin annotations.【F:src/Commands/MakeModuleCommand.php†L99-L170】【F:src/Generators/ResourceGenerator.php†L34-L207】
+// - Form requests live inside Http/Requests/{Module} and controller imports follow suit for tidier project structure.【F:src/Generators/FormRequestGenerator.php†L19-L205】【F:src/Generators/ControllerGenerator.php†L20-L120】

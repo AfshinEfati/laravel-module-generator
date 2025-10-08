@@ -18,11 +18,14 @@ Generate complete, test-ready Laravel modules from a single Artisan command. The
 - **Resource-rich APIs out of the box** – controllers, resources, and the bundled `ApiResponseHelper` format dates, booleans, and relations consistently using the Jalali-aware `Goli` helper.【F:src/Generators/ControllerGenerator.php†L1-L126】【F:src/Generators/ResourceGenerator.php†L9-L158】【F:src/Stubs/Helpers/ApiResponseHelper.php†L1-L83】
 - **Opinionated feature tests** – optional CRUD tests exercise success and failure flows using the metadata gathered from migrations or schema definitions.【F:src/Commands/MakeModuleCommand.php†L132-L170】【F:src/Generators/TestGenerator.php†L11-L107】
 - **First-class Jalali tooling** – the service provider binds the `goli()` helper and Carbon macros so Persian calendars are available anywhere in your app without external packages.【F:src/ModuleGeneratorServiceProvider.php†L14-L53】【F:src/Support/Goli.php†L1-L200】
+- **Documentation-ready controllers** – flip on `--swagger` to scaffold OpenAPI annotations per endpoint; the generator imports `OpenApi\Annotations` for you and warns if the swagger package is missing.【F:src/Commands/MakeModuleCommand.php†L37-L113】【F:src/Generators/ControllerGenerator.php†L20-L512】
+- **Module-scoped requests** – generated form requests live under `Http/Requests/{Module}`, keeping large apps tidy while controllers automatically import the new namespace.【F:src/Generators/FormRequestGenerator.php†L19-L205】【F:src/Generators/ControllerGenerator.php†L29-L120】
 
 ## Requirements
 
 - PHP 8.1 or newer
 - Laravel framework 10.x or 11.x
+- (Optional for `--swagger`) Install `darkaonline/l5-swagger` **or** `zircote/swagger-php` so OpenAPI annotations can be generated without warnings.
 
 ## Installation
 
@@ -78,6 +81,8 @@ Both approaches feed consistent metadata to the DTO, Form Request, Resource, and
 | `--no-dto` | `-nd` | Skip DTO generation. |
 | `--no-test` | `-nt` | Skip feature tests. |
 | `--no-provider` | `-np` | Skip provider creation and automatic registration. |
+| `--swagger` | `-sg` | Generate OpenAPI (`@OA`) annotations for API controllers (requires swagger-php or l5-swagger). |
+| `--no-swagger` | – | Explicitly disable Swagger annotations even when enabled by defaults. |
 | `--from-migration=` | `-fm` | Provide a migration path or keyword to infer fields and relations. |
 | `--fields=` | – | Inline schema definition (comma-separated) for modules without migrations. |
 | `--force` | `-f` | Overwrite existing files instead of skipping them. |
@@ -135,6 +140,7 @@ $fromJalali = Goli::parseGoli('1403-01-01 08:30:00', 'Asia/Tehran');
 ## Release highlights
 
 ### v7.x
+- Optional Swagger scaffolding (`--swagger`) produces OA annotations for every API controller while gracefully degrading when `swagger-php` is absent. Form requests live in module-scoped namespaces so imports stay organised, and resources always expose `id` regardless of `$fillable` definitions.【F:src/Commands/MakeModuleCommand.php†L37-L170】【F:src/Generators/ControllerGenerator.php†L20-L512】【F:src/Generators/FormRequestGenerator.php†L19-L205】【F:src/Generators/ResourceGenerator.php†L34-L207】
 - Base repository/service classes and interfaces are resolved from your published copies so generator output honours any customisations you make to the shared layer.【F:src/Support/BaseClassLocator.php†L9-L180】【F:src/Generators/ServiceGenerator.php†L9-L72】【F:src/Generators/RepositoryGenerator.php†L9-L76】
 - Publishable assets (config, helpers, base classes, and stubs) are mirrored automatically during console execution, removing the mandatory `vendor:publish` step after installation.【F:src/ModuleGeneratorServiceProvider.php†L31-L68】
 - Migration parsing now extracts concrete fillable fields and `belongsTo` relations while ignoring index-only definitions, producing richer DTOs, resources, and tests out of the box.【F:src/Support/MigrationFieldParser.php†L9-L325】

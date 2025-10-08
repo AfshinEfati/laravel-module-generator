@@ -17,11 +17,17 @@ php artisan make:module {Name}
   {--tests}
   {--policy}
   {--force}
+  {--swagger}
+  {--no-swagger}
   {--fields=}
   {--from-migration=}
 ```
 
 Use `php artisan make:module --help` for the full flag list and descriptions.
+
+### Optional Swagger annotations
+
+Pass `--swagger` when generating API modules to scaffold OpenAPI (`@OA`) annotations for every CRUD endpoint. The generator automatically imports `OpenApi\Annotations` and skips annotation output when the swagger package is missing, emitting a warning instead. Install either `darkaonline/l5-swagger` or `zircote/swagger-php` before enabling the flag.
 
 ## Generating a REST API module
 
@@ -38,6 +44,7 @@ What you get:
 - Form requests that validate the schema supplied in `--fields`.
 - DTO and resource classes that share the same field metadata.
 - Feature tests that cover happy paths and validation failures.
+- Form requests are generated inside `App\Http\Requests\Invoice\` so large apps stay organised automatically.
 
 ```php
 // app/Actions/Invoice/ShowInvoiceAction.php

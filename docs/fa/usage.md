@@ -19,11 +19,17 @@ php artisan make:module {Name}
   {--tests}
   {--policy}
   {--force}
+  {--swagger}
+  {--no-swagger}
   {--fields=}
   {--from-migration=}
 ```
 
 برای مشاهدهٔ توضیحات کامل فلگ‌ها `php artisan make:module --help` را اجرا کنید.
+
+### فعال‌سازی مستندات Swagger
+
+با فلگ `--swagger` می‌توانید برای هر اکشن CRUD کنترلر API داکیومنت OpenAPI (`@OA`) تولید کنید. ژنراتور به‌صورت خودکار فضای نام `OpenApi\Annotations` را ایمپورت می‌کند و اگر بستهٔ مربوطه نصب نباشد یک هشدار نمایش می‌دهد و بدون ایجاد خطا ادامه می‌دهد. پیش از استفاده، یکی از بسته‌های `darkaonline/l5-swagger` یا `zircote/swagger-php` را نصب کنید.
 
 ## ساخت ماژول REST
 
@@ -40,6 +46,7 @@ php artisan make:module Invoice \
 - فرم‌ریکوئست‌هایی که بر اساس اسکیما تعریف‌شده اعتبارسنجی می‌کنند.
 - کلاس‌های DTO و ریسورس با متادیتای مشترک.
 - تست فیچری برای سناریوهای موفق و شکست اعتبارسنجی.
+- فرم‌ریکوئست‌ها در مسیر `App\Http\Requests\Invoice\` ساخته می‌شوند تا ساختار پروژه‌های بزرگ مرتب بماند.
 
 ```php
 public function show(Invoice $invoice): mixed
