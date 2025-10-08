@@ -1,16 +1,11 @@
 import { defineNuxtConfig } from 'nuxt/config'
 import { joinURL } from 'ufo'
 
-const baseURL =
+const siteBaseURL =
   process.env.NUXT_PUBLIC_BASE_URL ??
   (process.env.NODE_ENV === 'production' ? '/laravel-module-generator/' : '/')
-const faviconHref = baseURL === '/' ? '/favicon.svg' : `${baseURL}favicon.svg`
-const rootRedirect = joinURL(baseURL, 'en')
-
-const baseURL =
-  process.env.NUXT_PUBLIC_BASE_URL ??
-  (process.env.NODE_ENV === 'production' ? '/laravel-module-generator/' : '/')
-const faviconHref = baseURL === '/' ? '/favicon.svg' : `${baseURL}favicon.svg`
+const faviconHref = siteBaseURL === '/' ? '/favicon.svg' : `${siteBaseURL}favicon.svg`
+const rootRedirect = joinURL(siteBaseURL, 'en')
 
 export default defineNuxtConfig({
   modules: ['@nuxt/content', '@nuxtjs/tailwindcss'],
@@ -28,7 +23,7 @@ export default defineNuxtConfig({
     '/': { redirect: rootRedirect }
   },
   app: {
-    baseURL,
+    baseURL: siteBaseURL,
     head: {
       titleTemplate: '%s · Laravel Module Generator',
       link: [
@@ -42,7 +37,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       siteName: 'Laravel Module Generator',
-      basePath: baseURL
+      basePath: siteBaseURL
     }
   },
   nitro: {
