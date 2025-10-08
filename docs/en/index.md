@@ -52,7 +52,7 @@ hide:
 - Service providers register your repositories, services, policies, and observers.
 - Configurable stubs give you full control over folder structure and base classes.
 - Feature and unit tests are scaffolded with factories so you can verify behaviour immediately.
-- Optional Swagger annotations (`--swagger`) document every API endpoint, and the generator warns when the swagger package is missing so builds never fail unexpectedly.
+- Optional Swagger annotations (`--swagger`) live in dedicated `App\Docs\{Module}Doc` classes (default path `app/Docs`), keeping controllers clean while warning you when the swagger package is missing.
 
 ## Learn more
 

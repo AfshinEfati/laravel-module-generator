@@ -4,29 +4,29 @@ namespace {{ namespace }};
 
 {{ uses }}
 
-{{ swagger_class_doc }}class {{ class }}
+class {{ class }}
 {
     public function __construct(public {{ service_class }} $service) {}
 
-{{ swagger_index }}    public function index()
+    public function index()
     {
 {{ index_body }}
     }
 
-{{ swagger_store }}    public function store({{ store_request_type }} $request)
+    public function store({{ store_request_type }} $request)
     {
 {{ store_payload }}
         $model = $this->service->store({{ store_argument }});
 {{ store_response }}
     }
 
-{{ swagger_show }}    public function show({{ model_class }} ${{ model_variable }}): mixed
+    public function show({{ model_class }} ${{ model_variable }}): mixed
     {
 {{ relations_load }}
 {{ show_response }}
     }
 
-{{ swagger_update }}    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
+    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
     {
 {{ update_payload }}
         $updated = $this->service->update(${{ model_variable }}->getKey(), {{ update_argument }});
@@ -38,7 +38,7 @@ namespace {{ namespace }};
 {{ update_response }}
     }
 
-{{ swagger_destroy }}    public function destroy({{ model_class }} ${{ model_variable }})
+    public function destroy({{ model_class }} ${{ model_variable }})
     {
         $deleted = $this->service->destroy(${{ model_variable }}->getKey());
         return $deleted

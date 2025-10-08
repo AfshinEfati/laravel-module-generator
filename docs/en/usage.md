@@ -27,7 +27,7 @@ Use `php artisan make:module --help` for the full flag list and descriptions.
 
 ### Optional Swagger annotations
 
-Pass `--swagger` when generating API modules to scaffold OpenAPI (`@OA`) annotations for every CRUD endpoint. The generator automatically imports `OpenApi\Annotations` and skips annotation output when the swagger package is missing, emitting a warning instead. Install either `darkaonline/l5-swagger` or `zircote/swagger-php` before enabling the flag.
+Pass `--swagger` alongside `--api` to scaffold OpenAPI (`@OA`) annotations for every CRUD endpoint. The generator creates an `App\Docs\{Module}Doc` class (controllers stay annotation-free) and skips doc generation with a warning when the swagger package is missing. The docs path defaults to `app/Docs` (override via `paths.docs` in the config). Install either `darkaonline/l5-swagger` or `zircote/swagger-php` before enabling the flag.
 
 ## Generating a REST API module
 

@@ -5,6 +5,7 @@ namespace Efati\ModuleGenerator\Generators;
 use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 
 class ControllerGenerator
 {
@@ -41,7 +42,10 @@ class ControllerGenerator
         $namespace     = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
         $className     = "{$name}Controller";
         $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
-        $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder);
+        $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder, $baseNamespace);
+        if ($swaggerDocs !== null) {
+            SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $force);
+        }
 
         if ($isApi) {
             $content = $withActions
@@ -58,8 +62,7 @@ class ControllerGenerator
                     $usesDto,
                     $usesResource,
                     $relationsLoad,
-                    $actionsNamespace,
-                    $swaggerDocs
+                    $actionsNamespace
                 )
                 : self::buildApiController(
                     $name,
@@ -74,8 +77,7 @@ class ControllerGenerator
                     $withRequests,
                     $usesDto,
                     $usesResource,
-                    $relationsLoad,
-                    $swaggerDocs
+                    $relationsLoad
                 );
         } else {
             $content = $withActions
@@ -125,8 +127,7 @@ class ControllerGenerator
         bool $withRequests,
         bool $usesDto,
         bool $usesResource,
-        string $relationsLoad,
-        array $swaggerDocs
+        string $relationsLoad
     ): string {
         $imports = [
             $modelFqcn,
@@ -146,12 +147,6 @@ class ControllerGenerator
         if ($withRequests) {
             $imports[] = $storeReqFqcn;
             $imports[] = $updateReqFqcn;
-        }
-        if (!empty($swaggerDocs['enabled'])) {
-            $imports[] = 'OpenApi\\Annotations as OA';
-        }
-        if (!empty($swaggerDocs['enabled'])) {
-            $imports[] = 'OpenApi\\Annotations as OA';
         }
 
         $usesBlock = self::buildUses($imports);
@@ -208,12 +203,6 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
             'update_response'     => $resourceUpdated,
-            'swagger_class_doc'   => $swaggerDocs['class'] ?? '',
-            'swagger_index'       => $swaggerDocs['index'] ?? '',
-            'swagger_store'       => $swaggerDocs['store'] ?? '',
-            'swagger_show'        => $swaggerDocs['show'] ?? '',
-            'swagger_update'      => $swaggerDocs['update'] ?? '',
-            'swagger_destroy'     => $swaggerDocs['destroy'] ?? '',
         ]);
     }
 
@@ -230,8 +219,7 @@ class ControllerGenerator
         bool $usesDto,
         bool $usesResource,
         string $relationsLoad,
-        string $actionsNamespace,
-        array $swaggerDocs
+        string $actionsNamespace
     ): string {
         $imports = [
             $modelFqcn,
@@ -311,12 +299,6 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
             'update_response'     => $updateResponse,
-            'swagger_class_doc'   => $swaggerDocs['class'] ?? '',
-            'swagger_index'       => $swaggerDocs['index'] ?? '',
-            'swagger_store'       => $swaggerDocs['store'] ?? '',
-            'swagger_show'        => $swaggerDocs['show'] ?? '',
-            'swagger_update'      => $swaggerDocs['update'] ?? '',
-            'swagger_destroy'     => $swaggerDocs['destroy'] ?? '',
         ]);
     }
 
@@ -463,24 +445,14 @@ class ControllerGenerator
     }
 
     /**
-     * Build swagger annotation snippets for API controllers.
+     * Build Swagger metadata for generating standalone documentation classes.
      *
-     * @return array{enabled: bool, class: string, index: string, store: string, show: string, update: string, destroy: string}
+     * @return array{tag: string, param_name: string, operations: array<int, array<string, mixed>>, base_path: string, namespace: string}|null
      */
-    private static function swaggerDocs(bool $enabled, bool $isApi, string $name, ?string $controllerSubfolder): array
+    private static function swaggerDocs(bool $enabled, bool $isApi, string $name, ?string $controllerSubfolder, string $baseNamespace): ?array
     {
-        $docs = [
-            'enabled' => false,
-            'class'   => '',
-            'index'   => '',
-            'store'   => '',
-            'show'    => '',
-            'update'  => '',
-            'destroy' => '',
-        ];
-
         if (!$enabled || !$isApi) {
-            return $docs;
+            return null;
         }
 
         $tag          = Str::studly($name);
@@ -489,7 +461,7 @@ class ControllerGenerator
 
         $segments = [];
         if (is_string($controllerSubfolder) && $controllerSubfolder !== '') {
-            foreach (preg_split('/[\/\\\\]+/', trim($controllerSubfolder, '/\\')) as $segment) {
+            foreach (preg_split('/[\/\\\\]+/', trim($controllerSubfolder, '/\\\\')) as $segment) {
                 if ($segment !== '') {
                     $segments[] = Str::kebab($segment);
                 }
@@ -502,83 +474,76 @@ class ControllerGenerator
         }
         $basePath .= '/' . $resourceSlug;
 
-        $docs['enabled'] = true;
-        $docs['class']   = self::formatDoc([
-            "@OA\\Tag(name=\"{$tag}\")",
-        ], 0);
+        $operations = [
+            [
+                'name'        => 'index',
+                'httpMethod'  => 'Get',
+                'path'        => $basePath,
+                'summary'     => "List {$tag}",
+                'requestBody' => false,
+                'pathParam'   => false,
+                'responses'   => [
+                    ['code' => 200, 'description' => 'Successful response'],
+                ],
+            ],
+            [
+                'name'        => 'store',
+                'httpMethod'  => 'Post',
+                'path'        => $basePath,
+                'summary'     => "Create {$tag}",
+                'requestBody' => true,
+                'pathParam'   => false,
+                'responses'   => [
+                    ['code' => 201, 'description' => 'Created'],
+                    ['code' => 422, 'description' => 'Validation error'],
+                ],
+            ],
+            [
+                'name'        => 'show',
+                'httpMethod'  => 'Get',
+                'path'        => $basePath . '/{' . $paramName . '}',
+                'summary'     => "Show {$tag}",
+                'requestBody' => false,
+                'pathParam'   => true,
+                'responses'   => [
+                    ['code' => 200, 'description' => 'Successful response'],
+                    ['code' => 404, 'description' => 'Not found'],
+                ],
+            ],
+            [
+                'name'        => 'update',
+                'httpMethod'  => 'Put',
+                'path'        => $basePath . '/{' . $paramName . '}',
+                'summary'     => "Update {$tag}",
+                'requestBody' => true,
+                'pathParam'   => true,
+                'responses'   => [
+                    ['code' => 200, 'description' => 'Updated'],
+                    ['code' => 422, 'description' => 'Validation error'],
+                    ['code' => 404, 'description' => 'Not found'],
+                ],
+            ],
+            [
+                'name'        => 'destroy',
+                'httpMethod'  => 'Delete',
+                'path'        => $basePath . '/{' . $paramName . '}',
+                'summary'     => "Delete {$tag}",
+                'requestBody' => false,
+                'pathParam'   => true,
+                'responses'   => [
+                    ['code' => 204, 'description' => 'Deleted'],
+                    ['code' => 404, 'description' => 'Not found'],
+                ],
+            ],
+        ];
 
-        $docs['index'] = self::formatDoc([
-            '@OA\Get(',
-            "    path=\"{$basePath}\",",
-            "    summary=\"List {$tag}\",",
-            "    tags={\"{$tag}\"},",
-            '    @OA\Response(response=200, description="Successful response")',
-            ')',
-        ]);
-
-        $docs['store'] = self::formatDoc([
-            '@OA\Post(',
-            "    path=\"{$basePath}\",",
-            "    summary=\"Create {$tag}\",",
-            "    tags={\"{$tag}\"},",
-            '    @OA\RequestBody(required=true, @OA\JsonContent()),',
-            '    @OA\Response(response=201, description="Created"),',
-            '    @OA\Response(response=422, description="Validation error")',
-            ')',
-        ]);
-
-        $docs['show'] = self::formatDoc([
-            '@OA\Get(',
-            "    path=\"{$basePath}/{{$paramName}}\",",
-            "    summary=\"Show {$tag}\",",
-            "    tags={\"{$tag}\"},",
-            "    @OA\Parameter(name=\"{$paramName}\", in=\"path\", required=true, @OA\Schema(type=\"integer\")),",
-            '    @OA\Response(response=200, description="Successful response"),',
-            '    @OA\Response(response=404, description="Not found")',
-            ')',
-        ]);
-
-        $docs['update'] = self::formatDoc([
-            '@OA\Put(',
-            "    path=\"{$basePath}/{{$paramName}}\",",
-            "    summary=\"Update {$tag}\",",
-            "    tags={\"{$tag}\"},",
-            "    @OA\Parameter(name=\"{$paramName}\", in=\"path\", required=true, @OA\Schema(type=\"integer\")),",
-            '    @OA\RequestBody(required=true, @OA\JsonContent()),',
-            '    @OA\Response(response=200, description="Updated"),',
-            '    @OA\Response(response=422, description="Validation error"),',
-            '    @OA\Response(response=404, description="Not found")',
-            ')',
-        ]);
-
-        $docs['destroy'] = self::formatDoc([
-            '@OA\Delete(',
-            "    path=\"{$basePath}/{{$paramName}}\",",
-            "    summary=\"Delete {$tag}\",",
-            "    tags={\"{$tag}\"},",
-            "    @OA\Parameter(name=\"{$paramName}\", in=\"path\", required=true, @OA\Schema(type=\"integer\")),",
-            '    @OA\Response(response=204, description="Deleted"),',
-            '    @OA\Response(response=404, description="Not found")',
-            ')',
-        ]);
-
-        return $docs;
-    }
-
-    private static function formatDoc(array $lines, int $indentLevel = 1): string
-    {
-        if (empty($lines)) {
-            return '';
-        }
-
-        $indent = str_repeat('    ', max(0, $indentLevel));
-        $doc    = $indent . "/**\n";
-        foreach ($lines as $line) {
-            $doc .= $indent . ' * ' . $line . "\n";
-        }
-        $doc .= $indent . " */\n";
-
-        return $doc;
+        return [
+            'tag'        => $tag,
+            'param_name' => $paramName,
+            'operations' => $operations,
+            'base_path'  => $basePath,
+            'namespace'  => $baseNamespace,
+        ];
     }
 
     private static function buildUses(array $imports): string

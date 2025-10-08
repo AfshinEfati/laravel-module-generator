@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\Tag(name="{{ tag }}")
+ */
+class {{ class }}
+{
+{{ operations }}
+}
