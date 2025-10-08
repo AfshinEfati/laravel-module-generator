@@ -1,4 +1,11 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import { joinURL } from 'ufo'
+
+const baseURL =
+  process.env.NUXT_PUBLIC_BASE_URL ??
+  (process.env.NODE_ENV === 'production' ? '/laravel-module-generator/' : '/')
+const faviconHref = baseURL === '/' ? '/favicon.svg' : `${baseURL}favicon.svg`
+const rootRedirect = joinURL(baseURL, 'en')
 
 const baseURL =
   process.env.NUXT_PUBLIC_BASE_URL ??
@@ -18,7 +25,7 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/': { redirect: '/en' }
+    '/': { redirect: rootRedirect }
   },
   app: {
     baseURL,

@@ -12,7 +12,6 @@ const runtimeConfig = useRuntimeConfig()
 const currentLang = computed(() => props.lang ?? (Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string) ?? 'en'))
 const isRtl = computed(() => currentLang.value === 'fa')
 
-const basePath = computed(() => runtimeConfig.public.basePath ?? '/')
 const normalizePath = (path: string) => {
   if (!path) {
     return '/'
@@ -21,22 +20,7 @@ const normalizePath = (path: string) => {
   const trimmed = path.replace(/\/+$/, '')
   return trimmed === '' ? '/' : trimmed
 }
-const stripBase = (path: string) => {
-  if (basePath.value !== '/' && path.startsWith(basePath.value)) {
-    const withoutBase = path.slice(basePath.value.length)
-    return `/${withoutBase.replace(/^\/+/, '')}`
-  }
-
-  return path
-}
-const currentPath = computed(() => normalizePath(stripBase(route.path)))
-const resolveLink = (path: string) => {
-  if (!path || basePath.value === '/' || basePath.value === '') {
-    return path
-  }
-
-  return joinURL(basePath.value, path.replace(/^\//, ''))
-}
+const currentPath = computed(() => normalizePath(route.path))
 const isActiveLink = (path: string) => currentPath.value === normalizePath(path)
 
 const navigation = computed(() => {
