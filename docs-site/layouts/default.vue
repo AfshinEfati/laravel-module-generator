@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useContent, useHead, useRuntimeConfig } from '#imports'
+import { useHead, useRuntimeConfig, useState } from '#imports'
 import { joinURL } from 'ufo'
 
 const route = useRoute()
-const { page } = useContent()
 const runtimeConfig = useRuntimeConfig()
+const hideNavigationState = useState<boolean>('hide-navigation', () => false)
 
 const normalize = (path: string): string => {
   if (!path) {
@@ -52,31 +52,7 @@ const isActiveLink = (path: string) => currentPath.value === normalize(path)
 
 const withBasePath = (path: string) => joinURL(basePath.value, path)
 
-const hideNavigation = computed(() => {
-  const hide = page.value?.hide
-
-  if (!hide) {
-    return false
-  }
-
-  if (Array.isArray(hide)) {
-    return hide.includes('navigation')
-  }
-
-  if (typeof hide === 'string') {
-    return hide === 'navigation'
-  }
-
-  if (typeof hide === 'object') {
-    return Boolean((hide as Record<string, unknown>).navigation)
-  }
-
-  if (typeof hide === 'boolean') {
-    return hide
-  }
-
-  return false
-})
+const hideNavigation = computed(() => Boolean(hideNavigationState.value))
 
 const contentContainerClasses = computed(() => [
   'mx-auto',
