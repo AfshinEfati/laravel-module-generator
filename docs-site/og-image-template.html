@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OG Image Template - Laravel Module Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -148,13 +149,30 @@
     </div>
     
     <div style="padding: 40px; background: #f8fafc;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button id="downloadBtn" style="
+                background: linear-gradient(135deg, #FF2D20 0%, #ff6b5a 100%);
+                color: white;
+                border: none;
+                padding: 16px 32px;
+                font-size: 18px;
+                font-weight: 600;
+                border-radius: 8px;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(255, 45, 32, 0.3);
+                transition: transform 0.2s;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                📥 Download OG Image (PNG)
+            </button>
+            <p style="margin-top: 10px; color: #64748b; font-size: 14px;">Click to automatically generate and download og-image.png</p>
+        </div>
+        
         <h2 style="margin-bottom: 20px; color: #1e293b;">Instructions:</h2>
         <ol style="color: #475569; line-height: 1.8;">
-            <li>Open this page in your browser at full screen (1200x630 viewport)</li>
-            <li>Take a screenshot of just the OG image area (the dark box above)</li>
-            <li>Or use browser dev tools to capture the element</li>
-            <li>Save as <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">og-image.png</code> in the <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">public/</code> directory</li>
-            <li>Update <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">nuxt.config.ts</code> to use <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">.png</code> instead of <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">.svg</code></li>
+            <li><strong>Easy Way:</strong> Click the button above to download the image</li>
+            <li>Save the downloaded file as <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">og-image.png</code> in the <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 3px;">public/</code> directory</li>
+            <li>The config is already updated to use PNG format</li>
+            <li>Build and deploy your site</li>
         </ol>
         
         <h3 style="margin: 30px 0 15px; color: #1e293b;">Alternative: Use Puppeteer/Playwright</h3>
@@ -173,5 +191,48 @@ const puppeteer = require('puppeteer');
   await browser.close();
 })();</code></pre>
     </div>
+    
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const button = this;
+            button.textContent = '⏳ Generating...';
+            button.disabled = true;
+            
+            const element = document.querySelector('.og-image');
+            
+            html2canvas(element, {
+                width: 1200,
+                height: 630,
+                scale: 2,
+                backgroundColor: '#0f172a',
+                logging: false
+            }).then(canvas => {
+                // تبدیل به blob
+                canvas.toBlob(function(blob) {
+                    // ایجاد لینک دانلود
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = 'og-image.png';
+                    link.href = url;
+                    link.click();
+                    
+                    // پاک کردن URL
+                    URL.revokeObjectURL(url);
+                    
+                    // بازگشت دکمه به حالت اولیه
+                    button.textContent = '✅ Downloaded! Click again if needed';
+                    button.disabled = false;
+                    
+                    setTimeout(() => {
+                        button.textContent = '📥 Download OG Image (PNG)';
+                    }, 3000);
+                }, 'image/png', 1.0);
+            }).catch(err => {
+                console.error('Error generating image:', err);
+                button.textContent = '❌ Error - Try again';
+                button.disabled = false;
+            });
+        });
+    </script>
 </body>
 </html>

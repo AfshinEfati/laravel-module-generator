@@ -54,7 +54,7 @@ export default defineNuxtConfig({
         { property: 'og:title', content: 'Laravel Module Generator - Build Modular Laravel Applications' },
         { property: 'og:description', content: 'A powerful Laravel package for generating modular application structures with clean architecture and best practices.' },
         { property: 'og:url', content: 'https://afshinefati.github.io/laravel-module-generator/' },
-        { property: 'og:image', content: 'https://afshinefati.github.io/laravel-module-generator/og-image.svg' },
+        { property: 'og:image', content: 'https://afshinefati.github.io/laravel-module-generator/og-image.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         
@@ -62,7 +62,7 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: 'Laravel Module Generator - Build Modular Laravel Applications' },
         { name: 'twitter:description', content: 'A powerful Laravel package for generating modular application structures with clean architecture and best practices.' },
-        { name: 'twitter:image', content: 'https://afshinefati.github.io/laravel-module-generator/og-image.svg' },
+        { name: 'twitter:image', content: 'https://afshinefati.github.io/laravel-module-generator/og-image.png' },
         
         // Additional
         { name: 'author', content: 'Afshin Efati' },
