@@ -33,8 +33,32 @@ export default defineNuxtConfig({
   },
   nitro: {
     prerender: {
-      crawlLinks: true,
-      routes: ['/', '/en', '/fa']
+      crawlLinks: false,
+      routes: [
+        '/',
+        '/en',
+        '/fa',
+        '/en/installation',
+        '/en/quickstart',
+        '/en/configuration',
+        '/en/usage',
+        '/en/advanced',
+        '/en/module-anatomy',
+        '/en/goli-guide',
+        '/en/github-pages-setup',
+        '/en/reference',
+        '/en/changelog',
+        '/fa/installation',
+        '/fa/quickstart',
+        '/fa/configuration',
+        '/fa/usage',
+        '/fa/advanced',
+        '/fa/module-anatomy',
+        '/fa/goli-guide',
+        '/fa/github-pages-setup',
+        '/fa/reference',
+        '/fa/changelog'
+      ]
     }
   },
   devtools: { enabled: false }
