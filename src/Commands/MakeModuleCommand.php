@@ -107,8 +107,8 @@ class MakeModuleCommand extends Command
             $withSwagger = false;
         }
         if ($withSwagger && !$isApi) {
-            $this->warn('• Swagger annotations require the --api flag. Disable --swagger or enable --api to proceed.');
-            $withSwagger = false;
+            $isApi = true;
+            $this->warn('• --swagger implicitly enables API controllers. Generating ProductController as API.');
         }
         if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
             $this->warn('• Swagger annotations requested but the swagger-php package is missing. Install it via `composer require darkaonline/l5-swagger` or `composer require zircote/swagger-php` to use --swagger.');
