@@ -7,6 +7,16 @@
 The full documentation and usage guide is available at:  
 👉 [Laravel Module Generator Docs](https://afshinefati.github.io/laravel-module-generator/)
 
+The documentation site lives in [`docs-site/`](docs-site/) and is built with Nuxt 3 + Tailwind. To run it locally:
+
+```bash
+cd docs-site
+npm install
+npm run dev
+```
+
+The GitHub Pages workflow now runs `npm run generate` and deploys the static output in `.output/public`.
+
 Generate complete, test-ready Laravel modules from a single Artisan command. The generator scaffolds models, repositories, services, interfaces, DTOs, controllers, API resources, form requests, feature tests, and supporting helpers so you can jump straight to business logic.
 
 > **Compatible with Laravel 10 & 11 · Requires PHP 8.1+**
@@ -151,8 +161,8 @@ Previous release notes are archived in [`CHABELOG.md`](CHABELOG.md) and [`docs/c
 
 - [Full documentation](https://afshinefati.github.io/laravel-module-generator/) – landing page, configuration guide, and advanced topics.
 - [Usage reference](docs/usage.md) – option matrix, inline schema syntax, and command recipes.
-- [Module anatomy](docs/en/module-anatomy.md) – walk through every file generated for a Product module.
-- [Goli date helper guide](docs/en/goli-guide.md) – cookbook for parsing, formatting, and responding with Jalali dates.
+- [Module anatomy](docs-site/content/en/module-anatomy.md) – walk through every file generated for a Product module.
+- [Goli date helper guide](docs-site/content/en/goli-guide.md) – cookbook for parsing, formatting, and responding with Jalali dates.
 - [Advanced features](docs/advanced.md) – deep dive into test scaffolding, Jalali tooling, and stub customisation.
 
 ## License

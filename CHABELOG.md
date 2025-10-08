@@ -5,6 +5,7 @@ All notable changes to this package are documented here. The current release lin
 ## [7.1.6] - 2025-09-14
 ### ✨ Added
 - Optional `--swagger` flag now generates standalone `App\Docs\{Module}Doc` files with OpenAPI annotations (tags, CRUD endpoints, request/response skeletons), warning automatically when `swagger-php`/`l5-swagger` is missing.【F:src/Commands/MakeModuleCommand.php†L37-L115】【F:src/Generators/ControllerGenerator.php†L20-L512】【F:src/Generators/SwaggerDocGenerator.php†L9-L120】【F:src/Stubs/Module/Doc/swagger.stub†L1-L12】
+- Documentation site migrated to Nuxt 3 + Tailwind with bilingual navigation and GitHub Pages build (`npm run generate`), and all Markdown content now lives under `docs-site/content/*`.【F:docs-site/nuxt.config.ts†L1-L34】【F:docs-site/pages/[lang]/[...slug].vue†L1-L18】【F:.github/workflows/docs.yml†L1-L45】
 
 ### 🔧 Changed
 - Runtime model inspection now falls back to migration parsing for every module so DTOs, resources, requests, and tests always receive full field metadata; resources import the model, annotate with `@mixin ModelName`, and always expose the primary `id`.【F:src/Commands/MakeModuleCommand.php†L99-L170】【F:src/Generators/ResourceGenerator.php†L34-L207】【F:src/Support/ModelInspector.php†L23-L78】

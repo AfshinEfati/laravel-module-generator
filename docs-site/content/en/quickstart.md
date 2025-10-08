@@ -10,7 +10,7 @@ Follow this checklist to scaffold your first module in less than five minutes.
 composer require efati/laravel-module-generator
 ```
 
-MkDocs build automation is already configured in the repository, so installing the dependency locally is the only prerequisite.
+The docs site (Nuxt + Tailwind) lives in `docs-site/` and deploys automatically from GitHub Actions, so installing the package is the only prerequisite.
 
 ## 2. Publish configuration and stubs (optional)
 
@@ -52,4 +52,3 @@ The command creates:
 - Review the [usage guide](usage.md) for flag combinations and recipes.
 - Explore [advanced customisation](advanced.md) to add hooks or entirely new generators.
 - Scan the [CLI reference](reference.md) when you need an at-a-glance list of options.
-

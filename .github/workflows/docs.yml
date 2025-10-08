@@ -1,17 +1,15 @@
-name: Docs (MkDocs → GitHub Pages)
+name: Docs (Nuxt → GitHub Pages)
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
-# دسترسی لازم برای دیپلوی روی Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# از برخورد چند دیپلوی همزمان جلوگیری کن
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -19,28 +17,28 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs-site
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.x'
+          node-version: '18'
 
-      - name: Install MkDocs + theme/plugins
-        run: |
-          pip install mkdocs-material
-          # اگر افزونه‌های اضافه‌ای داری اینجا نصب کن (در حال حاضر لازم نیست)
-          # pip install mkdocs-minify-plugin mkdocs-redirects
+      - name: Install dependencies
+        run: npm install
 
-      - name: Build MkDocs
-        run: mkdocs build --strict
+      - name: Generate static site
+        run: npm run generate
 
-      - name: Upload built site as artifact
+      - name: Upload build output
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site
+          path: docs-site/.output/public
 
   deploy:
     needs: build
