@@ -1,44 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRuntimeConfig } from '#imports'
 
 const route = useRoute()
 
-const normalizePath = (path: string) => {
+const normalizePath = (path: string): string => {
   if (!path) {
     return '/'
   }
 
-  const trimmed = path.replace(/\/+$/, '')
-  return trimmed === '' ? '/' : trimmed
+  const ensured = path.startsWith('/') ? path : `/${path}`
+  return ensured.endsWith('/') ? ensured : `${ensured}/`
 }
 
 const currentLang = computed(() => {
-  const langParam = route.params.lang
-  if (Array.isArray(langParam)) {
-    return langParam[0] ?? 'en'
+  const param = route.params.lang
+  if (Array.isArray(param)) {
+    return param[0] ?? 'en'
   }
-
-  return (langParam as string) ?? 'en'
+  return (param as string) ?? 'en'
 })
+
 const isRtl = computed(() => currentLang.value === 'fa')
 const currentPath = computed(() => normalizePath(route.path))
 const isActiveLink = (path: string) => currentPath.value === normalizePath(path)
-
-const normalizePath = (path: string) => {
-  if (!path) {
-    return '/'
-  }
-
-  const trimmed = path.replace(/\/+$/, '')
-  return trimmed === '' ? '/' : trimmed
-}
-const currentPath = computed(() => normalizePath(stripBase(route.path)))
-const resolveHref = (path: string) => {
-  const target = path.startsWith('/') ? path : `/${path}`
-  return basePath.value ? `${basePath.value}${target}` : target
-}
-const isActiveLink = (path: string) => currentPath.value === normalizePath(path)
+const resolveHref = (path: string) => normalizePath(path)
 
 const navigation = computed(() => {
   const enNav = [
