@@ -15,6 +15,7 @@ class SwaggerDocGenerator
         $tag        = (string) ($swaggerData['tag'] ?? $name);
         $operations = $swaggerData['operations'] ?? [];
         $paramName  = $swaggerData['param_name'] ?? null;
+        $security   = $swaggerData['security'] ?? [];
 
         if (empty($operations)) {
             return;
@@ -34,11 +35,13 @@ class SwaggerDocGenerator
 
         $namespace = $baseNamespace . '\\Docs';
         $operationsBlock = self::buildOperations((string) $tag, $operations, $paramName);
+        $securityBlock   = self::buildSecuritySchemes($security['schemes'] ?? [], (bool) ($security['enabled'] ?? false));
 
         $content = Stub::render('Doc/swagger', [
             'namespace' => $namespace,
             'class'     => $className,
             'tag'       => $tag,
+            'security_schemes' => $securityBlock,
             'operations'=> $operationsBlock,
         ]);
 
@@ -75,6 +78,7 @@ class SwaggerDocGenerator
         $summary    = (string) ($operation['summary'] ?? 'Endpoint');
         $name       = (string) ($operation['name'] ?? strtolower($method));
         $responses  = $operation['responses'] ?? [];
+        $security   = $operation['security'] ?? [];
         $hasBody    = (bool) ($operation['requestBody'] ?? false);
         $hasParam   = (bool) ($operation['pathParam'] ?? false);
         $paramName  = $defaultParam ?? 'id';
@@ -96,6 +100,20 @@ class SwaggerDocGenerator
             $code = $response['code'] ?? 200;
             $desc = $response['description'] ?? 'Response';
             $entries[] = "@OA\\Response(response={$code}, description=\"{$desc}\")";
+        }
+
+        if (!empty($security) && is_array($security)) {
+            $securityEntries = [];
+            foreach ($security as $scheme) {
+                if (!is_string($scheme) || $scheme === '') {
+                    continue;
+                }
+                $securityEntries[] = '"' . addslashes($scheme) . '":{}';
+            }
+
+            if (!empty($securityEntries)) {
+                $entries[] = 'security={{' . implode(', ', $securityEntries) . '}}';
+            }
         }
 
         $annotation = self::buildAnnotation($method, $entries);
@@ -138,5 +156,61 @@ class SwaggerDocGenerator
         $lines[] = ')';
 
         return $lines;
+    }
+
+    private static function buildSecuritySchemes(array $schemes, bool $enabled): string
+    {
+        if (!$enabled || empty($schemes)) {
+            return '';
+        }
+
+        $blocks = [];
+
+        foreach ($schemes as $name => $definition) {
+            if (!is_string($name) || $name === '' || !is_array($definition)) {
+                continue;
+            }
+
+            $lines = [];
+            $lines[] = '    /**';
+            $lines[] = '     * @OA\SecurityScheme(';
+            $lines[] = '     *     securityScheme="' . addslashes($name) . '",';
+
+            $type = $definition['type'] ?? null;
+            if ($type) {
+                $lines[] = '     *     type="' . addslashes((string) $type) . '",';
+            }
+
+            $scheme = $definition['scheme'] ?? null;
+            if ($scheme) {
+                $lines[] = '     *     scheme="' . addslashes((string) $scheme) . '",';
+            }
+
+            $bearer = $definition['bearer_format'] ?? null;
+            if ($bearer) {
+                $lines[] = '     *     bearerFormat="' . addslashes((string) $bearer) . '",';
+            }
+
+            $description = $definition['description'] ?? null;
+            if ($description) {
+                $lines[] = '     *     description="' . addslashes((string) $description) . '",';
+            }
+
+            $lines[] = '     * )';
+            $lines[] = '     */';
+
+            $methodName = preg_replace('/[^A-Za-z0-9_]/', '', ucfirst($name)) . 'Security';
+            if ($methodName === '') {
+                $methodName = 'SecurityScheme';
+            }
+
+            $lines[] = '    public function ' . $methodName . '(): void';
+            $lines[] = '    {';
+            $lines[] = '    }';
+
+            $blocks[] = implode("\n", $lines);
+        }
+
+        return implode("\n\n", $blocks) . "\n";
     }
 }

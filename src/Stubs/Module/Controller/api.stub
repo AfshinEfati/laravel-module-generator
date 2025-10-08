@@ -6,7 +6,10 @@ namespace {{ namespace }};
 
 class {{ class }}
 {
-    public function __construct(public {{ service_class }} $service) {}
+    public function __construct(public {{ service_class }} $service)
+    {
+{{ middleware_block }}
+    }
 
     public function index()
     {

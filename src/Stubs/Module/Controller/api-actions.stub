@@ -13,6 +13,7 @@ class {{ class }}
         public Update{{ name }}Action $updateAction,
         public Delete{{ name }}Action $deleteAction,
     ) {
+{{ middleware_block }}
     }
 
     public function index()

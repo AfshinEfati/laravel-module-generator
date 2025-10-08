@@ -12,6 +12,10 @@ export default defineNuxtConfig({
       preload: ['php', 'bash', 'json', 'yaml', 'diff']
     }
   },
+  routeRules: {
+    '/en/index': { redirect: '/en' },
+    '/fa/index': { redirect: '/fa' }
+  },
   app: {
     head: {
       titleTemplate: '%s · Laravel Module Generator',
@@ -30,7 +34,8 @@ export default defineNuxtConfig({
   },
   nitro: {
     prerender: {
-      routes: ['/', '/en', '/en/index', '/fa', '/fa/index']
+      crawlLinks: true,
+      routes: ['/', '/en/index', '/fa/index'] // changed prerender routes
     }
   },
   devtools: { enabled: false }

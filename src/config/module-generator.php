@@ -37,6 +37,7 @@ return [
         'resource'      => 'Http/Resources',   // ← قابل‌پیکربندی
         'form_request'  => 'Http/Requests',
         'actions'       => 'Actions',
+        'docs'          => 'Docs',
     ],
 
     /*
@@ -64,6 +65,22 @@ return [
         'with_dto'           => true,
         'with_provider'      => true,
         'with_actions'       => false,
+        'controller_middleware' => [],
+    ],
+
+    'swagger' => [
+        'security' => [
+            'auth_middleware' => ['auth', 'auth:api', 'auth:sanctum'],
+            'default' => 'bearerAuth',
+            'schemes' => [
+                'bearerAuth' => [
+                    'type' => 'http',
+                    'scheme' => 'bearer',
+                    'bearer_format' => 'JWT',
+                    'description' => 'Pass a valid bearer token retrieved from the authentication endpoint.'
+                ],
+            ],
+        ],
     ],
 
     /*

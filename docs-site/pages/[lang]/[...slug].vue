@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { queryContent, createError, navigateTo } from '#imports'
+import { queryContent, createError } from '#imports'
 
 const route = useRoute()
 const langParam = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
@@ -11,7 +11,7 @@ const slugSegments = Array.isArray(slugParam)
     : []
 
 if (slugSegments.length === 0) {
-  await navigateTo(`/${langParam}/index`, { replace: true })
+  throw createError({ statusCode: 404, statusMessage: 'Document not found' })
 }
 
 const contentPath = `/${langParam}/${slugSegments.join('/')}`

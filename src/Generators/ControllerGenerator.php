@@ -37,12 +37,13 @@ class ControllerGenerator
         $requestNamespace = "{$baseNamespace}\\Http\\Requests\\{$name}";
         $storeReqFqcn  = "{$requestNamespace}\\Store{$name}Request";
         $updateReqFqcn = "{$requestNamespace}\\Update{$name}Request";
+        $controllerMiddleware = array_values(array_filter((array) config('module-generator.defaults.controller_middleware', [])));
 
         $relationsLoad = self::relationsLoadSnippet($modelFqcn, $withActions ? 'model' : null);
         $namespace     = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
         $className     = "{$name}Controller";
         $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
-        $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder, $baseNamespace);
+        $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder, $baseNamespace, $controllerMiddleware);
         if ($swaggerDocs !== null) {
             SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $force);
         }
@@ -62,7 +63,8 @@ class ControllerGenerator
                     $usesDto,
                     $usesResource,
                     $relationsLoad,
-                    $actionsNamespace
+                    $actionsNamespace,
+                    $controllerMiddleware
                 )
                 : self::buildApiController(
                     $name,
@@ -77,7 +79,8 @@ class ControllerGenerator
                     $withRequests,
                     $usesDto,
                     $usesResource,
-                    $relationsLoad
+                    $relationsLoad,
+                    $controllerMiddleware
                 );
         } else {
             $content = $withActions
@@ -127,7 +130,8 @@ class ControllerGenerator
         bool $withRequests,
         bool $usesDto,
         bool $usesResource,
-        string $relationsLoad
+        string $relationsLoad,
+        array $controllerMiddleware
     ): string {
         $imports = [
             $modelFqcn,
@@ -203,6 +207,7 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
             'update_response'     => $resourceUpdated,
+            'middleware_block'   => self::buildMiddlewareBlock($controllerMiddleware),
         ]);
     }
 
@@ -219,7 +224,8 @@ class ControllerGenerator
         bool $usesDto,
         bool $usesResource,
         string $relationsLoad,
-        string $actionsNamespace
+        string $actionsNamespace,
+        array $controllerMiddleware
     ): string {
         $imports = [
             $modelFqcn,
@@ -299,6 +305,7 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
             'update_response'     => $updateResponse,
+            'middleware_block'   => self::buildMiddlewareBlock($controllerMiddleware),
         ]);
     }
 
@@ -444,12 +451,28 @@ class ControllerGenerator
         ]);
     }
 
+    private static function buildMiddlewareBlock(array $middleware): string
+    {
+        $middleware = array_values(array_filter($middleware, static fn ($value) => is_string($value) && $value !== ''));
+
+        if (empty($middleware)) {
+            return '';
+        }
+
+        $lines = [];
+        foreach ($middleware as $mw) {
+            $lines[] = "        \$this->middleware('" . addslashes($mw) . "');";
+        }
+
+        return implode("\n", $lines);
+    }
+
     /**
      * Build Swagger metadata for generating standalone documentation classes.
      *
      * @return array{tag: string, param_name: string, operations: array<int, array<string, mixed>>, base_path: string, namespace: string}|null
      */
-    private static function swaggerDocs(bool $enabled, bool $isApi, string $name, ?string $controllerSubfolder, string $baseNamespace): ?array
+    private static function swaggerDocs(bool $enabled, bool $isApi, string $name, ?string $controllerSubfolder, string $baseNamespace, array $controllerMiddleware): ?array
     {
         if (!$enabled || !$isApi) {
             return null;
@@ -474,6 +497,13 @@ class ControllerGenerator
         }
         $basePath .= '/' . $resourceSlug;
 
+        $securityConfig = (array) config('module-generator.swagger.security', []);
+        $configuredSchemes = (array) ($securityConfig['schemes'] ?? []);
+        $defaultScheme = (string) ($securityConfig['default'] ?? array_key_first($configuredSchemes) ?? 'bearerAuth');
+        $authMiddleware = array_map('strtolower', array_filter((array) ($securityConfig['auth_middleware'] ?? ['auth', 'auth:api', 'auth:sanctum'])));
+        $normalizedControllerMiddleware = array_map('strtolower', array_map('trim', $controllerMiddleware));
+        $requiresAuth = !empty(array_intersect($authMiddleware, $normalizedControllerMiddleware));
+
         $operations = [
             [
                 'name'        => 'index',
@@ -485,6 +515,7 @@ class ControllerGenerator
                 'responses'   => [
                     ['code' => 200, 'description' => 'Successful response'],
                 ],
+                'security'    => $requiresAuth ? [$defaultScheme] : [],
             ],
             [
                 'name'        => 'store',
@@ -497,6 +528,7 @@ class ControllerGenerator
                     ['code' => 201, 'description' => 'Created'],
                     ['code' => 422, 'description' => 'Validation error'],
                 ],
+                'security'    => $requiresAuth ? [$defaultScheme] : [],
             ],
             [
                 'name'        => 'show',
@@ -509,6 +541,7 @@ class ControllerGenerator
                     ['code' => 200, 'description' => 'Successful response'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
+                'security'    => $requiresAuth ? [$defaultScheme] : [],
             ],
             [
                 'name'        => 'update',
@@ -522,6 +555,7 @@ class ControllerGenerator
                     ['code' => 422, 'description' => 'Validation error'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
+                'security'    => $requiresAuth ? [$defaultScheme] : [],
             ],
             [
                 'name'        => 'destroy',
@@ -534,6 +568,7 @@ class ControllerGenerator
                     ['code' => 204, 'description' => 'Deleted'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
+                'security'    => $requiresAuth ? [$defaultScheme] : [],
             ],
         ];
 
@@ -543,6 +578,11 @@ class ControllerGenerator
             'operations' => $operations,
             'base_path'  => $basePath,
             'namespace'  => $baseNamespace,
+            'security'   => [
+                'enabled' => $requiresAuth,
+                'default' => $defaultScheme,
+                'schemes' => $configuredSchemes,
+            ],
         ];
     }
 

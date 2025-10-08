@@ -1,5 +1,5 @@
 <script setup>
-await navigateTo('/en/index')
+await navigateTo('/en', { replace: true })
 </script>
 
 <template>
