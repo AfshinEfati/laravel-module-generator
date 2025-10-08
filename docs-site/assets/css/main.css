@@ -5,7 +5,7 @@
 @font-face {
   font-family: 'IRANSans';
   src: url('~/assets/fonts/iransans/iransans.woff2') format('woff2'),
-       url('~/assets/fonts/iransans/iransans.woff') format('woff');
+    url('~/assets/fonts/iransans/iransans.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -14,10 +14,24 @@
 @font-face {
   font-family: 'Fira Code';
   src: url('~/assets/fonts/firacode/FiraCode-Regular.woff2') format('woff2'),
-       url('~/assets/fonts/firacode/FiraCode-Regular.woff') format('woff');
+    url('~/assets/fonts/firacode/FiraCode-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+}
+
+.prose pre {
+  background-color: #f8f8f8 !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  overflow-x: auto !important;
+}
+
+.prose code {
+  background-color: transparent !important;
+  padding: 0 !important;
+  color: inherit !important;
 }
 
 :root {
@@ -36,7 +50,8 @@ body {
   @apply text-slate-800 bg-slate-50;
 }
 
-code, pre {
+code,
+pre {
   font-variant-ligatures: contextual;
 }
 

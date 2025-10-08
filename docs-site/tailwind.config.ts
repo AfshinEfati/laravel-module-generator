@@ -56,12 +56,12 @@ export default <Partial<Config>>{
             },
             pre: {
               fontFamily: theme('fontFamily.mono').join(', '),
-              backgroundColor: theme('colors.gray.900'),
-              color: theme('colors.gray.100'),
+              backgroundColor: '#282a36',
+              color: '#f8f8f2',
               padding: theme('spacing.4'),
               borderRadius: theme('borderRadius.lg'),
               borderWidth: '1px',
-              borderColor: theme('colors.gray.800')
+              borderColor: '#44475a'
             }
           }
         }

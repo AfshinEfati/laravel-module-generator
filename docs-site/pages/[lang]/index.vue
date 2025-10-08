@@ -53,5 +53,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <ContentRenderer :value="doc" />
+  <NuxtLayout :lang="langParam" :doc="doc">
+    <ContentRenderer :value="doc" />
+  </NuxtLayout>
 </template>

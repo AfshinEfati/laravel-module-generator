@@ -11,12 +11,25 @@ export default defineNuxtConfig({
   modules: ['@nuxt/content', '@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
   content: {
+    documentDriven: false,
     highlight: {
       theme: {
-        default: 'github-light',
-        dark: 'github-dark'
+        default: 'min-light',
+        dark: 'min-light'
       },
-      preload: ['php', 'bash', 'json', 'yaml', 'diff']
+      preload: [
+        'php',
+        'bash',
+        'json',
+        'yaml',
+        'diff'
+      ]
+    },
+    markdown: {
+      toc: {
+        depth: 3,
+        searchDepth: 3
+      }
     }
   },
   routeRules: {

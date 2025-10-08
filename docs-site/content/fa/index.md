@@ -1,7 +1,5 @@
 ---
 title: ژنراتور ماژول لاراول
-hide:
-  - navigation
 ---
 
 [🇬🇧 English](../en/index.md){ .language-switcher }

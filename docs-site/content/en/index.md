@@ -1,7 +1,5 @@
 ---
 title: Laravel Module Generator
-hide:
-  - navigation
 ---
 
 [🇮🇷 فارسی](../fa/index.md){ .language-switcher }
