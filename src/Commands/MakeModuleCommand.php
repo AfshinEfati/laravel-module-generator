@@ -34,6 +34,8 @@ class MakeModuleCommand extends Command
                             {--np|no-provider : Do not generate provider}
                             {--actions : Generate Actions for the module}
                             {--no-actions : Skip generating Actions}
+                            {--sg|swagger : Generate Swagger/OpenAPI annotations}
+                            {--no-swagger : Skip generating Swagger/OpenAPI annotations}
                             {--fm|from-migration= : Migration file path or hint for inferring fields}
                             {--fields= : Inline schema definition for modules without migrations}
                             {--f|force : Overwrite existing files}';
@@ -95,6 +97,18 @@ class MakeModuleCommand extends Command
         }
         if ($this->input->hasParameterOption(['--no-actions'])) {
             $withActions = false;
+        }
+
+        $withSwagger = (bool) ($defaults['with_swagger'] ?? false);
+        if ($this->input->hasParameterOption(['--swagger', '--sg'])) {
+            $withSwagger = true;
+        }
+        if ($this->input->hasParameterOption(['--no-swagger'])) {
+            $withSwagger = false;
+        }
+        if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
+            $this->warn('• Swagger annotations requested but the swagger-php package is missing. Install it via `composer require darkaonline/l5-swagger` or `composer require zircote/swagger-php` to use --swagger.');
+            $withSwagger = false;
         }
 
         $modelFqcn       = $baseNamespace . '\\Models\\' . $name;
@@ -210,6 +224,7 @@ class MakeModuleCommand extends Command
                 withRequests: $withRequests,
                 usesDto: $withDTO,
                 usesResource: $withResource,
+                withSwagger: $withSwagger,
                 force: $force,
                 withActions: $withActions
             );

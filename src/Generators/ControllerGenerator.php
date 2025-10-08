@@ -16,6 +16,7 @@ class ControllerGenerator
         bool $withRequests = false,
         bool $usesDto = true,
         bool $usesResource = true,
+        bool $withSwagger = false,
         bool $force = false,
         bool $withActions = false
     ): array {
@@ -40,6 +41,7 @@ class ControllerGenerator
         $namespace     = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
         $className     = "{$name}Controller";
         $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
+        $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder);
 
         if ($isApi) {
             $content = $withActions
@@ -56,7 +58,8 @@ class ControllerGenerator
                     $usesDto,
                     $usesResource,
                     $relationsLoad,
-                    $actionsNamespace
+                    $actionsNamespace,
+                    $swaggerDocs
                 )
                 : self::buildApiController(
                     $name,
@@ -71,7 +74,8 @@ class ControllerGenerator
                     $withRequests,
                     $usesDto,
                     $usesResource,
-                    $relationsLoad
+                    $relationsLoad,
+                    $swaggerDocs
                 );
         } else {
             $content = $withActions
@@ -121,7 +125,8 @@ class ControllerGenerator
         bool $withRequests,
         bool $usesDto,
         bool $usesResource,
-        string $relationsLoad
+        string $relationsLoad,
+        array $swaggerDocs
     ): string {
         $imports = [
             $modelFqcn,
@@ -141,6 +146,12 @@ class ControllerGenerator
         if ($withRequests) {
             $imports[] = $storeReqFqcn;
             $imports[] = $updateReqFqcn;
+        }
+        if (!empty($swaggerDocs['enabled'])) {
+            $imports[] = 'OpenApi\\Annotations as OA';
+        }
+        if (!empty($swaggerDocs['enabled'])) {
+            $imports[] = 'OpenApi\\Annotations as OA';
         }
 
         $usesBlock = self::buildUses($imports);
@@ -197,6 +208,12 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
             'update_response'     => $resourceUpdated,
+            'swagger_class_doc'   => $swaggerDocs['class'] ?? '',
+            'swagger_index'       => $swaggerDocs['index'] ?? '',
+            'swagger_store'       => $swaggerDocs['store'] ?? '',
+            'swagger_show'        => $swaggerDocs['show'] ?? '',
+            'swagger_update'      => $swaggerDocs['update'] ?? '',
+            'swagger_destroy'     => $swaggerDocs['destroy'] ?? '',
         ]);
     }
 
@@ -213,7 +230,8 @@ class ControllerGenerator
         bool $usesDto,
         bool $usesResource,
         string $relationsLoad,
-        string $actionsNamespace
+        string $actionsNamespace,
+        array $swaggerDocs
     ): string {
         $imports = [
             $modelFqcn,
@@ -293,6 +311,12 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
             'update_response'     => $updateResponse,
+            'swagger_class_doc'   => $swaggerDocs['class'] ?? '',
+            'swagger_index'       => $swaggerDocs['index'] ?? '',
+            'swagger_store'       => $swaggerDocs['store'] ?? '',
+            'swagger_show'        => $swaggerDocs['show'] ?? '',
+            'swagger_update'      => $swaggerDocs['update'] ?? '',
+            'swagger_destroy'     => $swaggerDocs['destroy'] ?? '',
         ]);
     }
 
@@ -436,6 +460,125 @@ class ControllerGenerator
             'update_payload'      => $payloadInitUpdate,
             'update_argument'     => $updateArgument,
         ]);
+    }
+
+    /**
+     * Build swagger annotation snippets for API controllers.
+     *
+     * @return array{enabled: bool, class: string, index: string, store: string, show: string, update: string, destroy: string}
+     */
+    private static function swaggerDocs(bool $enabled, bool $isApi, string $name, ?string $controllerSubfolder): array
+    {
+        $docs = [
+            'enabled' => false,
+            'class'   => '',
+            'index'   => '',
+            'store'   => '',
+            'show'    => '',
+            'update'  => '',
+            'destroy' => '',
+        ];
+
+        if (!$enabled || !$isApi) {
+            return $docs;
+        }
+
+        $tag          = Str::studly($name);
+        $resourceSlug = Str::kebab(Str::pluralStudly($name));
+        $paramName    = Str::camel($name);
+
+        $segments = [];
+        if (is_string($controllerSubfolder) && $controllerSubfolder !== '') {
+            foreach (preg_split('/[\/\\\\]+/', trim($controllerSubfolder, '/\\')) as $segment) {
+                if ($segment !== '') {
+                    $segments[] = Str::kebab($segment);
+                }
+            }
+        }
+
+        $basePath = '/api';
+        if (!empty($segments)) {
+            $basePath .= '/' . implode('/', $segments);
+        }
+        $basePath .= '/' . $resourceSlug;
+
+        $docs['enabled'] = true;
+        $docs['class']   = self::formatDoc([
+            "@OA\\Tag(name=\"{$tag}\")",
+        ], 0);
+
+        $docs['index'] = self::formatDoc([
+            '@OA\Get(',
+            "    path=\"{$basePath}\",",
+            "    summary=\"List {$tag}\",",
+            "    tags={\"{$tag}\"},",
+            '    @OA\Response(response=200, description="Successful response")',
+            ')',
+        ]);
+
+        $docs['store'] = self::formatDoc([
+            '@OA\Post(',
+            "    path=\"{$basePath}\",",
+            "    summary=\"Create {$tag}\",",
+            "    tags={\"{$tag}\"},",
+            '    @OA\RequestBody(required=true, @OA\JsonContent()),',
+            '    @OA\Response(response=201, description="Created"),',
+            '    @OA\Response(response=422, description="Validation error")',
+            ')',
+        ]);
+
+        $docs['show'] = self::formatDoc([
+            '@OA\Get(',
+            "    path=\"{$basePath}/{{$paramName}}\",",
+            "    summary=\"Show {$tag}\",",
+            "    tags={\"{$tag}\"},",
+            "    @OA\Parameter(name=\"{$paramName}\", in=\"path\", required=true, @OA\Schema(type=\"integer\")),",
+            '    @OA\Response(response=200, description="Successful response"),',
+            '    @OA\Response(response=404, description="Not found")',
+            ')',
+        ]);
+
+        $docs['update'] = self::formatDoc([
+            '@OA\Put(',
+            "    path=\"{$basePath}/{{$paramName}}\",",
+            "    summary=\"Update {$tag}\",",
+            "    tags={\"{$tag}\"},",
+            "    @OA\Parameter(name=\"{$paramName}\", in=\"path\", required=true, @OA\Schema(type=\"integer\")),",
+            '    @OA\RequestBody(required=true, @OA\JsonContent()),',
+            '    @OA\Response(response=200, description="Updated"),',
+            '    @OA\Response(response=422, description="Validation error"),',
+            '    @OA\Response(response=404, description="Not found")',
+            ')',
+        ]);
+
+        $docs['destroy'] = self::formatDoc([
+            '@OA\Delete(',
+            "    path=\"{$basePath}/{{$paramName}}\",",
+            "    summary=\"Delete {$tag}\",",
+            "    tags={\"{$tag}\"},",
+            "    @OA\Parameter(name=\"{$paramName}\", in=\"path\", required=true, @OA\Schema(type=\"integer\")),",
+            '    @OA\Response(response=204, description="Deleted"),',
+            '    @OA\Response(response=404, description="Not found")',
+            ')',
+        ]);
+
+        return $docs;
+    }
+
+    private static function formatDoc(array $lines, int $indentLevel = 1): string
+    {
+        if (empty($lines)) {
+            return '';
+        }
+
+        $indent = str_repeat('    ', max(0, $indentLevel));
+        $doc    = $indent . "/**\n";
+        foreach ($lines as $line) {
+            $doc .= $indent . ' * ' . $line . "\n";
+        }
+        $doc .= $indent . " */\n";
+
+        return $doc;
     }
 
     private static function buildUses(array $imports): string

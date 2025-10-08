@@ -4,7 +4,7 @@ namespace {{ namespace }};
 
 {{ uses }}
 
-class {{ class }}
+{{ swagger_class_doc }}class {{ class }}
 {
     public function __construct(
         public List{{ name }}Action $listAction,
@@ -15,19 +15,19 @@ class {{ class }}
     ) {
     }
 
-    public function index()
+{{ swagger_index }}    public function index()
     {
 {{ index_body }}
     }
 
-    public function store({{ store_request_type }} $request)
+{{ swagger_store }}    public function store({{ store_request_type }} $request)
     {
 {{ store_payload }}
         $model = ($this->createAction)({{ store_argument }});
 {{ store_response }}
     }
 
-    public function show({{ model_class }} ${{ model_variable }}): mixed
+{{ swagger_show }}    public function show({{ model_class }} ${{ model_variable }}): mixed
     {
         $model = ($this->showAction)(${{ model_variable }}->getKey());
         if (!$model) {
@@ -37,7 +37,7 @@ class {{ class }}
 {{ show_response }}
     }
 
-    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
+{{ swagger_update }}    public function update({{ update_request_type }} $request, {{ model_class }} ${{ model_variable }})
     {
 {{ update_payload }}
         $model = ($this->updateAction)(${{ model_variable }}->getKey(), {{ update_argument }});
@@ -48,7 +48,7 @@ class {{ class }}
 {{ update_response }}
     }
 
-    public function destroy({{ model_class }} ${{ model_variable }})
+{{ swagger_destroy }}    public function destroy({{ model_class }} ${{ model_variable }})
     {
         $deleted = ($this->deleteAction)(${{ model_variable }}->getKey());
         return $deleted
