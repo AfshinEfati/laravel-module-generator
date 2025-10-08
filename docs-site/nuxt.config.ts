@@ -34,7 +34,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      siteName: 'Laravel Module Generator'
+      siteName: 'Laravel Module Generator',
+      basePath: baseURL
     }
   },
   nitro: {
