@@ -32,8 +32,9 @@ class ControllerGenerator
         $helperFqcn    = "{$baseNamespace}\\Helpers\\ApiResponseHelper";
         $resourceFqcn  = "{$baseNamespace}\\Http\\Resources\\{$name}Resource";
         $dtoFqcn       = "{$baseNamespace}\\DTOs\\{$name}DTO";
-        $storeReqFqcn  = "{$baseNamespace}\\Http\\Requests\\Store{$name}Request";
-        $updateReqFqcn = "{$baseNamespace}\\Http\\Requests\\Update{$name}Request";
+        $requestNamespace = "{$baseNamespace}\\Http\\Requests\\{$name}";
+        $storeReqFqcn  = "{$requestNamespace}\\Store{$name}Request";
+        $updateReqFqcn = "{$requestNamespace}\\Update{$name}Request";
 
         $relationsLoad = self::relationsLoadSnippet($modelFqcn, $withActions ? 'model' : null);
         $namespace     = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
