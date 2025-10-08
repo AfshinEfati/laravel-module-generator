@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { createError } from 'h3'
 
 const route = useRoute()
@@ -10,10 +11,16 @@ const { data: doc } = await useAsyncData(`doc-${contentPath}`, () => queryConten
 if (!doc.value) {
   throw createError({ statusCode: 404, statusMessage: 'Document not found' })
 }
+
+const pageTitle = computed(() =>
+  doc.value?.title ? `${doc.value.title} · Laravel Module Generator` : 'Laravel Module Generator'
+)
+
+useHead(() => ({
+  title: pageTitle.value
+}))
 </script>
 
 <template>
-  <NuxtLayout :lang="langParam" :doc="doc">
-    <ContentRenderer :value="doc" />
-  </NuxtLayout>
+  <ContentRenderer :value="doc" />
 </template>

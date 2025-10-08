@@ -2,38 +2,28 @@
 import { computed } from 'vue'
 import { useRuntimeConfig } from '#imports'
 
-const props = defineProps<{
-  lang?: string
-  doc?: Record<string, any>
-}>()
-
 const route = useRoute()
-const runtimeConfig = useRuntimeConfig()
 
-const normalizeBasePath = (path: string) => {
-  if (!path || path === '/') {
-    return ''
+const normalizePath = (path: string) => {
+  if (!path) {
+    return '/'
   }
 
-  const trimmed = path.replace(/^\/+|\/+$/g, '')
-  return trimmed ? `/${trimmed}` : ''
+  const trimmed = path.replace(/\/+$/, '')
+  return trimmed === '' ? '/' : trimmed
 }
 
-const basePath = computed(() => normalizeBasePath(runtimeConfig.public.basePath))
-
-const stripBase = (path: string) => {
-  if (!path || !basePath.value) {
-    return path
+const currentLang = computed(() => {
+  const langParam = route.params.lang
+  if (Array.isArray(langParam)) {
+    return langParam[0] ?? 'en'
   }
 
-  return path.startsWith(basePath.value) ? path.slice(basePath.value.length) || '/' : path
-}
-
-const currentLang = computed(() =>
-  props.lang ??
-  (Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string) ?? 'en')
-)
+  return (langParam as string) ?? 'en'
+})
 const isRtl = computed(() => currentLang.value === 'fa')
+const currentPath = computed(() => normalizePath(route.path))
+const isActiveLink = (path: string) => currentPath.value === normalizePath(path)
 
 const normalizePath = (path: string) => {
   if (!path) {
@@ -112,13 +102,12 @@ const navigation = computed(() => {
   return currentLang.value === 'fa' ? faNav : enNav
 })
 
-useHead({
-  title: props.doc?.title ?? 'Laravel Module Generator',
+useHead(() => ({
   htmlAttrs: {
     lang: currentLang.value,
     dir: isRtl.value ? 'rtl' : 'ltr'
   }
-})
+}))
 </script>
 
 <template>
