@@ -1,4 +1,11 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import { joinURL } from 'ufo'
+
+const siteBaseURL =
+  process.env.NUXT_PUBLIC_BASE_URL ??
+  (process.env.NODE_ENV === 'production' ? '/laravel-module-generator/' : '/')
+const faviconHref = siteBaseURL === '/' ? '/favicon.svg' : `${siteBaseURL}favicon.svg`
+const rootRedirect = joinURL(siteBaseURL, 'en')
 
 export default defineNuxtConfig({
   modules: ['@nuxt/content', '@nuxtjs/tailwindcss'],
@@ -13,13 +20,14 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/': { redirect: '/en' }
+    '/': { redirect: rootRedirect }
   },
   app: {
+    baseURL: siteBaseURL,
     head: {
       titleTemplate: '%s · Laravel Module Generator',
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+        { rel: 'icon', type: 'image/svg+xml', href: faviconHref }
       ]
     }
   },
@@ -28,13 +36,38 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      siteName: 'Laravel Module Generator'
+      siteName: 'Laravel Module Generator',
+      basePath: siteBaseURL
     }
   },
   nitro: {
     prerender: {
-      crawlLinks: true,
-      routes: ['/', '/en', '/fa']
+      crawlLinks: false,
+      routes: [
+        '/',
+        '/en',
+        '/fa',
+        '/en/installation',
+        '/en/quickstart',
+        '/en/configuration',
+        '/en/usage',
+        '/en/advanced',
+        '/en/module-anatomy',
+        '/en/goli-guide',
+        '/en/github-pages-setup',
+        '/en/reference',
+        '/en/changelog',
+        '/fa/installation',
+        '/fa/quickstart',
+        '/fa/configuration',
+        '/fa/usage',
+        '/fa/advanced',
+        '/fa/module-anatomy',
+        '/fa/goli-guide',
+        '/fa/github-pages-setup',
+        '/fa/reference',
+        '/fa/changelog'
+      ]
     }
   },
   devtools: { enabled: false }
