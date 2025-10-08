@@ -41,6 +41,32 @@ export default defineNuxtConfig({
       titleTemplate: '%s · Laravel Module Generator',
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: faviconHref }
+      ],
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'A powerful Laravel package for generating modular application structures with clean architecture and best practices.' },
+        { name: 'keywords', content: 'Laravel, Module Generator, PHP, Modular Architecture, Laravel Package' },
+        
+        // Open Graph
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Laravel Module Generator' },
+        { property: 'og:title', content: 'Laravel Module Generator - Build Modular Laravel Applications' },
+        { property: 'og:description', content: 'A powerful Laravel package for generating modular application structures with clean architecture and best practices.' },
+        { property: 'og:url', content: 'https://afshinefati.github.io/laravel-module-generator/' },
+        { property: 'og:image', content: 'https://afshinefati.github.io/laravel-module-generator/og-image.svg' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        
+        // Twitter Card
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'Laravel Module Generator - Build Modular Laravel Applications' },
+        { name: 'twitter:description', content: 'A powerful Laravel package for generating modular application structures with clean architecture and best practices.' },
+        { name: 'twitter:image', content: 'https://afshinefati.github.io/laravel-module-generator/og-image.svg' },
+        
+        // Additional
+        { name: 'author', content: 'Afshin Efati' },
+        { name: 'theme-color', content: '#3b82f6' }
       ]
     }
   },

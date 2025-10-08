@@ -1,0 +1,69 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0f172a"/>
+  
+  <!-- Gradient overlay -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF2D20;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.15" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grad1)"/>
+  
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  
+  <!-- Content -->
+  <g>
+    <!-- Laravel Logo (Official) -->
+    <g transform="translate(520, 120)">
+      <!-- Background circle -->
+      <circle cx="80" cy="80" r="75" fill="rgba(255, 45, 32, 0.1)"/>
+      
+      <!-- Laravel Logo -->
+      <g transform="scale(0.35) translate(80, 80)">
+        <path fill="#FF2D20" d="M81.6 31.7l-68.8 39.7c-2.5 1.4-4.1 4.1-4.1 7v79.4c0 2.9 1.6 5.6 4.1 7l68.8 39.7c2.5 1.4 5.6 1.4 8.2 0l68.8-39.7c2.5-1.4 4.1-4.1 4.1-7V78.4c0-2.9-1.6-5.6-4.1-7L89.8 31.7c-2.5-1.4-5.7-1.4-8.2 0z"/>
+        <path fill="#ffffff" d="M127.4 80.4l-22.3-12.9c-1.1-0.6-2.4-0.6-3.5 0l-22.3 12.9c-1.1 0.6-1.7 1.8-1.7 3v25.8c0 1.2 0.6 2.3 1.7 3l22.3 12.9c1.1 0.6 2.4 0.6 3.5 0l22.3-12.9c1.1-0.6 1.7-1.8 1.7-3V83.4c0-1.2-0.6-2.4-1.7-3z"/>
+        <path fill="#FF2D20" d="M103.5 95.2c-3.2 0-5.8-2.6-5.8-5.8s2.6-5.8 5.8-5.8 5.8 2.6 5.8 5.8-2.6 5.8-5.8 5.8zm0-9.3c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5z"/>
+      </g>
+    </g>
+    
+    <!-- Badge -->
+    <rect x="520" y="250" width="160" height="32" rx="16" fill="rgba(255, 45, 32, 0.2)" stroke="rgba(255, 45, 32, 0.4)" stroke-width="1"/>
+    <text x="600" y="272" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="600" fill="#ff6b5a" text-anchor="middle">
+      📦 Laravel Package
+    </text>
+    
+    <!-- Title -->
+    <text x="600" y="330" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="800" fill="#ffffff" text-anchor="middle">
+      Laravel Module
+    </text>
+    <text x="600" y="395" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="800" fill="#ffffff" text-anchor="middle">
+      Generator
+    </text>
+    
+    <!-- Subtitle -->
+    <text x="600" y="445" font-family="system-ui, -apple-system, sans-serif" font-size="30" fill="#94a3b8" text-anchor="middle">
+      Build Modular Laravel Applications
+    </text>
+    
+    <!-- Description -->
+    <text x="600" y="495" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b" text-anchor="middle">
+      A powerful package for generating modular application structures
+    </text>
+    <text x="600" y="525" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b" text-anchor="middle">
+      with clean architecture and best practices
+    </text>
+    
+    <!-- Footer -->
+    <text x="600" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#475569" text-anchor="middle">
+      afshinefati.github.io/laravel-module-generator
+    </text>
+  </g>
+</svg>
