@@ -13,8 +13,8 @@ title: Laravel Module Generator
       Ship production-ready modules that follow best practices and keep your project structure predictable.
     </p>
     <div class="hero__actions">
-      [Get started](installation.md){ .md-button .md-button--primary }
-      [View on GitHub](https://github.com/AfshinEfati/laravel-module-generator){ .md-button .md-button--secondary target=_blank }
+      <a href="installation.md" class="md-button md-button--primary">Get started</a>
+      <a href="https://github.com/AfshinEfati/laravel-module-generator" class="md-button md-button--secondary" target="_blank">View on GitHub</a>
     </div>
   </div>
 </section>

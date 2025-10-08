@@ -13,8 +13,8 @@ title: ژنراتور ماژول لاراول
       استاب‌ها را هر طور که می‌خواهید تغییر دهید تا خروجی با استاندارد تیم شما هم‌خوان باشد.
     </p>
     <div class="hero__actions">
-      [شروع کنید](installation.md){ .md-button .md-button--primary }
-      [مشاهده در گیت‌هاب](https://github.com/AfshinEfati/laravel-module-generator){ .md-button .md-button--secondary target=_blank }
+      <a href="installation.md" class="md-button md-button--primary">شروع کنید</a>
+      <a href="https://github.com/AfshinEfati/laravel-module-generator" class="md-button md-button--secondary" target="_blank">مشاهده در گیت‌هاب</a>
     </div>
   </div>
 </section>
