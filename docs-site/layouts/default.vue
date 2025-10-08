@@ -10,6 +10,17 @@ const route = useRoute()
 const currentLang = computed(() => props.lang ?? (Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string) ?? 'en'))
 const isRtl = computed(() => currentLang.value === 'fa')
 
+const normalizePath = (path: string) => {
+  if (!path) {
+    return '/'
+  }
+
+  const trimmed = path.replace(/\/+$/, '')
+  return trimmed === '' ? '/' : trimmed
+}
+const currentPath = computed(() => normalizePath(route.path))
+const isActiveLink = (path: string) => currentPath.value === normalizePath(path)
+
 const navigation = computed(() => {
   const enNav = [
     {
@@ -112,9 +123,7 @@ useHead({
                     :to="link.path"
                     class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600"
                     :class="{
-                      'bg-primary-100 text-primary-700 font-semibold':
-                        $route.path === link.path ||
-                        $route.path === `${link.path}/`
+                      'bg-primary-100 text-primary-700 font-semibold': isActiveLink(link.path)
                     }"
                   >
                     {{ link.title }}
