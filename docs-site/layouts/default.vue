@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { joinURL } from 'ufo'
 
 const props = defineProps<{
   lang?: string
@@ -7,8 +8,36 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+const runtimeConfig = useRuntimeConfig()
 const currentLang = computed(() => props.lang ?? (Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string) ?? 'en'))
 const isRtl = computed(() => currentLang.value === 'fa')
+
+const basePath = computed(() => runtimeConfig.public.basePath ?? '/')
+const normalizePath = (path: string) => {
+  if (!path) {
+    return '/'
+  }
+
+  const trimmed = path.replace(/\/+$/, '')
+  return trimmed === '' ? '/' : trimmed
+}
+const stripBase = (path: string) => {
+  if (basePath.value !== '/' && path.startsWith(basePath.value)) {
+    const withoutBase = path.slice(basePath.value.length)
+    return `/${withoutBase.replace(/^\/+/, '')}`
+  }
+
+  return path
+}
+const currentPath = computed(() => normalizePath(stripBase(route.path)))
+const resolveLink = (path: string) => {
+  if (!path || basePath.value === '/' || basePath.value === '') {
+    return path
+  }
+
+  return joinURL(basePath.value, path.replace(/^\//, ''))
+}
+const isActiveLink = (path: string) => currentPath.value === normalizePath(path)
 
 const navigation = computed(() => {
   const enNav = [
@@ -86,13 +115,13 @@ useHead({
     <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-3">
-          <NuxtLink to="/en" class="text-lg font-semibold text-primary-600">Laravel Module Generator</NuxtLink>
+          <NuxtLink :to="resolveLink('/en')" class="text-lg font-semibold text-primary-600">Laravel Module Generator</NuxtLink>
           <span class="hidden text-sm text-slate-500 sm:inline">Docs</span>
         </div>
         <nav class="flex items-center gap-4 text-sm font-medium text-slate-600">
-          <NuxtLink to="/en" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'en' }">English</NuxtLink>
+          <NuxtLink :to="resolveLink('/en')" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'en' }">English</NuxtLink>
           <span class="text-slate-300">·</span>
-          <NuxtLink to="/fa" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی</NuxtLink>
+          <NuxtLink :to="resolveLink('/fa')" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی</NuxtLink>
           <a href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-primary-500 hover:text-primary-600">
             <span>GitHub</span>
           </a>
@@ -109,12 +138,10 @@ useHead({
               <ul class="space-y-2" :class="{ 'text-right': isRtl }">
                 <li v-for="link in section.links" :key="link.path">
                   <NuxtLink
-                    :to="link.path"
+                    :to="resolveLink(link.path)"
                     class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600"
                     :class="{
-                      'bg-primary-100 text-primary-700 font-semibold':
-                        $route.path === link.path ||
-                        $route.path === `${link.path}/`
+                      'bg-primary-100 text-primary-700 font-semibold': isActiveLink(link.path)
                     }"
                   >
                     {{ link.title }}

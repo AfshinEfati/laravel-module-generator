@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NUXT_PUBLIC_BASE_URL: /laravel-module-generator/
     defaults:
       run:
         working-directory: docs-site
