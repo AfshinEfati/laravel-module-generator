@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { queryContent } from '#content'
-import { createError } from 'nuxt/app'
+import { queryContent } from '#content/server'
+import { createError, navigateTo } from '#imports'
 
 const route = useRoute()
 const langParam = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
 const slugParam = route.params.slug
-const slug = Array.isArray(slugParam) ? slugParam.join('/') : (slugParam as string | undefined)
-const path = `${langParam}/${slug ?? 'index'}`
+const slugSegments = Array.isArray(slugParam)
+  ? slugParam
+  : typeof slugParam === 'string'
+    ? [slugParam]
+    : []
 
-const { data: doc } = await useAsyncData(`doc-${path}`, () => queryContent(path).findOne())
+if (slugSegments.length === 0) {
+  await navigateTo(`/${langParam}/index`, { replace: true })
+}
+
+const contentPath = `/${langParam}/${slugSegments.join('/')}`
+
+const { data: doc } = await useAsyncData(`doc-${contentPath}`, () => queryContent(contentPath).findOne())
 
 if (!doc.value) {
   throw createError({ statusCode: 404, statusMessage: 'Document not found' })

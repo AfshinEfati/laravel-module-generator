@@ -1,9 +1,20 @@
 <script setup lang="ts">
+import { queryContent } from '#content/server'
+import { createError } from '#imports'
+
 const route = useRoute()
-const lang = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
-await navigateTo(`/${lang}/index`, { replace: true })
+const langParam = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
+const contentPath = `/${langParam}/index`
+
+const { data: doc } = await useAsyncData(`doc-${contentPath}`, () => queryContent(contentPath).findOne())
+
+if (!doc.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Document not found' })
+}
 </script>
 
 <template>
-  <div />
+  <NuxtLayout :lang="langParam" :doc="doc">
+    <ContentRenderer :value="doc" />
+  </NuxtLayout>
 </template>

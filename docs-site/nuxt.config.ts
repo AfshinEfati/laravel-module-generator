@@ -30,7 +30,7 @@ export default defineNuxtConfig({
   },
   nitro: {
     prerender: {
-      routes: ['/en', '/fa']
+      routes: ['/', '/en', '/en/index', '/fa', '/fa/index']
     }
   },
   devtools: { enabled: false }
