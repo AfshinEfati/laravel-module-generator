@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps<{
-  lang?: string
-  doc?: Record<string, any>
-}>()
-
 const route = useRoute()
-const currentLang = computed(() => props.lang ?? (Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string) ?? 'en'))
+
+const normalizeDocPath = (path: string) => {
+  if (!path) {
+    return '/'
+  }
+
+  const trimmed = path.replace(/\/+$/, '')
+  return trimmed === '' ? '/' : trimmed
+}
+
+const currentLang = computed(() => {
+  const langParam = route.params.lang
+  if (Array.isArray(langParam)) {
+    return langParam[0] ?? 'en'
+  }
+
+  return (langParam as string) ?? 'en'
+})
 const isRtl = computed(() => currentLang.value === 'fa')
+const currentPath = computed(() => normalizeDocPath(route.path))
+const isActiveLink = (path: string) => currentPath.value === normalizeDocPath(path)
 
 const navigation = computed(() => {
   const enNav = [
@@ -72,13 +86,12 @@ const navigation = computed(() => {
   return currentLang.value === 'fa' ? faNav : enNav
 })
 
-useHead({
-  title: props.doc?.title ?? 'Laravel Module Generator',
+useHead(() => ({
   htmlAttrs: {
     lang: currentLang.value,
     dir: isRtl.value ? 'rtl' : 'ltr'
   }
-})
+}))
 </script>
 
 <template>
@@ -112,9 +125,7 @@ useHead({
                     :to="link.path"
                     class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600"
                     :class="{
-                      'bg-primary-100 text-primary-700 font-semibold':
-                        $route.path === link.path ||
-                        $route.path === `${link.path}/`
+                      'bg-primary-100 text-primary-700 font-semibold': isActiveLink(link.path)
                     }"
                   >
                     {{ link.title }}
