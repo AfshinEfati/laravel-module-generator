@@ -5,6 +5,7 @@ namespace Efati\ModuleGenerator\Generators;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\ModelInspector;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\Stub;
 
@@ -71,11 +72,7 @@ class FormRequestGenerator
             }
         }
 
-        $fillable = [];
-        if (class_exists($modelFqcn)) {
-            $m = new $modelFqcn();
-            $fillable = method_exists($m, 'getFillable') ? (array) $m->getFillable() : [];
-        }
+        $fillable = ModelInspector::extractFillable($modelFqcn);
 
         if (empty($fillable) && !empty($schema)) {
             $fillable = SchemaParser::fieldNames($schema);
