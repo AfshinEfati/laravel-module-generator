@@ -32,6 +32,11 @@ class ModelInspector
             }
         }
 
+        $runtime = RuntimeFieldParser::parse($modelFqcn);
+        if (!empty($runtime['fields'])) {
+            return MigrationFieldParser::buildFillableFromFields($runtime['fields']);
+        }
+
         return self::extractColumnsFromModel($model);
     }
 
@@ -62,6 +67,13 @@ class ModelInspector
         }
 
         $columns = array_filter($columns, static fn ($value) => is_string($value) && $value !== '');
+        $columns = array_filter($columns, static fn ($column) => !in_array($column, [
+            'id',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'remember_token',
+        ], true));
 
         return array_values(array_unique($columns));
     }

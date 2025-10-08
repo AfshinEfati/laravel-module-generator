@@ -3,6 +3,7 @@
 namespace Efati\ModuleGenerator\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Str;
 use Efati\ModuleGenerator\Generators\RepositoryGenerator;
 use Efati\ModuleGenerator\Generators\ServiceGenerator;
@@ -15,6 +16,7 @@ use Efati\ModuleGenerator\Generators\ResourceGenerator;
 use Efati\ModuleGenerator\Generators\ActionGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
+use Efati\ModuleGenerator\Support\RuntimeFieldParser;
 
 
 class MakeModuleCommand extends Command
@@ -102,9 +104,30 @@ class MakeModuleCommand extends Command
         $parsedRelations = [];
         $parsedTable     = null;
 
+        $modelExists = class_exists($modelFqcn) && is_subclass_of($modelFqcn, EloquentModel::class);
+
+        if (!$modelExists && empty($schemaDefinitions) && empty($migrationHint)) {
+            $this->error("• Model {$modelFqcn} was not found. Create the model first or provide schema metadata via --fields/--from-migration.");
+            return self::FAILURE;
+        }
+
         if (!empty($schemaDefinitions)) {
             [$parsedFields, $parsedRelations] = $this->prepareSchemaDefinitions($schemaDefinitions);
             $parsedTable = Str::snake(Str::pluralStudly($name));
+        }
+
+        if ($modelExists) {
+            $runtime = RuntimeFieldParser::parse($modelFqcn);
+            if ($parsedTable === null && !empty($runtime['table'])) {
+                $parsedTable = $runtime['table'];
+            }
+
+            if (empty($parsedFields) && !empty($runtime['fields'])) {
+                $parsedFields    = $runtime['fields'];
+                $parsedRelations = $runtime['relations'];
+            } elseif (empty($parsedFields) && empty($migrationHint) && empty($schemaDefinitions)) {
+                $this->warn('• Unable to inspect database columns for the model. Falling back to migration parsing.');
+            }
         }
 
         if (empty($parsedFields)) {
@@ -121,8 +144,8 @@ class MakeModuleCommand extends Command
             }
 
             if (is_string($migrationHint) && $migrationHint !== '' && empty($parsedFields)) {
-                $this->warn('• Unable to extract fields from the provided migration hint. Falling back to runtime inspection.');
-            } elseif (!class_exists($modelFqcn) && empty($parsedFields)) {
+                $this->warn('• Unable to extract fields from the provided migration hint.');
+            } elseif (!$modelExists && empty($parsedFields)) {
                 $this->warn('• Model class not found and fields could not be inferred from migration. Some generators may use empty metadata.');
             }
         }

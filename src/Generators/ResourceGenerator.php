@@ -36,7 +36,7 @@ class ResourceGenerator
         $relations = self::resolveRelations($modelFqcn, $baseNamespace, $migrationRelations);
 
 
-        $content = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations, $casts);
+        $content = self::build($className, $baseNamespace, $helperFqcn, $fillable, $relations, $casts, $modelFqcn);
 
         return [$filePath => self::writeFile($filePath, $content, $force)];
     }
@@ -134,7 +134,8 @@ class ResourceGenerator
         string $helperFqcn,
         array $fillable,
         array $relations,
-        array $casts
+        array $casts,
+        string $modelFqcn
     ): string {
         $ns = "{$baseNamespace}\\Http\\Resources";
         $uses = [
@@ -143,6 +144,7 @@ class ResourceGenerator
         ];
 
         $usesBlock = self::buildUses($uses);
+        $mixinDoc = "/**\n * @mixin \\\\{$modelFqcn}\n */";
 
         $body = [];
         foreach ($fillable as $field) {
@@ -166,7 +168,26 @@ class ResourceGenerator
 
         $bodyBlock = implode("\n", $body);
 
-        return "<?php\n\nnamespace {$ns};\n\n{$usesBlock}\n\nclass {$className} extends JsonResource\n{\n    public function toArray(\$request): array\n    {\n        return [\n{$bodyBlock}\n        ];\n    }\n}\n";
+        if ($bodyBlock !== '') {
+            $arrayBody = "        return [\n{$bodyBlock}\n        ];\n";
+        } else {
+            $arrayBody = "        return [];\n";
+        }
+
+        $classBody = "class {$className} extends JsonResource\n{\n    public function toArray(\$request): array\n    {\n{$arrayBody}    }\n}\n";
+
+        $segments = [
+            "<?php",
+            "",
+            "namespace {$ns};",
+            "",
+            $usesBlock !== '' ? $usesBlock : null,
+            "",
+            $mixinDoc,
+            $classBody,
+        ];
+
+        return implode("\n", array_filter($segments, static fn ($segment) => $segment !== null));
 
     }
 
