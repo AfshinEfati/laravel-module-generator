@@ -1,5 +1,5 @@
 // version 7.1.6 summary
-// - Added optional --swagger flag that generates App\Docs\{Module}Doc classes with OpenAPI annotations and warns when swagger-php is missing.【F:src/Commands/MakeModuleCommand.php†L37-L115】【F:src/Generators/ControllerGenerator.php†L20-L512】【F:src/Generators/SwaggerDocGenerator.php†L9-L120】
+// - Added optional --swagger flag that generates App\Docs\{Module}Doc classes with OpenAPI annotations, marks endpoints as secured when controller middleware matches auth rules, and warns when swagger-php is missing.【F:src/Commands/MakeModuleCommand.php†L37-L115】【F:src/Generators/ControllerGenerator.php†L20-L520】【F:src/Generators/SwaggerDocGenerator.php†L9-L187】
 // - Runtime metadata fallback now guarantees DTO/resource/request generation even when models lack $fillable, and resources always expose the primary id with clean mixin annotations.【F:src/Commands/MakeModuleCommand.php†L99-L170】【F:src/Generators/ResourceGenerator.php†L34-L207】
 // - Form requests live inside Http/Requests/{Module} and controller imports follow suit for tidier project structure.【F:src/Generators/FormRequestGenerator.php†L19-L205】【F:src/Generators/ControllerGenerator.php†L20-L120】
 // - Documentation migrated to Nuxt 3 + Tailwind (docs-site/) with GitHub Pages workflow invoking `npm run generate`.【F:docs-site/nuxt.config.ts†L1-L34】【F:.github/workflows/docs.yml†L1-L45】
