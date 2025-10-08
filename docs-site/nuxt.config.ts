@@ -7,6 +7,11 @@ const baseURL =
 const faviconHref = baseURL === '/' ? '/favicon.svg' : `${baseURL}favicon.svg`
 const rootRedirect = joinURL(baseURL, 'en')
 
+const baseURL =
+  process.env.NUXT_PUBLIC_BASE_URL ??
+  (process.env.NODE_ENV === 'production' ? '/laravel-module-generator/' : '/')
+const faviconHref = baseURL === '/' ? '/favicon.svg' : `${baseURL}favicon.svg`
+
 export default defineNuxtConfig({
   modules: ['@nuxt/content', '@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
