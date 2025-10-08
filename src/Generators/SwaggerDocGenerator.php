@@ -36,7 +36,10 @@ class SwaggerDocGenerator
 
         $namespace       = $baseNamespace . '\\Docs';
         $operationsBlock = self::buildOperations((string) $tag, $operations, $paramName);
-        $securityBlock   = self::buildSecuritySchemes($security['schemes'] ?? [], (bool) ($security['enabled'] ?? false));
+
+        $schemesConfig  = is_array($security['schemes'] ?? null) ? $security['schemes'] : [];
+        $filteredSchemes = self::filterUndefinedSchemes($schemesConfig, $docsPath);
+        $securityBlock   = self::buildSecuritySchemes($filteredSchemes, (bool) ($security['enabled'] ?? false));
 
         $content = Stub::render('Doc/swagger', [
             'namespace'        => $namespace,
@@ -222,5 +225,34 @@ class SwaggerDocGenerator
         }
 
         return implode("\n\n", $blocks) . "\n";
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $schemes
+     * @return array<string, array<string, mixed>>
+     */
+    private static function filterUndefinedSchemes(array $schemes, string $docsPath): array
+    {
+        if (empty($schemes) || !is_dir($docsPath)) {
+            return $schemes;
+        }
+
+        $remaining = $schemes;
+
+        foreach (File::files($docsPath) as $file) {
+            $contents = File::get($file->getPathname());
+
+            foreach (array_keys($remaining) as $name) {
+                if (str_contains($contents, 'securityScheme="' . addslashes($name) . '"')) {
+                    unset($remaining[$name]);
+                }
+            }
+
+            if (empty($remaining)) {
+                break;
+            }
+        }
+
+        return $remaining;
     }
 }
