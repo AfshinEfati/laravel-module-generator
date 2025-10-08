@@ -102,6 +102,15 @@ pre {
     @apply border border-primary-200 bg-primary-50 text-primary-700 hover:border-primary-300 hover:bg-primary-100;
   }
 
+  .md-button svg {
+    flex-shrink: 0;
+  }
+
+  .md-button:hover svg {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+  }
+
   .landing-grid {
     @apply grid gap-6 sm:grid-cols-2;
   }
