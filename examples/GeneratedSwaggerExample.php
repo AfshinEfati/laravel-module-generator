@@ -13,7 +13,7 @@
 
 namespace App\Docs;
 
-use OpenApi\Annotations as OA;
+use OpenApi\\Annotations as OA;
 
 /**
  * @OA\Tag(name="User")
