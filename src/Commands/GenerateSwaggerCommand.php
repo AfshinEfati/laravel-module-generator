@@ -19,6 +19,8 @@ class GenerateSwaggerCommand extends Command
 
     protected $description = 'Generate Swagger documentation by scanning Laravel routes';
 
+    private static $securitySchemeGenerated = false;
+
     public function handle(): int
     {
         $pathFilter = $this->option('path');
@@ -27,6 +29,9 @@ class GenerateSwaggerCommand extends Command
         $outputDir = $this->option('output') ?: app_path('Docs');
 
         File::ensureDirectoryExists($outputDir);
+
+        // Reset security scheme flag
+        self::$securitySchemeGenerated = false;
 
         $this->info('🔍 Scanning Laravel routes...');
 
@@ -265,9 +270,7 @@ class GenerateSwaggerCommand extends Command
         $lines[] = '     * )';
         $lines[] = '     */';
         $methodNameSafe = str_replace(['.', '-', '/'], '_', $methodName . '_' . $routeName);
-        $lines[] = sprintf('    public function %s(): void', Str::camel($methodNameSafe));
-        $lines[] = '    {';
-        $lines[] = '    }';
+        $lines[] = sprintf('    public function %s(){}', Str::camel($methodNameSafe));
 
         return implode("\n", $lines);
     }
@@ -426,8 +429,8 @@ class GenerateSwaggerCommand extends Command
         $lines[] = "class {$className}";
         $lines[] = '{';
 
-        // Add security schemes
-        if (!empty($securitySchemes)) {
+        // Add security schemes (only once across all files)
+        if (!empty($securitySchemes) && !self::$securitySchemeGenerated) {
             foreach ($securitySchemes as $name => $scheme) {
                 $lines[] = '    /**';
                 $lines[] = '     * @OA\SecurityScheme(';
@@ -444,11 +447,10 @@ class GenerateSwaggerCommand extends Command
                 }
                 $lines[] = '     * )';
                 $lines[] = '     */';
-                $lines[] = '    public function ' . Str::camel($name) . 'Security(): void';
-                $lines[] = '    {';
-                $lines[] = '    }';
+                $lines[] = '    public function ' . Str::camel($name) . 'Security(){}';
                 $lines[] = '';
             }
+            self::$securitySchemeGenerated = true;
         }
 
         // Add operations
