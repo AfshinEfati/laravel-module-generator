@@ -91,7 +91,7 @@ Both approaches feed consistent metadata to the DTO, Form Request, Resource, and
 | `--no-dto` | `-nd` | Skip DTO generation. |
 | `--no-test` | `-nt` | Skip feature tests. |
 | `--no-provider` | `-np` | Skip provider creation and automatic registration. |
-| `--swagger` | `-sg` | Generate OpenAPI (`@OA`) annotations inside `App\Docs\{Module}Doc` (requires `--api` plus swagger-php or l5-swagger). |
+| `--swagger` | `-sg` | Generate OpenAPI (`@OA`) annotations inside `App\Docs\{Module}Doc`. When used alone, only generates swagger docs. When combined with other flags, generates full module with swagger. |
 | `--no-swagger` | – | Explicitly disable Swagger annotations even when enabled by defaults. |
 | `--from-migration=` | `-fm` | Provide a migration path or keyword to infer fields and relations. |
 | `--fields=` | – | Inline schema definition (comma-separated) for modules without migrations. |
@@ -128,6 +128,76 @@ Enable `--tests` (or configure it as the default) to scaffold CRUD feature tests
 - Mount routes against a dedicated test URI segment so you can wire them to your preferred router quickly.
 
 Tests honour your configured database connection—there is no forced SQLite driver, so they run against the environment you already maintain.【F:src/Generators/TestGenerator.php†L19-L44】【F:src/Commands/MakeModuleCommand.php†L132-L170】
+
+## Swagger/OpenAPI documentation
+
+### Model-Based Swagger (Module Generator)
+
+Generate standalone Swagger documentation classes with the `--swagger` flag:
+
+```bash
+# Generate only Swagger documentation (no other files)
+php artisan make:module City --swagger
+
+# Generate full module with Swagger documentation
+php artisan make:module City --api --swagger
+```
+
+When `--swagger` is used alone, only the Swagger documentation file is created in `App\Docs\{Module}Doc`.
+
+### Route-Based Swagger (Automatic Scanner)
+
+**NEW:** Generate Swagger documentation by scanning your existing Laravel routes:
+
+```bash
+# Scan all routes and generate documentation
+php artisan make:swagger
+
+# Filter by path prefix
+php artisan make:swagger --path=api/v1
+
+# Filter by controller namespace
+php artisan make:swagger --controller=Api
+
+# Combine filters
+php artisan make:swagger --path=api --controller=V1 --force
+```
+
+This command:
+- ✅ Scans all Laravel routes automatically
+- ✅ Groups routes by controller
+- ✅ Generates separate documentation files per controller
+- ✅ Works independently of models
+- ✅ Supports custom routes and endpoints
+
+See [ROUTE_BASED_SWAGGER.md](ROUTE_BASED_SWAGGER.md) for detailed usage guide.
+
+### Generated Swagger Features
+
+The generated annotations include:
+
+- **Proper JSON responses** – All responses include `@OA\JsonContent()` with appropriate content-type headers
+- **Authentication handling** – 401 responses are documented with proper JSON error format
+- **Error responses** – 404 and 422 errors include structured JSON examples
+- **Security schemes** – Configured via `config/module-generator.php` under `swagger.security`
+
+**Important**: To ensure your Laravel API returns JSON for authentication errors (not HTML 404), add this to your API routes or middleware:
+
+```php
+// In routes/api.php or your API middleware
+Route::middleware(['api'])->group(function () {
+    // Your routes here
+});
+```
+
+And ensure your `app/Http/Middleware/Authenticate.php` redirects to a JSON response:
+
+```php
+protected function redirectTo(Request $request): ?string
+{
+    return $request->expectsJson() ? null : route('login');
+}
+```
 
 ## Jalali date tooling
 

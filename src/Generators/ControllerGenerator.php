@@ -518,6 +518,7 @@ class ControllerGenerator
                 'pathParam'   => false,
                 'responses'   => [
                     ['code' => 200, 'description' => 'Successful response'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
                 ],
                 'security'    => $operationSecurity,
             ],
@@ -530,6 +531,7 @@ class ControllerGenerator
                 'pathParam'   => false,
                 'responses'   => [
                     ['code' => 201, 'description' => 'Created'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 422, 'description' => 'Validation error'],
                 ],
                 'security'    => $operationSecurity,
@@ -543,6 +545,7 @@ class ControllerGenerator
                 'pathParam'   => true,
                 'responses'   => [
                     ['code' => 200, 'description' => 'Successful response'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
                 'security'    => $operationSecurity,
@@ -556,6 +559,7 @@ class ControllerGenerator
                 'pathParam'   => true,
                 'responses'   => [
                     ['code' => 200, 'description' => 'Updated'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 422, 'description' => 'Validation error'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
@@ -570,6 +574,7 @@ class ControllerGenerator
                 'pathParam'   => true,
                 'responses'   => [
                     ['code' => 204, 'description' => 'Deleted'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
                 'security'    => $operationSecurity,

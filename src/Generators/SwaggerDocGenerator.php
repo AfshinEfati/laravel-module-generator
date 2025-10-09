@@ -103,7 +103,22 @@ class SwaggerDocGenerator
         foreach ($responses as $response) {
             $code = $response['code'] ?? 200;
             $desc = $response['description'] ?? 'Response';
-            $entries[] = "@OA\\Response(response={$code}, description=\"{$desc}\")";
+            
+            // Add JSON content type for successful responses (2xx)
+            if ($code >= 200 && $code < 300 && $code !== 204) {
+                $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent()\n    )";
+            } elseif ($code === 401) {
+                // Unauthenticated response with JSON
+                $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent(\n            @OA\\Property(property=\"message\", type=\"string\", example=\"Unauthenticated.\")\n        )\n    )";
+            } elseif ($code === 404) {
+                // Not found response with JSON
+                $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent(\n            @OA\\Property(property=\"message\", type=\"string\", example=\"Resource not found.\")\n        )\n    )";
+            } elseif ($code === 422) {
+                // Validation error response with JSON
+                $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent(\n            @OA\\Property(property=\"message\", type=\"string\", example=\"The given data was invalid.\")\n        )\n    )";
+            } else {
+                $entries[] = "@OA\\Response(response={$code}, description=\"{$desc}\")";
+            }
         }
 
         if (!empty($security) && is_array($security)) {

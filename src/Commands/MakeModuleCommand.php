@@ -14,6 +14,7 @@ use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
 use Efati\ModuleGenerator\Generators\ActionGenerator;
+use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\RuntimeFieldParser;
@@ -100,13 +101,41 @@ class MakeModuleCommand extends Command
         }
 
         $withSwagger = (bool) ($defaults['with_swagger'] ?? false);
+        $swaggerOnly = false;
         if ($this->input->hasParameterOption(['--swagger', '--sg'])) {
             $withSwagger = true;
+            // Check if --swagger is the only flag provided (besides name)
+            $providedOptions = array_filter([
+                $this->input->hasParameterOption(['--controller', '--c', '-c']),
+                $this->input->hasParameterOption(['--api', '--a', '-a']),
+                $this->input->hasParameterOption(['--requests', '--r', '-r']),
+                $this->input->hasParameterOption(['--tests', '--t', '-t']),
+                $this->input->hasParameterOption(['--no-controller', '--nc', '-nc']),
+                $this->input->hasParameterOption(['--no-resource', '--nr', '-nr']),
+                $this->input->hasParameterOption(['--no-dto', '--nd', '-nd']),
+                $this->input->hasParameterOption(['--no-test', '--nt', '-nt']),
+                $this->input->hasParameterOption(['--no-provider', '--np', '-np']),
+                $this->input->hasParameterOption(['--actions']),
+                $this->input->hasParameterOption(['--no-actions']),
+                $this->input->hasParameterOption(['--from-migration', '--fm']),
+                $this->input->hasParameterOption(['--fields']),
+            ]);
+            
+            if (empty($providedOptions)) {
+                $swaggerOnly = true;
+                $withController = false;
+                $withResource = false;
+                $withDTO = false;
+                $withProvider = false;
+                $withActions = false;
+                $withUnitTest = false;
+                $withRequests = false;
+            }
         }
         if ($this->input->hasParameterOption(['--no-swagger'])) {
             $withSwagger = false;
         }
-        if ($withSwagger && !$isApi) {
+        if ($withSwagger && !$isApi && !$swaggerOnly) {
             $isApi = true;
             $this->warn('• --swagger implicitly enables API controllers. Generating ProductController as API.');
         }
@@ -124,7 +153,7 @@ class MakeModuleCommand extends Command
 
         $modelExists = class_exists($modelFqcn) && is_subclass_of($modelFqcn, EloquentModel::class);
 
-        if (!$modelExists && empty($schemaDefinitions) && empty($migrationHint)) {
+        if (!$modelExists && empty($schemaDefinitions) && empty($migrationHint) && !$swaggerOnly) {
             $this->error("• Model {$modelFqcn} was not found. Create the model first or provide schema metadata via --fields/--from-migration.");
             return self::FAILURE;
         }
@@ -168,6 +197,20 @@ class MakeModuleCommand extends Command
             } elseif ($modelExists && empty($parsedFields)) {
                 $this->warn('• Unable to infer fields from database or migrations. Some generators may use empty metadata.');
             }
+        }
+
+        // Handle swagger-only generation
+        if ($swaggerOnly) {
+            if ($withSwagger) {
+                $swaggerData = self::buildSwaggerData($name, null, $baseNamespace, []);
+                if ($swaggerData !== null) {
+                    SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerData, $force);
+                    $this->info("✅ Swagger documentation for {$name} generated successfully.");
+                } else {
+                    $this->warn('• Swagger documentation could not be generated.');
+                }
+            }
+            return self::SUCCESS;
         }
 
         // generate
@@ -410,5 +453,127 @@ class MakeModuleCommand extends Command
         }
 
         return SchemaParser::parse($raw);
+    }
+
+    /**
+     * Build swagger data for standalone swagger generation.
+     */
+    private static function buildSwaggerData(string $name, ?string $controllerSubfolder, string $baseNamespace, array $controllerMiddleware): ?array
+    {
+        $tag          = Str::studly($name);
+        $resourceSlug = Str::kebab(Str::pluralStudly($name));
+        $paramName    = Str::camel($name);
+
+        $segments = [];
+        if (is_string($controllerSubfolder) && $controllerSubfolder !== '') {
+            foreach (preg_split('/[\/\\\\]+/', trim($controllerSubfolder, '/\\\\')) as $segment) {
+                if ($segment !== '') {
+                    $segments[] = Str::kebab($segment);
+                }
+            }
+        }
+
+        $basePath = '/api';
+        if (!empty($segments)) {
+            $basePath .= '/' . implode('/', $segments);
+        }
+        $basePath .= '/' . $resourceSlug;
+
+        $securityConfig = (array) config('module-generator.swagger.security', []);
+        $configuredSchemes = (array) ($securityConfig['schemes'] ?? []);
+        $defaultScheme = (string) ($securityConfig['default'] ?? array_key_first($configuredSchemes) ?? 'bearerAuth');
+        $authMiddleware = array_map('strtolower', array_filter((array) ($securityConfig['auth_middleware'] ?? ['auth', 'auth:api', 'auth:sanctum'])));
+        $normalizedControllerMiddleware = array_map('strtolower', array_map('trim', $controllerMiddleware));
+        $requiresAuth = !empty(array_intersect($authMiddleware, $normalizedControllerMiddleware));
+
+        $securitySchemeExists = $defaultScheme !== '' && array_key_exists($defaultScheme, $configuredSchemes);
+        $securityEnabled = $requiresAuth && $securitySchemeExists;
+        $operationSecurity = $securityEnabled ? [$defaultScheme] : [];
+
+        $operations = [
+            [
+                'name'        => 'index',
+                'httpMethod'  => 'Get',
+                'path'        => $basePath,
+                'summary'     => "List {$tag}",
+                'requestBody' => false,
+                'pathParam'   => false,
+                'responses'   => [
+                    ['code' => 200, 'description' => 'Successful response'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
+                ],
+                'security'    => $operationSecurity,
+            ],
+            [
+                'name'        => 'store',
+                'httpMethod'  => 'Post',
+                'path'        => $basePath,
+                'summary'     => "Create {$tag}",
+                'requestBody' => true,
+                'pathParam'   => false,
+                'responses'   => [
+                    ['code' => 201, 'description' => 'Created'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
+                    ['code' => 422, 'description' => 'Validation error'],
+                ],
+                'security'    => $operationSecurity,
+            ],
+            [
+                'name'        => 'show',
+                'httpMethod'  => 'Get',
+                'path'        => $basePath . '/{' . $paramName . '}',
+                'summary'     => "Show {$tag}",
+                'requestBody' => false,
+                'pathParam'   => true,
+                'responses'   => [
+                    ['code' => 200, 'description' => 'Successful response'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
+                    ['code' => 404, 'description' => 'Not found'],
+                ],
+                'security'    => $operationSecurity,
+            ],
+            [
+                'name'        => 'update',
+                'httpMethod'  => 'Put',
+                'path'        => $basePath . '/{' . $paramName . '}',
+                'summary'     => "Update {$tag}",
+                'requestBody' => true,
+                'pathParam'   => true,
+                'responses'   => [
+                    ['code' => 200, 'description' => 'Updated'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
+                    ['code' => 422, 'description' => 'Validation error'],
+                    ['code' => 404, 'description' => 'Not found'],
+                ],
+                'security'    => $operationSecurity,
+            ],
+            [
+                'name'        => 'destroy',
+                'httpMethod'  => 'Delete',
+                'path'        => $basePath . '/{' . $paramName . '}',
+                'summary'     => "Delete {$tag}",
+                'requestBody' => false,
+                'pathParam'   => true,
+                'responses'   => [
+                    ['code' => 204, 'description' => 'Deleted'],
+                    ['code' => 401, 'description' => 'Unauthenticated'],
+                    ['code' => 404, 'description' => 'Not found'],
+                ],
+                'security'    => $operationSecurity,
+            ],
+        ];
+
+        return [
+            'tag'        => $tag,
+            'param_name' => $paramName,
+            'operations' => $operations,
+            'base_path'  => $basePath,
+            'namespace'  => $baseNamespace,
+            'security'   => [
+                'enabled' => $securityEnabled,
+                'default' => $defaultScheme,
+                'schemes' => $securityEnabled ? $configuredSchemes : [],
+            ],
+        ];
     }
 }

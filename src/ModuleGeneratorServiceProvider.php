@@ -7,6 +7,7 @@ use DateTimeZone;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Filesystem\Filesystem;
 use Efati\ModuleGenerator\Commands\MakeModuleCommand;
+use Efati\ModuleGenerator\Commands\GenerateSwaggerCommand;
 use Efati\ModuleGenerator\Support\Goli;
 
 class ModuleGeneratorServiceProvider extends ServiceProvider
@@ -29,6 +30,7 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
 
         $this->commands([
             MakeModuleCommand::class,
+            GenerateSwaggerCommand::class,
         ]);
     }
 

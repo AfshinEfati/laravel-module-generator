@@ -2,6 +2,21 @@
 
 All notable changes to this package are documented here. The current release line is **v7.x**.
 
+## [Unreleased]
+### ✨ Added
+- **NEW Command: `make:swagger`** - Route-based Swagger documentation generator that scans existing Laravel routes and generates OpenAPI documentation independently of models. Supports filtering by path prefix and controller namespace.【F:src/Commands/GenerateSwaggerCommand.php†L1-L450】
+- Swagger-only generation mode: using `--swagger` flag alone now generates only the Swagger documentation file without creating other module files (Repository, Service, DTO, Controller, etc.).【F:src/Commands/MakeModuleCommand.php†L102-L213】
+
+### 🔧 Changed
+- Swagger documentation now includes proper JSON response content types with `@OA\JsonContent()` annotations for all endpoints.【F:src/Generators/SwaggerDocGenerator.php†L103-L122】
+- All Swagger endpoints now document 401 (Unauthenticated) responses with proper JSON error format when authentication is required.【F:src/Generators/ControllerGenerator.php†L511-L582】【F:src/Commands/MakeModuleCommand.php†L492-L563】
+- Enhanced error responses (404, 422) in Swagger documentation with structured JSON examples including message properties.【F:src/Generators/SwaggerDocGenerator.php†L110-L121】
+
+### 📚 Documentation
+- Added comprehensive route-based Swagger documentation guide with examples and troubleshooting.【F:ROUTE_BASED_SWAGGER.md†L1-L500】
+- Added comprehensive Swagger/OpenAPI documentation section in README with usage examples and Laravel configuration tips for proper JSON responses.【F:README.md†L132-L200】
+- Updated command options table to clarify swagger-only behavior.【F:README.md†L94】
+
 ## [7.1.6] - 2025-09-14
 ### ✨ Added
 - Optional `--swagger` flag now generates standalone `App\Docs\{Module}Doc` files with OpenAPI annotations (tags, CRUD endpoints, request/response skeletons), automatically marking endpoints as secured whenever configured middleware (e.g. `auth:sanctum`) is applied and warning if `swagger-php`/`l5-swagger` is missing.【F:src/Commands/MakeModuleCommand.php†L37-L115】【F:src/Generators/ControllerGenerator.php†L20-L520】【F:src/Generators/SwaggerDocGenerator.php†L9-L187】【F:src/Stubs/Module/Doc/swagger.stub†L1-L12】
