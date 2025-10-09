@@ -44,6 +44,9 @@ class GenerateSwaggerCommand extends Command
 
         $this->info(sprintf('📋 Found %d routes to document.', count($routes)));
 
+        // Generate main Info file first
+        $this->generateMainInfoFile($outputDir, $force);
+
         $groupedRoutes = $this->groupRoutesByController($routes);
 
         $generatedFiles = 0;
@@ -66,6 +69,13 @@ class GenerateSwaggerCommand extends Command
     private function getFilteredRoutes(?string $pathFilter, ?string $controllerFilter): array
     {
         $routes = [];
+        $baseNamespace = config('module-generator.base_namespace', 'App');
+
+        // Get allowed route files
+        $allowedFiles = [
+            base_path('routes/api.php'),
+            base_path('routes/web.php'),
+        ];
 
         foreach (Route::getRoutes() as $route) {
             $uri = $route->uri();
@@ -73,6 +83,30 @@ class GenerateSwaggerCommand extends Command
 
             // Skip closure routes
             if ($action === 'Closure' || Str::contains($action, 'Closure')) {
+                continue;
+            }
+
+            // Get route file path
+            $routeAction = $route->getAction();
+            $routeFile = $routeAction['file'] ?? null;
+
+            // Only include routes from api.php and web.php
+            if ($routeFile && !in_array($routeFile, $allowedFiles)) {
+                continue;
+            }
+
+            // Skip vendor/package routes (Laravel, Sanctum, L5-Swagger, etc.)
+            if (Str::contains($action, ['Laravel\\', 'Illuminate\\', 'Laravel\\Sanctum\\', 'L5Swagger\\', 'Darkaonline\\'])) {
+                continue;
+            }
+
+            // Skip documentation routes
+            if (Str::startsWith($uri, ['api/documentation', 'sanctum/', '_ignition'])) {
+                continue;
+            }
+
+            // Only include routes from app controllers
+            if (!Str::startsWith($action, $baseNamespace . '\\')) {
                 continue;
             }
 
@@ -96,6 +130,53 @@ class GenerateSwaggerCommand extends Command
         }
 
         return $routes;
+    }
+
+    /**
+     * Generate main OpenAPI Info file
+     */
+    private function generateMainInfoFile(string $outputDir, bool $force): void
+    {
+        $filePath = $outputDir . DIRECTORY_SEPARATOR . 'OpenApiInfo.php';
+
+        if (!$force && File::exists($filePath)) {
+            return;
+        }
+
+        $baseNamespace = config('module-generator.base_namespace', 'App');
+        $namespace = $baseNamespace . '\\Docs';
+        $appName = config('app.name', 'Laravel API');
+        $appVersion = '1.0.0';
+
+        $content = <<<PHP
+<?php
+
+namespace {$namespace};
+
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\Info(
+ *     title="{$appName}",
+ *     version="{$appVersion}",
+ *     description="API Documentation",
+ *     @OA\Contact(
+ *         email="api@example.com"
+ *     )
+ * )
+ * @OA\Server(
+ *     url="/",
+ *     description="API Server"
+ * )
+ */
+class OpenApiInfo
+{
+}
+
+PHP;
+
+        File::put($filePath, $content);
+        $this->line('  ✓ Generated: OpenApiInfo.php');
     }
 
     /**
@@ -239,9 +320,25 @@ class GenerateSwaggerCommand extends Command
 
         // Add request body
         if ($hasBody) {
+            $requestProperties = $this->extractRequestProperties($route);
             $lines[] = '     *     @OA\RequestBody(';
             $lines[] = '     *         required=true,';
-            $lines[] = '     *         @OA\JsonContent()';
+            if (!empty($requestProperties)) {
+                $lines[] = '     *         @OA\JsonContent(';
+                $lines[] = '     *             required={' . implode(',', array_map(fn($p) => '"' . $p . '"', array_keys($requestProperties))) . '},';
+                $propCount = count($requestProperties);
+                $index = 0;
+                foreach ($requestProperties as $propName => $propType) {
+                    $index++;
+                    $comma = $index < $propCount ? ',' : '';
+                    $lines[] = sprintf('     *             @OA\Property(property="%s", type="%s")%s', $propName, $propType, $comma);
+                }
+                $lines[] = '     *         )';
+            } else {
+                $lines[] = '     *         @OA\JsonContent(';
+                $lines[] = '     *             @OA\Property(property="example", type="string", description="Add your request fields here")';
+                $lines[] = '     *         )';
+            }
             $lines[] = '     *     ),';
         }
 
@@ -269,7 +366,9 @@ class GenerateSwaggerCommand extends Command
 
         $lines[] = '     * )';
         $lines[] = '     */';
-        $methodNameSafe = str_replace(['.', '-', '/'], '_', $methodName . '_' . $routeName);
+        // Create unique method name from HTTP method + URI
+        $uriForMethod = str_replace(['/', '{', '}', '-', '.'], '_', $uri);
+        $methodNameSafe = $httpMethod . '_' . $uriForMethod;
         $lines[] = sprintf('    public function %s(){}', Str::camel($methodNameSafe));
 
         return implode("\n", $lines);
@@ -361,6 +460,113 @@ class GenerateSwaggerCommand extends Command
         }
 
         return false;
+    }
+
+    /**
+     * Extract request properties from controller action
+     */
+    private function extractRequestProperties(array $route): array
+    {
+        $action = $route['action'];
+        
+        // Try to find FormRequest class
+        if (!Str::contains($action, '@')) {
+            return [];
+        }
+
+        [$controllerClass, $method] = explode('@', $action);
+
+        if (!class_exists($controllerClass)) {
+            return [];
+        }
+
+        try {
+            $reflection = new ReflectionClass($controllerClass);
+            if (!$reflection->hasMethod($method)) {
+                return [];
+            }
+
+            $methodReflection = $reflection->getMethod($method);
+            $parameters = $methodReflection->getParameters();
+
+            foreach ($parameters as $parameter) {
+                $type = $parameter->getType();
+                if (!$type || $type->isBuiltin()) {
+                    continue;
+                }
+
+                $typeName = $type->getName();
+                
+                // Check if it's a FormRequest
+                if (class_exists($typeName) && is_subclass_of($typeName, 'Illuminate\\Foundation\\Http\\FormRequest')) {
+                    return $this->extractPropertiesFromFormRequest($typeName);
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore errors
+        }
+
+        return [];
+    }
+
+    /**
+     * Extract properties from FormRequest rules
+     */
+    private function extractPropertiesFromFormRequest(string $formRequestClass): array
+    {
+        try {
+            $formRequest = new $formRequestClass();
+            
+            if (!method_exists($formRequest, 'rules')) {
+                return [];
+            }
+
+            $rules = $formRequest->rules();
+            $properties = [];
+
+            foreach ($rules as $field => $rule) {
+                $type = $this->inferTypeFromRule($rule);
+                $properties[$field] = $type;
+            }
+
+            return $properties;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Infer property type from validation rule
+     */
+    private function inferTypeFromRule($rule): string
+    {
+        if (is_array($rule)) {
+            $rule = implode('|', $rule);
+        }
+
+        $rule = strtolower((string) $rule);
+
+        if (str_contains($rule, 'integer') || str_contains($rule, 'numeric')) {
+            return 'integer';
+        }
+
+        if (str_contains($rule, 'boolean') || str_contains($rule, 'bool')) {
+            return 'boolean';
+        }
+
+        if (str_contains($rule, 'array')) {
+            return 'array';
+        }
+
+        if (str_contains($rule, 'email')) {
+            return 'string';
+        }
+
+        if (str_contains($rule, 'date')) {
+            return 'string';
+        }
+
+        return 'string';
     }
 
     /**
