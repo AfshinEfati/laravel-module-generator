@@ -264,7 +264,8 @@ class GenerateSwaggerCommand extends Command
 
         $lines[] = '     * )';
         $lines[] = '     */';
-        $lines[] = sprintf('    public function %s(): void', Str::camel($methodName . '_' . $routeName));
+        $methodNameSafe = str_replace(['.', '-', '/'], '_', $methodName . '_' . $routeName);
+        $lines[] = sprintf('    public function %s(): void', Str::camel($methodNameSafe));
         $lines[] = '    {';
         $lines[] = '    }';
 
