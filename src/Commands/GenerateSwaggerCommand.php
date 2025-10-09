@@ -216,7 +216,7 @@ class GenerateSwaggerCommand extends Command
 
         $lines = [];
         $lines[] = '    /**';
-        $lines[] = sprintf('     * @OA\\%s(', $httpMethodUpper);
+        $lines[] = sprintf('     * @OA\%s(', $httpMethodUpper);
         $lines[] = sprintf('     *     path="%s",', $uri);
         $lines[] = sprintf('     *     summary="%s",', $summary);
         $lines[] = sprintf('     *     tags={"%s"},', $tag);
@@ -224,35 +224,35 @@ class GenerateSwaggerCommand extends Command
         // Add path parameters
         foreach ($pathParams as $param) {
             $paramType = $this->inferParameterType($param);
-            $lines[] = '     *     @OA\\Parameter(';
+            $lines[] = '     *     @OA\Parameter(';
             $lines[] = sprintf('     *         name="%s",', $param);
             $lines[] = '     *         in="path",';
             $lines[] = '     *         required=true,';
-            $lines[] = sprintf('     *         @OA\\Schema(type="%s")', $paramType);
+            $lines[] = sprintf('     *         @OA\Schema(type="%s")', $paramType);
             $lines[] = '     *     ),';
         }
 
         // Add request body
         if ($hasBody) {
-            $lines[] = '     *     @OA\\RequestBody(';
+            $lines[] = '     *     @OA\RequestBody(';
             $lines[] = '     *         required=true,';
-            $lines[] = '     *         @OA\\JsonContent()';
+            $lines[] = '     *         @OA\JsonContent()';
             $lines[] = '     *     ),';
         }
 
         // Add responses
         foreach ($responses as $response) {
-            $lines[] = '     *     @OA\\Response(';
+            $lines[] = '     *     @OA\Response(';
             $lines[] = sprintf('     *         response=%d,', $response['code']);
             $lines[] = sprintf('     *         description="%s",', $response['description']);
             if (isset($response['content'])) {
-                $lines[] = '     *         @OA\\JsonContent(';
+                $lines[] = '     *         @OA\JsonContent(';
                 if (isset($response['example'])) {
-                    $lines[] = sprintf('     *             @OA\\Property(property="message", type="string", example="%s")', $response['example']);
+                    $lines[] = sprintf('     *             @OA\Property(property="message", type="string", example="%s")', $response['example']);
                 }
                 $lines[] = '     *         )';
             } else {
-                $lines[] = '     *         @OA\\JsonContent()';
+                $lines[] = '     *         @OA\JsonContent()';
             }
             $lines[] = '     *     ),';
         }
@@ -417,10 +417,10 @@ class GenerateSwaggerCommand extends Command
         $lines[] = '';
         $lines[] = "namespace {$namespace};";
         $lines[] = '';
-        $lines[] = 'use OpenApi\\Annotations as OA;';
+        $lines[] = 'use OpenApi\Annotations as OA;';
         $lines[] = '';
         $lines[] = '/**';
-        $lines[] = sprintf(' * @OA\\Tag(name="%s")', $tag);
+        $lines[] = sprintf(' * @OA\Tag(name="%s")', $tag);
         $lines[] = ' */';
         $lines[] = "class {$className}";
         $lines[] = '{';
@@ -429,7 +429,7 @@ class GenerateSwaggerCommand extends Command
         if (!empty($securitySchemes)) {
             foreach ($securitySchemes as $name => $scheme) {
                 $lines[] = '    /**';
-                $lines[] = '     * @OA\\SecurityScheme(';
+                $lines[] = '     * @OA\SecurityScheme(';
                 $lines[] = sprintf('     *     securityScheme="%s",', $name);
                 $lines[] = sprintf('     *     type="%s",', $scheme['type'] ?? 'http');
                 if (isset($scheme['scheme'])) {
