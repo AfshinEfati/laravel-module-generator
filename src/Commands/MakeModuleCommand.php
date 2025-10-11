@@ -37,9 +37,10 @@ class MakeModuleCommand extends Command
                             {--no-actions : Skip generating Actions}
                             {--sg|swagger : Generate Swagger/OpenAPI annotations}
                             {--no-swagger : Skip generating Swagger/OpenAPI annotations}
+                            {--f|full : Generate the full module stack (controllers, requests, resources, tests, provider, DTOs, swagger, actions)}
                             {--fm|from-migration= : Migration file path or hint for inferring fields}
                             {--fields= : Inline schema definition for modules without migrations}
-                            {--f|force : Overwrite existing files}';
+                            {--force : Overwrite existing files}';
 
 
     protected $description = 'Generate Repository, Service, DTO, Provider, Resource, Controller and (optionally) FormRequests for a module';
@@ -53,7 +54,8 @@ class MakeModuleCommand extends Command
 
         $controllerSub = $this->option('controller');
         $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']);
-        $force         = $this->input->hasParameterOption(['--force', '--f', '-f']);
+        $force         = (bool) $this->option('force');
+        $fullStack     = (bool) $this->option('full');
 
         // toggles
         $withController = (bool) ($defaults['with_controller'] ?? true);
@@ -134,6 +136,18 @@ class MakeModuleCommand extends Command
         }
         if ($this->input->hasParameterOption(['--no-swagger'])) {
             $withSwagger = false;
+        }
+        if ($fullStack) {
+            $withController = true;
+            $withRequests = true;
+            $withUnitTest = true;
+            $withResource = true;
+            $withDTO = true;
+            $withProvider = true;
+            $withActions = true;
+            $withSwagger = true;
+            $swaggerOnly = false;
+            $isApi = true;
         }
         if ($withSwagger && !$isApi && !$swaggerOnly) {
             $isApi = true;
