@@ -78,6 +78,16 @@ php artisan make:module Product --api --requests --tests \
 
 Both approaches feed consistent metadata to the DTO, Form Request, Resource, and Test generators so every layer speaks the same language.【F:src/Commands/MakeModuleCommand.php†L47-L130】【F:src/Support/MigrationFieldParser.php†L214-L325】
 
+## Web UI (New)
+
+This package now includes a web-based UI to generate modules interactively. To use it, make sure you've published the package assets, and then visit the `/module-generator` route in your application.
+
+```bash
+php artisan vendor:publish --provider="Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider" --tag=module-generator-views
+```
+
+The UI is inspired by the Spatie Laravel Permission UI and provides a simple and intuitive way to generate modules without using the command line.
+
 ## Command options
 
 | Option | Alias | Description |

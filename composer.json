@@ -16,7 +16,8 @@
 
   "autoload": {
     "psr-4": {
-      "Efati\\ModuleGenerator\\": "src/"
+      "Efati\\ModuleGenerator\\": "src/",
+      "Efati\\ModuleGenerator\\Http\\Controllers\\": "Http/Controllers/"
     },
     "files": [
       "src/helpers.php"

@@ -9,6 +9,7 @@ use Illuminate\Filesystem\Filesystem;
 use Efati\ModuleGenerator\Commands\MakeModuleCommand;
 use Efati\ModuleGenerator\Commands\GenerateSwaggerCommand;
 use Efati\ModuleGenerator\Support\Goli;
+use Efati\ModuleGenerator\Http\Controllers\ModuleGeneratorController;
 
 class ModuleGeneratorServiceProvider extends ServiceProvider
 {
@@ -36,6 +37,9 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'module-generator');
+
         $defaultPublishables = [
             __DIR__ . '/Stubs/BaseRepository.php'           => app_path('Repositories/Eloquent/BaseRepository.php'),
             __DIR__ . '/Stubs/BaseRepositoryInterface.php'  => app_path('Repositories/Contracts/BaseRepositoryInterface.php'),
@@ -56,6 +60,10 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
         ];
 
         $this->publishes($stubPublishables, 'module-generator-stubs');
+
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/module-generator'),
+        ], 'module-generator-views');
 
         if ($this->app->runningInConsole()) {
             $this->ensurePublished($defaultPublishables + $stubPublishables);
