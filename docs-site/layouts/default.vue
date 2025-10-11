@@ -83,8 +83,7 @@ const navigation = computed(() => {
         { title: 'Web UI', path: '/en/web-ui' },
         { title: 'Advanced topics', path: '/en/advanced' },
         { title: 'Module anatomy', path: '/en/module-anatomy' },
-        { title: 'Goli helper', path: '/en/goli-guide' },
-        { title: 'GitHub Pages setup', path: '/en/github-pages-setup' }
+        { title: 'Goli helper', path: '/en/goli-guide' }
       ]
     },
     {
@@ -113,8 +112,7 @@ const navigation = computed(() => {
         { title: 'رابط کاربری تحت وب', path: '/fa/web-ui' },
         { title: 'پیشرفته', path: '/fa/advanced' },
         { title: 'آناتومی ماژول', path: '/fa/module-anatomy' },
-        { title: 'راهنمای گُلی', path: '/fa/goli-guide' },
-        { title: 'دیپلوی روی گیت‌هاب پیجز', path: '/fa/github-pages-setup' }
+        { title: 'راهنمای گُلی', path: '/fa/goli-guide' }
       ]
     },
     {
