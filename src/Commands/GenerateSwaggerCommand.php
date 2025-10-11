@@ -9,11 +9,10 @@ use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use ReflectionMethod;
 use Efati\ModuleGenerator\Commands\Concerns\PublishesAssets;
-use Efati\ModuleGenerator\Commands\Concerns\GeneratesBaseSwaggerDoc;
 
 class GenerateSwaggerCommand extends Command
 {
-    use PublishesAssets, GeneratesBaseSwaggerDoc;
+    use PublishesAssets;
 
     protected $signature = 'make:swagger
                             {--path= : Filter routes by path prefix (e.g., api, api/v1)}

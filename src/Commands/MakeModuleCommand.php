@@ -19,12 +19,11 @@ use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\RuntimeFieldParser;
 use Efati\ModuleGenerator\Commands\Concerns\PublishesAssets;
-use Efati\ModuleGenerator\Commands\Concerns\GeneratesBaseSwaggerDoc;
 
 
 class MakeModuleCommand extends Command
 {
-    use PublishesAssets, GeneratesBaseSwaggerDoc;
+    use PublishesAssets;
 
     protected $signature = 'make:module
                             {name : The model/module base name (e.g. Product)}
@@ -145,7 +144,6 @@ class MakeModuleCommand extends Command
         }
         if ($withSwagger) {
             $this->publishInitialAssets();
-            $this->generateBaseDocFile($force);
         }
 
         if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
