@@ -93,7 +93,7 @@ export default defineNuxtConfig({
         '/en/advanced',
         '/en/module-anatomy',
         '/en/goli-guide',
-        '/en/github-pages-setup',
+        '/en/web-ui',
         '/en/reference',
         '/en/changelog',
         '/fa/installation',
@@ -103,7 +103,7 @@ export default defineNuxtConfig({
         '/fa/advanced',
         '/fa/module-anatomy',
         '/fa/goli-guide',
-        '/fa/github-pages-setup',
+        '/fa/web-ui',
         '/fa/reference',
         '/fa/changelog'
       ]

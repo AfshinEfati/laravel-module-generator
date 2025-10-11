@@ -16,8 +16,9 @@ class Show{{ model_class }}Action extends BaseAction
         parent::__construct($logger);
     }
 
-    protected function handle(mixed $modelOrId): ?{{ model_class }}
+    protected function handle(mixed ...$arguments): mixed
     {
+        $modelOrId = $arguments[0] ?? null;
         if ($modelOrId instanceof {{ model_class }}) {
             $modelOrId = $modelOrId->getKey();
         }

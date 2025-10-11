@@ -18,10 +18,14 @@ use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\RuntimeFieldParser;
+use Efati\ModuleGenerator\Commands\Concerns\PublishesAssets;
+use Efati\ModuleGenerator\Commands\Concerns\GeneratesBaseSwaggerDoc;
 
 
 class MakeModuleCommand extends Command
 {
+    use PublishesAssets, GeneratesBaseSwaggerDoc;
+
     protected $signature = 'make:module
                             {name : The model/module base name (e.g. Product)}
                             {--c|controller= : Optional controller subfolder (e.g. Admin)}
@@ -139,6 +143,11 @@ class MakeModuleCommand extends Command
             $isApi = true;
             $this->warn('• --swagger implicitly enables API controllers. Generating ProductController as API.');
         }
+        if ($withSwagger) {
+            $this->publishInitialAssets();
+            $this->generateBaseDocFile($force);
+        }
+
         if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
             $this->warn('• Swagger annotations requested but the swagger-php package is missing. Install it via `composer require darkaonline/l5-swagger` or `composer require zircote/swagger-php` to use --swagger.');
             $withSwagger = false;
@@ -306,6 +315,10 @@ class MakeModuleCommand extends Command
             $this->reportResults('Feature test', $testResults);
         } else {
             $this->line("• Tests skipped.");
+        }
+
+        if ($withSwagger) {
+            $this->publishSwaggerAssets();
         }
 
         $this->info("✅ Module {$name} generated successfully.");

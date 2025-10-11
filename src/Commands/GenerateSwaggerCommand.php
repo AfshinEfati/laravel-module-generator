@@ -8,9 +8,13 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use ReflectionMethod;
+use Efati\ModuleGenerator\Commands\Concerns\PublishesAssets;
+use Efati\ModuleGenerator\Commands\Concerns\GeneratesBaseSwaggerDoc;
 
 class GenerateSwaggerCommand extends Command
 {
+    use PublishesAssets, GeneratesBaseSwaggerDoc;
+
     protected $signature = 'make:swagger
                             {--path= : Filter routes by path prefix (e.g., api, api/v1)}
                             {--controller= : Filter routes by controller namespace}
@@ -33,6 +37,8 @@ class GenerateSwaggerCommand extends Command
         // Reset security scheme flag
         self::$securitySchemeGenerated = false;
 
+        $this->publishInitialAssets();
+
         $this->info('🔍 Scanning Laravel routes...');
 
         $routes = $this->getFilteredRoutes($pathFilter, $controllerFilter);
@@ -45,7 +51,7 @@ class GenerateSwaggerCommand extends Command
         $this->info(sprintf('📋 Found %d routes to document.', count($routes)));
 
         // Generate main Info file first
-        $this->generateMainInfoFile($outputDir, $force);
+        $this->generateBaseDocFile($force);
 
         $groupedRoutes = $this->groupRoutesByController($routes);
 
@@ -59,6 +65,8 @@ class GenerateSwaggerCommand extends Command
         }
 
         $this->info(sprintf('✅ Successfully generated %d swagger documentation file(s).', $generatedFiles));
+
+        $this->publishSwaggerAssets();
 
         return self::SUCCESS;
     }
@@ -130,53 +138,6 @@ class GenerateSwaggerCommand extends Command
         }
 
         return $routes;
-    }
-
-    /**
-     * Generate main OpenAPI Info file
-     */
-    private function generateMainInfoFile(string $outputDir, bool $force): void
-    {
-        $filePath = $outputDir . DIRECTORY_SEPARATOR . 'OpenApiInfo.php';
-
-        if (!$force && File::exists($filePath)) {
-            return;
-        }
-
-        $baseNamespace = config('module-generator.base_namespace', 'App');
-        $namespace = $baseNamespace . '\\Docs';
-        $appName = config('app.name', 'Laravel API');
-        $appVersion = '1.0.0';
-
-        $content = <<<PHP
-<?php
-
-namespace {$namespace};
-
-use OpenApi\Annotations as OA;
-
-/**
- * @OA\Info(
- *     title="{$appName}",
- *     version="{$appVersion}",
- *     description="API Documentation",
- *     @OA\Contact(
- *         email="api@example.com"
- *     )
- * )
- * @OA\Server(
- *     url="/",
- *     description="API Server"
- * )
- */
-class OpenApiInfo
-{
-}
-
-PHP;
-
-        File::put($filePath, $content);
-        $this->line('  ✓ Generated: OpenApiInfo.php');
     }
 
     /**

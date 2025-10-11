@@ -1,0 +1,55 @@
+<?php
+
+namespace {{ namespace }};
+
+use OpenApi\Annotations as OA;
+
+/**
+ * ---------------------------------------------------------
+ *  Base API Documentation Template (Auto-Generated)
+ * ---------------------------------------------------------
+ *  This file defines the main API metadata for Swagger (L5-Swagger).
+ *  Developers can edit these values to customize their project docs.
+ *
+ *  Notes:
+ *  - Only ONE @OA\Info() annotation must exist in the project.
+ *  - Other @OA\Tag() / @OA\Path() annotations go in separate files.
+ */
+
+/**
+ * @OA\Info(
+ *     title="{{ title }}",
+ *     version="{{ version }}",
+ *     description="{{ description }}",
+ *     termsOfService="{{ terms_of_service_url }}",
+ *
+ *     @OA\Contact(
+ *         name="{{ contact_name }}",
+ *         email="{{ contact_email }}",
+ *         url="{{ contact_url }}"
+ *     ),
+ *
+ *     @OA\License(
+ *         name="{{ license_name }}",
+ *         url="{{ license_url }}"
+ *     )
+ * )
+ *
+ * @OA\Server(
+ *     url="{{ server_1_url }}",
+ *     description="{{ server_1_description }}"
+ * )
+ * @OA\Server(
+ *     url="{{ server_2_url }}",
+ *     description="{{ server_2_description }}"
+ * )
+ * @OA\Server(
+ *     url="{{ server_3_url }}",
+ *     description="{{ server_3_description }}"
+ * )
+ */
+class BaseDoc
+{
+    // This class is intentionally empty.
+    // Only serves as the container for OpenAPI annotations.
+}
