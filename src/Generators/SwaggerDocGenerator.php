@@ -27,6 +27,10 @@ class SwaggerDocGenerator
         $docsPath = app_path($docsRel);
         File::ensureDirectoryExists($docsPath);
 
+        $namespace = $baseNamespace . '\\Docs';
+
+        self::ensureBaseDocExists($docsPath, $namespace);
+
         $className = "{$name}Doc";
         $filePath  = $docsPath . DIRECTORY_SEPARATOR . $className . '.php';
 
@@ -34,7 +38,6 @@ class SwaggerDocGenerator
             return;
         }
 
-        $namespace       = $baseNamespace . '\\Docs';
         $operationsBlock = self::buildOperations((string) $tag, $operations, $paramName);
 
         $schemesConfig  = is_array($security['schemes'] ?? null) ? $security['schemes'] : [];
@@ -50,6 +53,80 @@ class SwaggerDocGenerator
         ]);
 
         File::put($filePath, $content);
+    }
+
+    private static function ensureBaseDocExists(string $docsPath, string $namespace): void
+    {
+        $baseDocPath = $docsPath . DIRECTORY_SEPARATOR . 'BaseDoc.php';
+
+        if (File::exists($baseDocPath)) {
+            return;
+        }
+
+        if (self::projectHasInfoAnnotation([
+            $docsPath,
+            app_path(),
+        ])) {
+            return;
+        }
+
+        $stubPath = __DIR__ . '/../Stubs/BaseDoc.stub';
+
+        if (!File::exists($stubPath)) {
+            return;
+        }
+
+        $replacements = [
+            '{{ namespace }}'            => $namespace,
+            '{{ title }}'                => config('app.name', 'Sample Project API'),
+            '{{ version }}'              => '1.0.0',
+            '{{ description }}'          => 'This is a sample auto-generated API doc. Customize it as needed.',
+            '{{ terms_of_service_url }}' => 'https://example.com/terms',
+            '{{ contact_name }}'         => 'API Support',
+            '{{ contact_email }}'        => 'support@example.com',
+            '{{ contact_url }}'          => 'https://example.com/support',
+            '{{ license_name }}'         => 'MIT',
+            '{{ license_url }}'          => 'https://opensource.org/licenses/MIT',
+            '{{ server_1_url }}'         => config('app.url', 'http://localhost:8000'),
+            '{{ server_1_description }}' => 'Local Development Server',
+            '{{ server_2_url }}'         => 'https://staging-api.example.com',
+            '{{ server_2_description }}' => 'Staging Server',
+            '{{ server_3_url }}'         => 'https://api.example.com',
+            '{{ server_3_description }}' => 'Production Server',
+        ];
+
+        $content = str_replace(
+            array_keys($replacements),
+            array_values($replacements),
+            File::get($stubPath)
+        );
+
+        File::put($baseDocPath, $content);
+    }
+
+    /**
+     * @param  array<int, string>  $paths
+     */
+    private static function projectHasInfoAnnotation(array $paths): bool
+    {
+        foreach ($paths as $path) {
+            if (!is_string($path) || $path === '' || !File::exists($path)) {
+                continue;
+            }
+
+            foreach (File::allFiles($path) as $file) {
+                if ($file->getExtension() !== 'php') {
+                    continue;
+                }
+
+                $contents = File::get($file->getPathname());
+                if (strpos($contents, '@OA\\Info(') !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
