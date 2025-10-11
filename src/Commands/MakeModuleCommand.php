@@ -18,10 +18,13 @@ use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\RuntimeFieldParser;
+use Efati\ModuleGenerator\Commands\Concerns\PublishesAssets;
 
 
 class MakeModuleCommand extends Command
 {
+    use PublishesAssets;
+
     protected $signature = 'make:module
                             {name : The model/module base name (e.g. Product)}
                             {--c|controller= : Optional controller subfolder (e.g. Admin)}
@@ -318,36 +321,6 @@ class MakeModuleCommand extends Command
 
         $this->info("✅ Module {$name} generated successfully.");
         return self::SUCCESS;
-    }
-
-    private function publishSwaggerAssets(): void
-    {
-        if (\Illuminate\Support\Facades\File::exists(public_path('vendor/l5-swagger'))) {
-            $this->info('✅ Swagger assets are already published.');
-            return;
-        }
-
-        $this->info('Publishing Swagger assets...');
-        $this->call('vendor:publish', [
-            '--provider' => 'L5Swagger\\L5SwaggerServiceProvider',
-        ]);
-        $this->info('✅ Swagger assets published successfully.');
-    }
-
-    private function publishInitialAssets(): void
-    {
-        $this->call('vendor:publish', [
-            '--provider' => 'Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider',
-            '--tag' => 'module-generator',
-        ]);
-    }
-
-    private function publishInitialAssets(): void
-    {
-        $this->call('vendor:publish', [
-            '--provider' => 'Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider',
-            '--tag' => 'module-generator'
-        ]);
     }
 
     private function reportResults(string $label, array $results): void

@@ -8,9 +8,12 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use ReflectionMethod;
+use Efati\ModuleGenerator\Commands\Concerns\PublishesAssets;
 
 class GenerateSwaggerCommand extends Command
 {
+    use PublishesAssets;
+
     protected $signature = 'make:swagger
                             {--path= : Filter routes by path prefix (e.g., api, api/v1)}
                             {--controller= : Filter routes by controller namespace}
@@ -65,37 +68,6 @@ class GenerateSwaggerCommand extends Command
         $this->publishSwaggerAssets();
 
         return self::SUCCESS;
-    }
-
-    private function publishInitialAssets(): void
-    {
-        $this->call('vendor:publish', [
-            '--provider' => 'Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider',
-            '--tag' => 'module-generator',
-            '--force' => true,
-        ]);
-    }
-
-    private function publishSwaggerAssets(): void
-    {
-        if (File::exists(public_path('vendor/l5-swagger'))) {
-            $this->info('✅ Swagger assets are already published.');
-            return;
-        }
-
-        $this->info('Publishing Swagger assets...');
-        $this->call('vendor:publish', [
-            '--provider' => 'L5Swagger\\L5SwaggerServiceProvider',
-        ]);
-        $this->info('✅ Swagger assets published successfully.');
-    }
-
-    private function publishInitialAssets(): void
-    {
-        $this->call('vendor:publish', [
-            '--provider' => 'Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider',
-            '--tag' => 'module-generator'
-        ]);
     }
 
     /**

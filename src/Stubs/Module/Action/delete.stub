@@ -15,8 +15,9 @@ class Delete{{ model_class }}Action extends BaseAction
         parent::__construct($logger);
     }
 
-    public function handle(int|string $id): mixed
+    protected function handle(mixed ...$arguments): mixed
     {
+        $id = $arguments[0] ?? null;
         return $this->service->destroy($id);
     }
 }
