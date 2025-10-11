@@ -54,11 +54,11 @@
             </form>
             <div v-if="output" class="mt-4 p-4 bg-gray-200 rounded">
                 <h3 class="font-bold">Output:</h3>
-                <pre class="whitespace-pre-wrap">{{ output }}</pre>
+                <pre class="whitespace-pre-wrap">@{{ output }}</pre>
             </div>
             <div v-if="error" class="mt-4 p-4 bg-red-200 text-red-800 rounded">
                 <h3 class="font-bold">Error:</h3>
-                <p>{{ error }}</p>
+                <p>@{{ error }}</p>
             </div>
         </div>
     </div>
