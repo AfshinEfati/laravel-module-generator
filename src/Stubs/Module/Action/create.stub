@@ -19,7 +19,7 @@ class Create{{ model_class }}Action extends BaseAction
     /**
      * @param  {{ payload_doc }}  $payload
      */
-    protected function handle(mixed $payload): {{ model_class }}
+    public function handle(mixed $payload): mixed
     {
         /** @var {{ model_class }} */
         return $this->service->store($payload);

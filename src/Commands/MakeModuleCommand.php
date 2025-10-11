@@ -139,6 +139,10 @@ class MakeModuleCommand extends Command
             $isApi = true;
             $this->warn('• --swagger implicitly enables API controllers. Generating ProductController as API.');
         }
+        if ($withSwagger) {
+            $this->publishInitialAssets();
+        }
+
         if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
             $this->warn('• Swagger annotations requested but the swagger-php package is missing. Install it via `composer require darkaonline/l5-swagger` or `composer require zircote/swagger-php` to use --swagger.');
             $withSwagger = false;
@@ -308,8 +312,42 @@ class MakeModuleCommand extends Command
             $this->line("• Tests skipped.");
         }
 
+        if ($withSwagger) {
+            $this->publishSwaggerAssets();
+        }
+
         $this->info("✅ Module {$name} generated successfully.");
         return self::SUCCESS;
+    }
+
+    private function publishSwaggerAssets(): void
+    {
+        if (\Illuminate\Support\Facades\File::exists(public_path('vendor/l5-swagger'))) {
+            $this->info('✅ Swagger assets are already published.');
+            return;
+        }
+
+        $this->info('Publishing Swagger assets...');
+        $this->call('vendor:publish', [
+            '--provider' => 'L5Swagger\\L5SwaggerServiceProvider',
+        ]);
+        $this->info('✅ Swagger assets published successfully.');
+    }
+
+    private function publishInitialAssets(): void
+    {
+        $this->call('vendor:publish', [
+            '--provider' => 'Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider',
+            '--tag' => 'module-generator',
+        ]);
+    }
+
+    private function publishInitialAssets(): void
+    {
+        $this->call('vendor:publish', [
+            '--provider' => 'Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider',
+            '--tag' => 'module-generator'
+        ]);
     }
 
     private function reportResults(string $label, array $results): void
