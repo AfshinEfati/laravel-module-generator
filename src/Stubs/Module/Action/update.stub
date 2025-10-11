@@ -16,11 +16,12 @@ class Update{{ model_class }}Action extends BaseAction
         parent::__construct($logger);
     }
 
-    /**
-     * @param  {{ payload_doc }}  $payload
-     */
-    protected function handle(int|string $id, mixed $payload): ?{{ model_class }}
+    protected function handle(mixed ...$arguments): ?{{ model_class }}
     {
+        $id = $arguments[0] ?? null;
+        $payload = $arguments[1] ?? null;
+
+        /** @var {{ payload_doc }} $payload */
         $updated = $this->service->update($id, $payload);
 
         if (!$updated) {

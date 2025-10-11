@@ -16,12 +16,11 @@ class Create{{ model_class }}Action extends BaseAction
         parent::__construct($logger);
     }
 
-    /**
-     * @param  {{ payload_doc }}  $payload
-     */
-    protected function handle(mixed $payload): {{ model_class }}
+    protected function handle(mixed ...$arguments): {{ model_class }}
     {
-        /** @var {{ model_class }} */
+        $payload = $arguments[0] ?? null;
+
+        /** @var {{ payload_doc }} $payload */
         return $this->service->store($payload);
     }
 }
