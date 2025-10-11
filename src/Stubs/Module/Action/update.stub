@@ -17,12 +17,10 @@ class Update{{ model_class }}Action extends BaseAction
     }
 
     /**
-     * @param  {{ payload_doc }}  ...$payload
+     * @param  {{ payload_doc }}  $payload
      */
-    protected function handle(mixed ...$arguments): mixed
+    protected function handle(int|string $id, mixed $payload): ?{{ model_class }}
     {
-        $id = $arguments[0] ?? null;
-        $payload = $arguments[1] ?? null;
         $updated = $this->service->update($id, $payload);
 
         if (!$updated) {

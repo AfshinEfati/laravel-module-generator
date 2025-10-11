@@ -77,13 +77,14 @@ const navigation = computed(() => {
       ]
     },
     {
-      label: 'Guides',
+      label: 'Features',
       links: [
-        { title: 'Usage', path: '/en/usage' },
-        { title: 'Web UI', path: '/en/web-ui' },
-        { title: 'Advanced topics', path: '/en/advanced' },
-        { title: 'Module anatomy', path: '/en/module-anatomy' },
-        { title: 'Goli helper', path: '/en/goli-guide' }
+        { title: 'Generating Modules', path: '/en/features/generating-modules' },
+        { title: 'Schema-Aware Generation', path: '/en/features/schema-aware-generation' },
+        { title: 'Web UI', path: '/en/features/web-ui' },
+        { title: 'Swagger Generation', path: '/en/features/swagger-generation' },
+        { title: 'Action Layer', path: '/en/features/action-layer' },
+        { title: 'Jalali Support', path: '/en/features/jalali-support' }
       ]
     },
     {
@@ -106,13 +107,14 @@ const navigation = computed(() => {
       ]
     },
     {
-      label: 'راهنما',
+      label: 'امکانات',
       links: [
-        { title: 'نحوهٔ استفاده', path: '/fa/usage' },
-        { title: 'رابط کاربری تحت وب', path: '/fa/web-ui' },
-        { title: 'پیشرفته', path: '/fa/advanced' },
-        { title: 'آناتومی ماژول', path: '/fa/module-anatomy' },
-        { title: 'راهنمای گُلی', path: '/fa/goli-guide' }
+        { title: 'تولید ماژول‌ها', path: '/fa/features/generating-modules' },
+        { title: 'تولید آگاه از طرح‌واره', path: '/fa/features/schema-aware-generation' },
+        { title: 'رابط کاربری تحت وب', path: '/fa/features/web-ui' },
+        { title: 'تولید مستندات Swagger', path: '/fa/features/swagger-generation' },
+        { title: 'لایهٔ اکشن', path: '/fa/features/action-layer' },
+        { title: 'پشتیبانی از تاریخ شمسی', path: '/fa/features/jalali-support' }
       ]
     },
     {
