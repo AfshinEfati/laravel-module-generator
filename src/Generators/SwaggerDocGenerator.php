@@ -10,9 +10,8 @@ class SwaggerDocGenerator
 {
     /**
      * @param  array<string, mixed>  $swaggerData
-     * @param  array<string, mixed>  $fields
      */
-    public static function generate(string $name, string $baseNamespace, array $swaggerData, array $fields = [], bool $force = false): void
+    public static function generate(string $name, string $baseNamespace, array $swaggerData, bool $force = false): void
     {
         $tag        = (string) ($swaggerData['tag'] ?? $name);
         $operations = $swaggerData['operations'] ?? [];
@@ -132,14 +131,13 @@ class SwaggerDocGenerator
 
     /**
      * @param  array<int, array<string, mixed>>  $operations
-     * @param  array<string, mixed>  $fields
      */
-    private static function buildOperations(string $tag, array $operations, ?string $paramName, array $fields): string
+    private static function buildOperations(string $tag, array $operations, ?string $paramName): string
     {
         $blocks = [];
 
         foreach ($operations as $operation) {
-            $blocks[] = self::buildOperationBlock($tag, $operation, $paramName, $fields);
+            $blocks[] = self::buildOperationBlock($tag, $operation, $paramName);
         }
 
         $filtered = array_filter($blocks);
@@ -153,9 +151,8 @@ class SwaggerDocGenerator
 
     /**
      * @param  array<string, mixed>  $operation
-     * @param  array<string, mixed>  $fields
      */
-    private static function buildOperationBlock(string $tag, array $operation, ?string $defaultParam, array $fields): string
+    private static function buildOperationBlock(string $tag, array $operation, ?string $defaultParam): string
     {
         $method     = ucfirst(strtolower((string) ($operation['httpMethod'] ?? 'get')));
         $path       = (string) ($operation['path'] ?? '/api/resource');
@@ -177,8 +174,7 @@ class SwaggerDocGenerator
         }
 
         if ($hasBody) {
-            $jsonContent = self::buildJsonContent($fields);
-            $entries[] = "@OA\\RequestBody(required=true, {$jsonContent})";
+            $entries[] = '@OA\RequestBody(required=true, @OA\JsonContent())';
         }
 
         foreach ($responses as $response) {
@@ -350,34 +346,5 @@ class SwaggerDocGenerator
         }
 
         return $remaining;
-    }
-
-    private static function buildJsonContent(array $fields): string
-    {
-        if (empty($fields)) {
-            return '@OA\JsonContent()';
-        }
-
-        $properties = [];
-        foreach ($fields as $field) {
-            $name = $field['name'];
-            $type = self::mapTypeToSwagger($field['type']);
-            $properties[] = "@OA\\Property(property=\"{$name}\", type=\"{$type}\")";
-        }
-
-        $propertiesString = implode(",\n            ", $properties);
-
-        return "@OA\\JsonContent(\n            {$propertiesString}\n        )";
-    }
-
-    private static function mapTypeToSwagger(string $type): string
-    {
-        return match ($type) {
-            'integer' => 'integer',
-            'decimal', 'float' => 'number',
-            'boolean' => 'boolean',
-            'date', 'datetime', 'time' => 'string',
-            default => 'string',
-        };
     }
 }
