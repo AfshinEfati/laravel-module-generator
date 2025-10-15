@@ -99,11 +99,6 @@ class SwaggerFormatter
             }
 
             $lines[] = $indent . ')';
-
-            if ($includeExample) {
-                $collectionExample = self::formatJsonExample(self::collectionExample($normalized));
-                $lines[] = $indent . 'example=' . $collectionExample;
-            }
         } else {
             $lines[] = $indent . 'type="object",';
 
@@ -302,24 +297,6 @@ class SwaggerFormatter
         }
 
         return $example;
-    }
-
-    /**
-     * Generate collection example using item metadata.
-     *
-     * @param  array<int, array<string, mixed>>  $fields
-     * @return array<int, array<string, mixed>>
-     */
-    private static function collectionExample(array $fields): array
-    {
-        $first  = self::exampleData($fields);
-        $second = self::exampleData($fields);
-
-        if (isset($second['id']) && is_numeric($second['id'])) {
-            $second['id'] = (int) $second['id'] + 1;
-        }
-
-        return [$first, $second];
     }
 
     /**

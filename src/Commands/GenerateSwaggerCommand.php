@@ -6,6 +6,7 @@ use Efati\ModuleGenerator\Support\RuntimeFieldParser;
 use Efati\ModuleGenerator\Support\SwaggerFormatter;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -63,7 +64,32 @@ class GenerateSwaggerCommand extends Command
 
         $this->info(sprintf('✅ Successfully generated %d swagger documentation file(s).', $generatedFiles));
 
+        $this->maybeRunL5SwaggerGenerate();
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Run l5-swagger:generate if the command is available.
+     */
+    private function maybeRunL5SwaggerGenerate(): void
+    {
+        try {
+            $commands = Artisan::all();
+        } catch (\Throwable $e) {
+            return;
+        }
+
+        if (!array_key_exists('l5-swagger:generate', $commands)) {
+            return;
+        }
+
+        try {
+            Artisan::call('l5-swagger:generate');
+            $this->info('🧾 l5-swagger documentation refreshed.');
+        } catch (\Throwable $e) {
+            $this->warn('⚠️ Unable to run `l5-swagger:generate`: ' . $e->getMessage());
+        }
     }
 
     /**
