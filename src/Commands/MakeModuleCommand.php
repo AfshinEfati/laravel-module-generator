@@ -183,11 +183,10 @@ class MakeModuleCommand extends Command
                 $parsedTable = $runtime['table'];
             }
 
-            if (!empty($runtime['fields'])) {
-                $parsedFields = array_merge($runtime['fields'], $parsedFields);
-            }
-
-            if (empty($parsedFields) && empty($migrationHint) && empty($schemaDefinitions)) {
+            if (empty($parsedFields) && !empty($runtime['fields'])) {
+                $parsedFields    = $runtime['fields'];
+                $parsedRelations = $runtime['relations'];
+            } elseif (empty($parsedFields) && empty($migrationHint) && empty($schemaDefinitions)) {
                 $this->warn('• Unable to inspect database columns for the model. Falling back to migration parsing.');
             }
         }
@@ -219,7 +218,7 @@ class MakeModuleCommand extends Command
             if ($withSwagger) {
                 $swaggerData = self::buildSwaggerData($name, null, $baseNamespace, []);
                 if ($swaggerData !== null) {
-                    SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerData, $parsedFields, $force);
+                    SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerData, $force);
                     $this->info("✅ Swagger documentation for {$name} generated successfully.");
                 } else {
                     $this->warn('• Swagger documentation could not be generated.');
@@ -288,8 +287,7 @@ class MakeModuleCommand extends Command
                 usesResource: $withResource,
                 withSwagger: $withSwagger,
                 force: $force,
-                withActions: $withActions,
-                fields: $parsedFields
+                withActions: $withActions
             );
             $this->reportResults('Controller', $controllerResults);
         } else {
