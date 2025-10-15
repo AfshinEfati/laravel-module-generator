@@ -2,10 +2,13 @@
 
 namespace Efati\ModuleGenerator\Commands;
 
+use Efati\ModuleGenerator\Support\RuntimeFieldParser;
+use Efati\ModuleGenerator\Support\SwaggerFormatter;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -239,14 +242,19 @@ PHP;
         // Extract tag from controller name
         $tag = str_replace(['Controller', 'Doc'], '', $controllerName);
 
+        $fields = $this->inferModelFields($controllerClass);
+
         // Generate operations
-        $operations = $this->generateOperations($routes, $tag);
+        $operations = $this->generateOperations($routes, $tag, $fields);
 
         // Get security schemes
         $securitySchemes = $this->extractSecuritySchemes($routes);
 
+        $schemaName = $tag !== '' ? Str::studly($tag) : class_basename($controllerClass);
+        $schemaBlock = SwaggerFormatter::buildSchemaBlock($schemaName, $fields);
+
         // Generate file content
-        $content = $this->buildSwaggerFileContent($docClassName, $tag, $operations, $securitySchemes);
+        $content = $this->buildSwaggerFileContent($docClassName, $tag, $operations, $securitySchemes, $schemaBlock);
 
         File::put($filePath, $content);
 
@@ -254,14 +262,65 @@ PHP;
     }
 
     /**
+     * Attempt to infer model fields associated with the controller.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function inferModelFields(string $controllerClass): array
+    {
+        $baseNamespace = config('module-generator.base_namespace', 'App');
+        $controllerBase = class_basename($controllerClass);
+
+        if ($controllerBase === '') {
+            return [];
+        }
+
+        $modelName = Str::studly(str_replace('Controller', '', $controllerBase));
+        if ($modelName === '') {
+            return [];
+        }
+
+        $candidates = [];
+        $candidates[] = $baseNamespace . '\\Models\\' . $modelName;
+
+        if (Str::contains($controllerClass, '\\Modules\\')) {
+            $afterModules = Str::after($controllerClass, '\\Modules\\');
+            $segments = array_filter(explode('\\', $afterModules));
+            $moduleName = $segments[0] ?? null;
+
+            if (is_string($moduleName) && $moduleName !== '') {
+                $candidates[] = $baseNamespace . '\\Modules\\' . $moduleName . '\\Models\\' . $modelName;
+                $candidates[] = $baseNamespace . '\\Modules\\' . $moduleName . '\\Models\\' . Str::studly($moduleName);
+            }
+        }
+
+        foreach ($candidates as $modelFqcn) {
+            if (!is_string($modelFqcn) || $modelFqcn === '') {
+                continue;
+            }
+
+            if (!class_exists($modelFqcn) || !is_subclass_of($modelFqcn, EloquentModel::class)) {
+                continue;
+            }
+
+            $parsed = RuntimeFieldParser::parse($modelFqcn);
+            if (!empty($parsed['fields']) && is_array($parsed['fields'])) {
+                return $parsed['fields'];
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * Generate operation methods for routes
      */
-    private function generateOperations(array $routes, string $tag): string
+    private function generateOperations(array $routes, string $tag, array $fields): string
     {
         $operations = [];
 
         foreach ($routes as $route) {
-            $operations[] = $this->buildOperationMethod($route, $tag);
+            $operations[] = $this->buildOperationMethod($route, $tag, $fields);
         }
 
         return implode("\n\n", array_filter($operations));
@@ -270,7 +329,7 @@ PHP;
     /**
      * Build a single operation method
      */
-    private function buildOperationMethod(array $route, string $tag): string
+    private function buildOperationMethod(array $route, string $tag, array $fields): string
     {
         $uri = '/' . ltrim($route['uri'], '/');
         $methods = array_diff($route['methods'], ['HEAD']);
@@ -321,33 +380,71 @@ PHP;
         // Add request body
         if ($hasBody) {
             $requestProperties = $this->extractRequestProperties($route);
-            $lines[] = '     *     @OA\RequestBody(';
-            $lines[] = '     *         required=true,';
+            $requestFields = [];
+
             if (!empty($requestProperties)) {
-                $lines[] = '     *         @OA\JsonContent(';
-                $lines[] = '     *             required={' . implode(',', array_map(fn($p) => '"' . $p . '"', array_keys($requestProperties))) . '},';
-                $propCount = count($requestProperties);
-                $index = 0;
                 foreach ($requestProperties as $propName => $propType) {
-                    $index++;
-                    $comma = $index < $propCount ? ',' : '';
-                    $lines[] = sprintf('     *             @OA\Property(property="%s", type="%s")%s', $propName, $propType, $comma);
+                    if (!is_string($propName) || $propName === '') {
+                        continue;
+                    }
+
+                    $requestFields[] = [
+                        'name'         => $propName,
+                        'type'         => is_string($propType) ? $propType : 'string',
+                        'nullable'     => false,
+                        'auto_managed' => false,
+                    ];
                 }
-                $lines[] = '     *         )';
+            } elseif (!empty($fields)) {
+                $requestFields = SwaggerFormatter::requestFields($fields);
+            }
+
+            if (!empty($requestFields)) {
+                $requiredFields = $httpMethod === 'post'
+                    ? SwaggerFormatter::requiredFieldNames($requestFields)
+                    : [];
+                $jsonContent = SwaggerFormatter::buildJsonContent($requestFields, [
+                    'required' => $requiredFields,
+                ]);
+
+                $lines[] = '     *     @OA\RequestBody(';
+                $lines[] = '     *         required=true,';
+                foreach (explode("\n", $jsonContent) as $jsonLine) {
+                    $lines[] = '     *         ' . $jsonLine;
+                }
+                $lines[] = '     *     ),';
             } else {
+                $lines[] = '     *     @OA\RequestBody(';
+                $lines[] = '     *         required=true,';
                 $lines[] = '     *         @OA\JsonContent(';
                 $lines[] = '     *             @OA\Property(property="example", type="string", description="Add your request fields here")';
                 $lines[] = '     *         )';
+                $lines[] = '     *     ),';
             }
-            $lines[] = '     *     ),';
         }
 
         // Add responses
         foreach ($responses as $response) {
+            $code = $response['code'];
+            $description = $response['description'];
+
             $lines[] = '     *     @OA\Response(';
-            $lines[] = sprintf('     *         response=%d,', $response['code']);
-            $lines[] = sprintf('     *         description="%s",', $response['description']);
-            if (isset($response['content'])) {
+            $lines[] = sprintf('     *         response=%d,', $code);
+            $lines[] = sprintf('     *         description="%s",', $description);
+
+            if ($code >= 200 && $code < 300 && $code !== 204) {
+                if (!empty($fields)) {
+                    $isCollection = in_array(strtolower($methodName), ['index', 'list'], true);
+                    $jsonContent = SwaggerFormatter::buildJsonContent($fields, [
+                        'collection' => $isCollection,
+                    ]);
+                    foreach (explode("\n", $jsonContent) as $jsonLine) {
+                        $lines[] = '     *         ' . $jsonLine;
+                    }
+                } else {
+                    $lines[] = '     *         @OA\JsonContent()';
+                }
+            } elseif (isset($response['content'])) {
                 $lines[] = '     *         @OA\JsonContent(';
                 if (isset($response['example'])) {
                     $lines[] = sprintf('     *             @OA\Property(property="message", type="string", example="%s")', $response['example']);
@@ -356,6 +453,7 @@ PHP;
             } else {
                 $lines[] = '     *         @OA\JsonContent()';
             }
+
             $lines[] = '     *     ),';
         }
 
@@ -617,7 +715,7 @@ PHP;
     /**
      * Build swagger file content
      */
-    private function buildSwaggerFileContent(string $className, string $tag, string $operations, array $securitySchemes): string
+    private function buildSwaggerFileContent(string $className, string $tag, string $operations, array $securitySchemes, string $schemaBlock): string
     {
         $baseNamespace = config('module-generator.base_namespace', 'App');
         $namespace = $baseNamespace . '\\Docs';
@@ -657,6 +755,13 @@ PHP;
                 $lines[] = '';
             }
             self::$securitySchemeGenerated = true;
+        }
+
+        if ($schemaBlock !== '') {
+            foreach (explode("\n", rtrim($schemaBlock)) as $schemaLine) {
+                $lines[] = $schemaLine;
+            }
+            $lines[] = '';
         }
 
         // Add operations

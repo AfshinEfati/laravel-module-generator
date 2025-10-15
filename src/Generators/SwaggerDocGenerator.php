@@ -3,6 +3,7 @@
 namespace Efati\ModuleGenerator\Generators;
 
 use Efati\ModuleGenerator\Support\Stub;
+use Efati\ModuleGenerator\Support\SwaggerFormatter;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 
@@ -10,8 +11,9 @@ class SwaggerDocGenerator
 {
     /**
      * @param  array<string, mixed>  $swaggerData
+     * @param  array<int, array<string, mixed>>  $fields
      */
-    public static function generate(string $name, string $baseNamespace, array $swaggerData, bool $force = false): void
+    public static function generate(string $name, string $baseNamespace, array $swaggerData, array $fields = [], bool $force = false): void
     {
         $tag        = (string) ($swaggerData['tag'] ?? $name);
         $operations = $swaggerData['operations'] ?? [];
@@ -38,7 +40,8 @@ class SwaggerDocGenerator
             return;
         }
 
-        $operationsBlock = self::buildOperations((string) $tag, $operations, $paramName);
+        $operationsBlock = self::buildOperations((string) $tag, $operations, $paramName, $fields);
+        $schemaBlock     = SwaggerFormatter::buildSchemaBlock($name, $fields);
 
         $schemesConfig  = is_array($security['schemes'] ?? null) ? $security['schemes'] : [];
         $filteredSchemes = self::filterUndefinedSchemes($schemesConfig, $docsPath);
@@ -49,6 +52,7 @@ class SwaggerDocGenerator
             'class'            => $className,
             'tag'              => $tag,
             'security_schemes' => $securityBlock,
+            'schemas'          => $schemaBlock,
             'operations'       => $operationsBlock,
         ]);
 
@@ -132,12 +136,12 @@ class SwaggerDocGenerator
     /**
      * @param  array<int, array<string, mixed>>  $operations
      */
-    private static function buildOperations(string $tag, array $operations, ?string $paramName): string
+    private static function buildOperations(string $tag, array $operations, ?string $paramName, array $fields): string
     {
         $blocks = [];
 
         foreach ($operations as $operation) {
-            $blocks[] = self::buildOperationBlock($tag, $operation, $paramName);
+            $blocks[] = self::buildOperationBlock($tag, $operation, $paramName, $fields);
         }
 
         $filtered = array_filter($blocks);
@@ -152,7 +156,7 @@ class SwaggerDocGenerator
     /**
      * @param  array<string, mixed>  $operation
      */
-    private static function buildOperationBlock(string $tag, array $operation, ?string $defaultParam): string
+    private static function buildOperationBlock(string $tag, array $operation, ?string $defaultParam, array $fields): string
     {
         $method     = ucfirst(strtolower((string) ($operation['httpMethod'] ?? 'get')));
         $path       = (string) ($operation['path'] ?? '/api/resource');
@@ -174,24 +178,42 @@ class SwaggerDocGenerator
         }
 
         if ($hasBody) {
-            $entries[] = '@OA\RequestBody(required=true, @OA\JsonContent())';
+            $requestFields = SwaggerFormatter::requestFields($fields);
+            if (!empty($requestFields)) {
+                $requiredFields = strtolower($method) === 'post'
+                    ? SwaggerFormatter::requiredFieldNames($requestFields)
+                    : [];
+
+                $jsonContent = SwaggerFormatter::buildJsonContent($requestFields, [
+                    'required' => $requiredFields,
+                ]);
+
+                $entries[] = "@OA\\RequestBody(\n        required=true,\n" . self::indentBlock($jsonContent, 8) . "\n    )";
+            } else {
+                $entries[] = "@OA\\RequestBody(\n        required=true,\n        @OA\\JsonContent(\n            @OA\\Property(property=\"example\", type=\"string\", description=\"Add your request fields here\")\n        )\n    )";
+            }
         }
 
         foreach ($responses as $response) {
             $code = $response['code'] ?? 200;
             $desc = $response['description'] ?? 'Response';
-            
-            // Add JSON content type for successful responses (2xx)
+
             if ($code >= 200 && $code < 300 && $code !== 204) {
-                $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent()\n    )";
+                if (!empty($fields)) {
+                    $isCollection = strtolower((string) ($operation['name'] ?? '')) === 'index';
+                    $jsonContent = SwaggerFormatter::buildJsonContent($fields, [
+                        'collection' => $isCollection,
+                    ]);
+
+                    $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n" . self::indentBlock($jsonContent, 8) . "\n    )";
+                } else {
+                    $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent()\n    )";
+                }
             } elseif ($code === 401) {
-                // Unauthenticated response with JSON
                 $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent(\n            @OA\\Property(property=\"message\", type=\"string\", example=\"Unauthenticated.\")\n        )\n    )";
             } elseif ($code === 404) {
-                // Not found response with JSON
                 $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent(\n            @OA\\Property(property=\"message\", type=\"string\", example=\"Resource not found.\")\n        )\n    )";
             } elseif ($code === 422) {
-                // Validation error response with JSON
                 $entries[] = "@OA\\Response(\n        response={$code},\n        description=\"{$desc}\",\n        @OA\\JsonContent(\n            @OA\\Property(property=\"message\", type=\"string\", example=\"The given data was invalid.\")\n        )\n    )";
             } else {
                 $entries[] = "@OA\\Response(response={$code}, description=\"{$desc}\")";
@@ -252,6 +274,17 @@ class SwaggerDocGenerator
         $lines[] = ')';
 
         return $lines;
+    }
+
+    private static function indentBlock(string $content, int $spaces): string
+    {
+        $indent = str_repeat(' ', max(0, $spaces));
+        $lines  = explode("\n", $content);
+
+        return implode("\n", array_map(
+            static fn (string $line): string => $indent . $line,
+            $lines
+        ));
     }
 
     private static function buildSecuritySchemes(array $schemes, bool $enabled): string

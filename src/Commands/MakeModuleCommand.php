@@ -218,7 +218,7 @@ class MakeModuleCommand extends Command
             if ($withSwagger) {
                 $swaggerData = self::buildSwaggerData($name, null, $baseNamespace, []);
                 if ($swaggerData !== null) {
-                    SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerData, $force);
+                    SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerData, $parsedFields, $force);
                     $this->info("✅ Swagger documentation for {$name} generated successfully.");
                 } else {
                     $this->warn('• Swagger documentation could not be generated.');
@@ -287,7 +287,8 @@ class MakeModuleCommand extends Command
                 usesResource: $withResource,
                 withSwagger: $withSwagger,
                 force: $force,
-                withActions: $withActions
+                withActions: $withActions,
+                fields: $parsedFields
             );
             $this->reportResults('Controller', $controllerResults);
         } else {

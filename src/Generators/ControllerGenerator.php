@@ -19,7 +19,8 @@ class ControllerGenerator
         bool $usesResource = true,
         bool $withSwagger = false,
         bool $force = false,
-        bool $withActions = false
+        bool $withActions = false,
+        array $fields = []
     ): array {
         $paths = config('module-generator.paths', []);
         $configuredRel = $paths['controller'] ?? ($paths['controllers'] ?? null);
@@ -45,7 +46,7 @@ class ControllerGenerator
         $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
         $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder, $baseNamespace, $controllerMiddleware);
         if ($swaggerDocs !== null) {
-            SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $force);
+            SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $fields, $force);
         }
 
         if ($isApi) {

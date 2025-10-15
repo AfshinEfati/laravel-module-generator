@@ -10,5 +10,6 @@ use OpenApi\Annotations as OA;
 class {{ class }}
 {
 {{ security_schemes }}
+{{ schemas }}
 {{ operations }}
 }
