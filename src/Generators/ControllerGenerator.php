@@ -19,7 +19,8 @@ class ControllerGenerator
         bool $usesResource = true,
         bool $withSwagger = false,
         bool $force = false,
-        bool $withActions = false
+        bool $withActions = false,
+        array $fields = []
     ): array {
         $paths = config('module-generator.paths', []);
         $configuredRel = $paths['controller'] ?? ($paths['controllers'] ?? null);
@@ -45,7 +46,13 @@ class ControllerGenerator
         $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
         $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder, $baseNamespace, $controllerMiddleware);
         if ($swaggerDocs !== null) {
-            SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $force);
+            if (class_exists($modelFqcn)) {
+                $runtime = \Efati\ModuleGenerator\Support\RuntimeFieldParser::parse($modelFqcn);
+                if (!empty($runtime['fields'])) {
+                    $fields = array_merge($runtime['fields'], $fields);
+                }
+            }
+            SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $fields, $force);
         }
 
         if ($isApi) {
