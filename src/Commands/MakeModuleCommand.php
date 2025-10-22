@@ -53,7 +53,8 @@ class MakeModuleCommand extends Command
         $schemaDefinitions = $this->parseSchemaOption();
 
         $controllerSub = $this->option('controller');
-        $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']);
+        $defaultControllerType = (string) ($defaults['controller_type'] ?? 'web');
+        $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']) || $defaultControllerType === 'api';
         $force         = (bool) $this->option('force');
         $fullStack     = (bool) $this->option('full');
 
@@ -69,6 +70,9 @@ class MakeModuleCommand extends Command
         $withRequests = (bool) ($defaults['with_form_requests'] ?? false);
         if ($this->input->hasParameterOption(['--requests', '--r', '-r'])) {
             $withRequests = (bool) $this->option('requests');
+        }
+        if ($isApi) {
+            $withRequests = true;
         }
 
         $withUnitTest = (bool) ($defaults['with_unit_test'] ?? true);
@@ -100,6 +104,9 @@ class MakeModuleCommand extends Command
         }
         if ($this->input->hasParameterOption(['--no-actions'])) {
             $withActions = false;
+        }
+        if ($isApi && !$this->input->hasParameterOption(['--no-actions'])) {
+            $withActions = true;
         }
 
         $withSwagger = (bool) ($defaults['with_swagger'] ?? false);

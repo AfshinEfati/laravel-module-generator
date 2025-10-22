@@ -66,6 +66,7 @@ return [
         'with_provider'      => true,
         'with_actions'       => false,
         'controller_middleware' => [],
+        'controller_type'    => 'web', // 'web' or 'api' - تنظیم نوع کنترلر پیش‌فرض
     ],
 
     'swagger' => [

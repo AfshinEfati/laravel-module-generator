@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 class Show{{ model_class }}Action extends BaseAction
 {
     public function __construct(
-        private {{ service_class }} $service,
+        private readonly {{ service_class }} $service,
         ?LoggerInterface $logger = null,
     ) {
         parent::__construct($logger);
