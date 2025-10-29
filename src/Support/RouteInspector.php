@@ -10,7 +10,7 @@ class RouteInspector
      * Attempt to discover resource-style route URIs for the given controller basename.
      *
      * @param  array<int, string>  $slugHints
-     * @return array<string, string>
+     * @return array<string, array<string, mixed>>
      */
     public static function discoverResourceUris(string $controllerBasename, array $slugHints = []): array
     {
@@ -42,7 +42,10 @@ class RouteInspector
 
             if (class_basename($class) === $controllerBasename) {
                 if (!isset($result[$methodName])) {
-                    $result[$methodName] = self::normalizeUri($route->uri());
+                    $result[$methodName] = [
+                        'uri'        => self::normalizeUri($route->uri()),
+                        'middleware' => self::gatherNormalizedMiddleware($route),
+                    ];
                 }
                 continue;
             }
@@ -56,7 +59,10 @@ class RouteInspector
             foreach ($slugHints as $hint) {
                 if ($hint !== '' && self::uriContainsHint($uri, $hint)) {
                     if (!isset($result[$methodName])) {
-                        $result[$methodName] = self::normalizeUri($uri);
+                        $result[$methodName] = [
+                            'uri'        => self::normalizeUri($uri),
+                            'middleware' => self::gatherNormalizedMiddleware($route),
+                        ];
                     }
                     break;
                 }
@@ -66,8 +72,10 @@ class RouteInspector
         return $result;
     }
 
-    public static function extractParamName(?string $uri): ?string
+    public static function extractParamName($entry): ?string
     {
+        $uri = self::pathFromEntry($entry);
+
         if (!is_string($uri) || $uri === '') {
             return null;
         }
@@ -86,6 +94,61 @@ class RouteInspector
         }
 
         return '/' . ltrim($uri, '/');
+    }
+
+    public static function pathFromEntry($entry): ?string
+    {
+        if (is_array($entry)) {
+            return isset($entry['uri']) ? (string) $entry['uri'] : null;
+        }
+
+        return is_string($entry) ? self::normalizeUri($entry) : null;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function middlewareFromEntry($entry): array
+    {
+        if (is_array($entry) && isset($entry['middleware']) && is_array($entry['middleware'])) {
+            return array_values(array_unique(array_filter(array_map(static fn ($mw) => is_string($mw) ? trim(strtolower($mw)) : null, $entry['middleware']))));
+        }
+
+        return [];
+    }
+
+    private static function gatherNormalizedMiddleware($route): array
+    {
+        try {
+            if (method_exists($route, 'gatherMiddleware')) {
+                $middleware = (array) $route->gatherMiddleware();
+            } else {
+                $middleware = (array) $route->middleware();
+            }
+        } catch (\Throwable $e) {
+            $middleware = [];
+        }
+
+        return self::normalizeMiddlewareArray($middleware);
+    }
+
+    /**
+     * @param  array<int, mixed>  $middleware
+     * @return array<int, string>
+     */
+    private static function normalizeMiddlewareArray(array $middleware): array
+    {
+        $normalized = [];
+
+        foreach ($middleware as $mw) {
+            if (!is_string($mw) || $mw === '') {
+                continue;
+            }
+
+            $normalized[] = strtolower(trim($mw));
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     private static function uriContainsHint(string $uri, string $hint): bool

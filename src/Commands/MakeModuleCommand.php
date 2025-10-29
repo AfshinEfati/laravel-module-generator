@@ -490,26 +490,15 @@ class MakeModuleCommand extends Command
      */
     private static function buildSwaggerData(string $name, ?string $controllerSubfolder, string $baseNamespace, array $controllerMiddleware): ?array
     {
-        $tag          = Str::studly($name);
-        $resourceSlug = Str::kebab(Str::pluralStudly($name));
-        $paramName    = Str::camel($name);
+        $tag       = Str::studly($name);
+        $paramName = Str::camel($name);
 
-        $segments = [];
-        if (is_string($controllerSubfolder) && $controllerSubfolder !== '') {
-            foreach (preg_split('/[\/\\\\]+/', trim($controllerSubfolder, '/\\\\')) as $segment) {
-                if ($segment !== '') {
-                    $segments[] = Str::kebab($segment);
-                }
-            }
-        }
+        $slugHints          = SwaggerPathGuesser::slugHints($name);
+        $controllerSegments = SwaggerPathGuesser::controllerSegments($controllerSubfolder);
+        $resourceSegment    = SwaggerPathGuesser::defaultResourceSegment($name);
+        $basePath           = SwaggerPathGuesser::assemblePath($controllerSegments, $resourceSegment);
 
-        $basePath = '/api';
-        if (!empty($segments)) {
-            $basePath .= '/' . implode('/', $segments);
-        }
-        $basePath .= '/' . $resourceSlug;
-
-        $routeMap = RouteInspector::discoverResourceUris(Str::studly($name) . 'Controller');
+        $routeMap = RouteInspector::discoverResourceUris(Str::studly($name) . 'Controller', $slugHints);
         if (isset($routeMap['index'])) {
             $basePath = $routeMap['index'];
         }
@@ -519,11 +508,18 @@ class MakeModuleCommand extends Command
             $paramName = $detectedParam;
         }
 
-        $indexPath   = $routeMap['index'] ?? $basePath;
-        $storePath   = $routeMap['store'] ?? $indexPath;
-        $itemPath    = $routeMap['show'] ?? null;
-        $updatePath  = $routeMap['update'] ?? null;
-        $destroyPath = $routeMap['destroy'] ?? null;
+        $indexEntry  = $routeMap['index'] ?? null;
+        $storeEntry  = $routeMap['store'] ?? null;
+        $showEntry   = $routeMap['show'] ?? null;
+        $updateEntry = $routeMap['update'] ?? null;
+        $destroyEntry = $routeMap['destroy'] ?? null;
+
+        $basePathNormalized = RouteInspector::normalizeUri($basePath);
+        $indexPath   = RouteInspector::pathFromEntry($indexEntry) ?? $basePathNormalized;
+        $storePath   = RouteInspector::pathFromEntry($storeEntry) ?? $indexPath;
+        $itemPath    = RouteInspector::pathFromEntry($showEntry) ?? null;
+        $updatePath  = RouteInspector::pathFromEntry($updateEntry) ?? null;
+        $destroyPath = RouteInspector::pathFromEntry($destroyEntry) ?? null;
 
         $fallbackItemPath = self::fallbackItemPath($indexPath, $paramName);
         $itemPath    = $itemPath ?? $fallbackItemPath;
@@ -535,11 +531,38 @@ class MakeModuleCommand extends Command
         $defaultScheme = (string) ($securityConfig['default'] ?? array_key_first($configuredSchemes) ?? 'bearerAuth');
         $authMiddleware = array_map('strtolower', array_filter((array) ($securityConfig['auth_middleware'] ?? ['auth', 'auth:api', 'auth:sanctum'])));
         $normalizedControllerMiddleware = array_map('strtolower', array_map('trim', $controllerMiddleware));
-        $requiresAuth = !empty(array_intersect($authMiddleware, $normalizedControllerMiddleware));
-
         $securitySchemeExists = $defaultScheme !== '' && array_key_exists($defaultScheme, $configuredSchemes);
-        $securityEnabled = $requiresAuth && $securitySchemeExists;
-        $operationSecurity = $securityEnabled ? [$defaultScheme] : [];
+
+        $indexMiddleware   = RouteInspector::middlewareFromEntry($indexEntry);
+        $storeMiddleware   = RouteInspector::middlewareFromEntry($storeEntry);
+        $showMiddleware    = RouteInspector::middlewareFromEntry($showEntry);
+        $updateMiddleware  = RouteInspector::middlewareFromEntry($updateEntry);
+        $destroyMiddleware = RouteInspector::middlewareFromEntry($destroyEntry);
+
+        $requiresAuthFor = static function (array $routeMiddleware) use ($normalizedControllerMiddleware, $authMiddleware): bool {
+            $combined = array_values(array_unique(array_merge($normalizedControllerMiddleware, $routeMiddleware)));
+            return !empty(array_intersect($combined, $authMiddleware));
+        };
+
+        $indexRequiresAuth   = $requiresAuthFor($indexMiddleware);
+        $storeRequiresAuth   = $requiresAuthFor($storeMiddleware);
+        $showRequiresAuth    = $requiresAuthFor($showMiddleware);
+        $updateRequiresAuth  = $requiresAuthFor($updateMiddleware);
+        $destroyRequiresAuth = $requiresAuthFor($destroyMiddleware);
+
+        $indexSecurity   = ($securitySchemeExists && $indexRequiresAuth) ? [$defaultScheme] : [];
+        $storeSecurity   = ($securitySchemeExists && $storeRequiresAuth) ? [$defaultScheme] : [];
+        $showSecurity    = ($securitySchemeExists && $showRequiresAuth) ? [$defaultScheme] : [];
+        $updateSecurity  = ($securitySchemeExists && $updateRequiresAuth) ? [$defaultScheme] : [];
+        $destroySecurity = ($securitySchemeExists && $destroyRequiresAuth) ? [$defaultScheme] : [];
+
+        $securityEnabled = $securitySchemeExists && (
+            $indexRequiresAuth ||
+            $storeRequiresAuth ||
+            $showRequiresAuth ||
+            $updateRequiresAuth ||
+            $destroyRequiresAuth
+        );
 
         $operations = [
             [
@@ -553,7 +576,7 @@ class MakeModuleCommand extends Command
                     ['code' => 200, 'description' => 'Successful response'],
                     ['code' => 401, 'description' => 'Unauthenticated'],
                 ],
-                'security'    => $operationSecurity,
+                'security'    => $indexSecurity,
             ],
             [
                 'name'        => 'store',
@@ -567,7 +590,7 @@ class MakeModuleCommand extends Command
                     ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 422, 'description' => 'Validation error'],
                 ],
-                'security'    => $operationSecurity,
+                'security'    => $storeSecurity,
             ],
             [
                 'name'        => 'show',
@@ -581,7 +604,7 @@ class MakeModuleCommand extends Command
                     ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
-                'security'    => $operationSecurity,
+                'security'    => $showSecurity,
             ],
             [
                 'name'        => 'update',
@@ -596,7 +619,7 @@ class MakeModuleCommand extends Command
                     ['code' => 422, 'description' => 'Validation error'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
-                'security'    => $operationSecurity,
+                'security'    => $updateSecurity,
             ],
             [
                 'name'        => 'destroy',
@@ -610,7 +633,7 @@ class MakeModuleCommand extends Command
                     ['code' => 401, 'description' => 'Unauthenticated'],
                     ['code' => 404, 'description' => 'Not found'],
                 ],
-                'security'    => $operationSecurity,
+                'security'    => $destroySecurity,
             ],
         ];
 
@@ -618,7 +641,7 @@ class MakeModuleCommand extends Command
             'tag'        => $tag,
             'param_name' => $paramName,
             'operations' => $operations,
-            'base_path'  => $basePath,
+            'base_path'  => $basePathNormalized,
             'namespace'  => $baseNamespace,
             'security'   => [
                 'enabled' => $securityEnabled,
