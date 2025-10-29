@@ -25,7 +25,7 @@ class MakeModuleCommand extends Command
     protected $signature = 'make:module
                             {name : The model/module base name (e.g. Product)}
                             {--c|controller= : Optional controller subfolder (e.g. Admin)}
-                            {--a|api : Generate API style controller}
+                            {--api : Generate API style controller}
                             {--r|requests : Generate FormRequests (Store/Update)}
                             {--t|tests : Force generate feature tests}
                             {--nc|no-controller : Do not generate controller}
@@ -37,6 +37,7 @@ class MakeModuleCommand extends Command
                             {--no-actions : Skip generating Actions}
                             {--sg|swagger : Generate Swagger/OpenAPI annotations}
                             {--no-swagger : Skip generating Swagger/OpenAPI annotations}
+                            {--a|all : Generate the full module stack (controllers, requests, resources, tests, provider, DTOs, swagger, actions)}
                             {--f|full : Generate the full module stack (controllers, requests, resources, tests, provider, DTOs, swagger, actions)}
                             {--fm|from-migration= : Migration file path or hint for inferring fields}
                             {--fields= : Inline schema definition for modules without migrations}
@@ -54,9 +55,13 @@ class MakeModuleCommand extends Command
 
         $controllerSub = $this->option('controller');
         $defaultControllerType = (string) ($defaults['controller_type'] ?? 'web');
-        $isApi         = $this->input->hasParameterOption(['--api', '--a', '-a']) || $defaultControllerType === 'api';
+        $isApi         = $this->input->hasParameterOption(['--api']) || $defaultControllerType === 'api';
         $force         = (bool) $this->option('force');
         $fullStack     = (bool) $this->option('full');
+        $allStack      = (bool) $this->option('all');
+        if ($allStack) {
+            $fullStack = true;
+        }
 
         // toggles
         $withController = (bool) ($defaults['with_controller'] ?? true);
@@ -116,7 +121,8 @@ class MakeModuleCommand extends Command
             // Check if --swagger is the only flag provided (besides name)
             $providedOptions = array_filter([
                 $this->input->hasParameterOption(['--controller', '--c', '-c']),
-                $this->input->hasParameterOption(['--api', '--a', '-a']),
+                $this->input->hasParameterOption(['--api']),
+                $this->input->hasParameterOption(['--all', '--a', '-a']),
                 $this->input->hasParameterOption(['--requests', '--r', '-r']),
                 $this->input->hasParameterOption(['--tests', '--t', '-t']),
                 $this->input->hasParameterOption(['--no-controller', '--nc', '-nc']),

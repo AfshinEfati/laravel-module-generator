@@ -1,6 +1,6 @@
 # راهنمای مشارکت / Contribution Guidelines
 
-## به زبان فارسی
+## فارسی
 
 از اینکه مایل به مشارکت در پروژه Laravel Module Generator هستید، متشکریم! لطفاً قبل از ارسال درخواست‌های Pull، این راهنما را با دقت مطالعه کنید.
 
@@ -43,7 +43,7 @@ composer test
 
 ---
 
-## In English
+## English
 
 Thank you for your interest in contributing to Laravel Module Generator! Please take a moment to review this document before submitting a pull request.
 

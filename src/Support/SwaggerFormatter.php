@@ -228,6 +228,11 @@ class SwaggerFormatter
             $example = self::formatScalarExample(self::exampleValue($field));
             $attributes[] = 'example=' . $example;
 
+            // For array types, add @OA\Items
+            if ($type === 'array') {
+                $attributes[] = '@OA\\Items(type="object")';
+            }
+
             $lines[] = $indent . '@OA\\Property(' . implode(', ', $attributes) . ')';
         }
 

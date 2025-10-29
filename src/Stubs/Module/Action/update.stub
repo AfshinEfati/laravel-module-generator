@@ -5,6 +5,7 @@ namespace {{ namespace }};
 use {{ base_namespace }}\BaseAction;
 use {{ service_fqcn }};
 use {{ model_fqcn }};
+{{ dto_import }}
 use Psr\Log\LoggerInterface;
 
 class Update{{ model_class }}Action extends BaseAction

@@ -70,6 +70,7 @@ class ActionGenerator
                 'model_fqcn'     => $modelFqcn,
                 'model_class'    => $name,
                 'payload_doc'    => $usesDto ? $name . 'DTO|array' : 'array',
+                'dto_import'     => $usesDto ? 'use ' . $dtoFqcn . ';' : '',
             ]),
             'Update' => Stub::render('Action/update', [
                 'namespace'      => $moduleNamespace,
@@ -79,6 +80,7 @@ class ActionGenerator
                 'model_fqcn'     => $modelFqcn,
                 'model_class'    => $name,
                 'payload_doc'    => $usesDto ? $name . 'DTO|array' : 'array',
+                'dto_import'     => $usesDto ? 'use ' . $dtoFqcn . ';' : '',
             ]),
             'Delete' => Stub::render('Action/delete', [
                 'namespace'      => $moduleNamespace,

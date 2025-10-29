@@ -90,7 +90,7 @@ class FormRequestGenerator
             $definition = $schemaMap[$f] ?? null;
             $rules      = self::inferRuleForField($f, $table, true, $definition);
             if (!empty($rules)) {
-                $store[$f] = implode('|', $rules);
+                $store[$f] = array_values($rules);
             }
         }
 
@@ -100,7 +100,7 @@ class FormRequestGenerator
             $r          = self::inferRuleForField($f, $table, false, $definition);
             if (!empty($r)) {
                 array_unshift($r, 'sometimes');
-                $update[$f] = implode('|', $r);
+                $update[$f] = array_values($r);
             }
         }
 
@@ -199,81 +199,18 @@ class FormRequestGenerator
         ?string $routeParam,
         ?string $table
     ): string {
-        $rulesExport = [];
-        foreach ($rules as $k => $v) {
-            $rulesExport[] = "            '" . $k . "' => '" . $v . "',";
-        }
-        $rulesStr = implode("\n", $rulesExport);
-
         $uses = [
             'use Illuminate\\Foundation\\Http\\FormRequest;',
         ];
 
-        $rulesBody = '';
-
+        $routeAccessor = null;
         if ($isUpdate) {
-            $uses[] = 'use Illuminate\\Validation\\Rule;';
-            $routeParamVar = $routeParam ? ("'" . $routeParam . "'") : "'id'";
-            $tableVal      = $table ? ("'" . $table . "'") : "'items'";
-
-            $rulesInit = $rulesStr === ''
-                ? '        $rules = [];'
-                : "        \$rules = [\n{$rulesStr}\n        ];";
-
-            $uniquePatch = <<<PHP
-
-        // Convert 'unique:table,field' to Rule::unique(...)->ignore(\$id)
-        foreach (\$rules as \$field => &\$pipe) {
-            if (!is_string(\$pipe)) {
-                continue;
-            }
-            \$parts = explode('|', \$pipe);
-            foreach (\$parts as &\$p) {
-                if (strpos(\$p, 'unique:') === 0) {
-                    \$p2 = substr(\$p, 7);
-                    \$tmp = explode(',', \$p2, 2);
-                    \$tbl = \$tmp[0] !== '' ? \$tmp[0] : {$tableVal};
-                    \$col = isset(\$tmp[1]) && \$tmp[1] !== '' ? \$tmp[1] : \$field;
-
-                    \$id = null;
-                    \$routeParam = \$this->route({$routeParamVar});
-                    if (\$routeParam) {
-                        if (is_object(\$routeParam) && method_exists(\$routeParam, 'getKey')) {
-                            \$id = \$routeParam->getKey();
-                        } elseif (is_numeric(\$routeParam)) {
-                            \$id = (int) \$routeParam;
-                        }
-                    }
-
-                    \$p = Rule::unique(\$tbl, \$col)->ignore(\$id);
-                }
-            }
-            unset(\$p);
-            \$pipe = \$parts;
+            $routeAccessor = $routeParam
+                ? "\$this->route('{$routeParam}')->id"
+                : "\$this->route('id')";
         }
-        unset(\$pipe);
-PHP;
 
-            $bodyParts = [
-                $rulesInit,
-                $uniquePatch,
-                '',
-                '        foreach ($rules as $k => &$arr) {',
-                '            if (is_array($arr)) {',
-                '                $arr = array_map(function ($x) { return $x; }, $arr);',
-                '            }',
-                '        }',
-                '        unset($arr);',
-                '',
-                '        return $rules;',
-            ];
-
-            $rulesBody = implode("\n", $bodyParts);
-        } else {
-            $rulesBody = $rulesStr === ''
-                ? '        return [];'
-                : "        return [\n{$rulesStr}\n        ];";
-        }
+        $rulesBody = self::renderRulesBody($rules, $isUpdate, $routeAccessor);
 
         $ns = $requestNamespace;
 
@@ -283,6 +220,58 @@ PHP;
             'class'      => $className,
             'rules_body' => $rulesBody,
         ]);
+    }
+
+    private static function renderRulesBody(array $rules, bool $isUpdate, ?string $routeAccessor): string
+    {
+        if (empty($rules)) {
+            return '        return [];';
+        }
+
+        $lines = ['        return ['];
+
+        foreach ($rules as $field => $ruleSet) {
+            $lines[] = "            '" . addslashes($field) . "' => " . self::exportRuleSet($ruleSet, $isUpdate, $routeAccessor) . ",";
+        }
+
+        $lines[] = '        ];';
+
+        return implode("\n", $lines);
+    }
+
+    private static function exportRuleSet($ruleSet, bool $isUpdate, ?string $routeAccessor): string
+    {
+        if (is_array($ruleSet)) {
+            $parts = [];
+            foreach ($ruleSet as $rule) {
+                $parts[] = self::exportRuleValue($rule, $isUpdate, $routeAccessor);
+            }
+            return '[' . implode(', ', $parts) . ']';
+        }
+
+        return self::exportRuleValue($ruleSet, $isUpdate, $routeAccessor);
+    }
+
+    private static function exportRuleValue($rule, bool $isUpdate, ?string $routeAccessor): string
+    {
+        if (!is_string($rule)) {
+            return var_export($rule, true);
+        }
+
+        if ($isUpdate && $routeAccessor && str_starts_with($rule, 'unique:')) {
+            $body     = substr($rule, 7);
+            $segments = array_map('trim', explode(',', $body));
+            $hasIgnore = count($segments) >= 3 && $segments[2] !== '';
+            if (!$hasIgnore) {
+                $prefix = 'unique:' . $body;
+                if (!str_ends_with($prefix, ',')) {
+                    $prefix .= ',';
+                }
+                return "'" . addslashes($prefix) . "' . " . $routeAccessor;
+            }
+        }
+
+        return "'" . addslashes($rule) . "'";
     }
 
     private static function writeFile(string $path, string $contents, bool $force): bool

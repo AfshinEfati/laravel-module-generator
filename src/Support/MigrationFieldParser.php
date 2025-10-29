@@ -217,10 +217,10 @@ class MigrationFieldParser
             }
 
             $rules = self::rulesForField($name, $meta, $table, true);
-            $store[$name] = implode('|', $rules);
+            $store[$name] = array_values($rules);
 
             $updateRules = self::rulesForField($name, $meta, $table, false);
-            $update[$name] = implode('|', $updateRules);
+            $update[$name] = array_values($updateRules);
         }
 
         return [$store, $update];
@@ -557,6 +557,7 @@ class MigrationFieldParser
             'unique',
             'fulltext',
             'spatialindex',
+            'comment',
             'dropindex',
             'dropunique',
             'dropforeign',
