@@ -6,6 +6,7 @@ use Efati\ModuleGenerator\Support\Stub;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
+use Efati\ModuleGenerator\Support\RouteInspector;
 
 class ControllerGenerator
 {
@@ -498,6 +499,27 @@ class ControllerGenerator
         }
         $basePath .= '/' . $resourceSlug;
 
+        $routeMap = RouteInspector::discoverResourceUris(Str::studly($name) . 'Controller');
+        if (isset($routeMap['index'])) {
+            $basePath = $routeMap['index'];
+        }
+
+        $detectedParam = RouteInspector::extractParamName($routeMap['show'] ?? ($routeMap['update'] ?? ($routeMap['destroy'] ?? null)));
+        if ($detectedParam) {
+            $paramName = $detectedParam;
+        }
+
+        $indexPath   = $routeMap['index'] ?? $basePath;
+        $storePath   = $routeMap['store'] ?? $indexPath;
+        $itemPath    = $routeMap['show'] ?? null;
+        $updatePath  = $routeMap['update'] ?? null;
+        $destroyPath = $routeMap['destroy'] ?? null;
+
+        $fallbackItemPath = self::fallbackItemPath($indexPath, $paramName);
+        $itemPath    = $itemPath ?? $fallbackItemPath;
+        $updatePath  = $updatePath ?? $itemPath;
+        $destroyPath = $destroyPath ?? $itemPath;
+
         $securityConfig = (array) config('module-generator.swagger.security', []);
         $configuredSchemes = (array) ($securityConfig['schemes'] ?? []);
         $defaultScheme = (string) ($securityConfig['default'] ?? array_key_first($configuredSchemes) ?? 'bearerAuth');
@@ -513,7 +535,7 @@ class ControllerGenerator
             [
                 'name'        => 'index',
                 'httpMethod'  => 'Get',
-                'path'        => $basePath,
+                'path'        => $indexPath,
                 'summary'     => "List {$tag}",
                 'requestBody' => false,
                 'pathParam'   => false,
@@ -526,7 +548,7 @@ class ControllerGenerator
             [
                 'name'        => 'store',
                 'httpMethod'  => 'Post',
-                'path'        => $basePath,
+                'path'        => $storePath,
                 'summary'     => "Create {$tag}",
                 'requestBody' => true,
                 'pathParam'   => false,
@@ -540,7 +562,7 @@ class ControllerGenerator
             [
                 'name'        => 'show',
                 'httpMethod'  => 'Get',
-                'path'        => $basePath . '/{' . $paramName . '}',
+                'path'        => $itemPath,
                 'summary'     => "Show {$tag}",
                 'requestBody' => false,
                 'pathParam'   => true,
@@ -554,7 +576,7 @@ class ControllerGenerator
             [
                 'name'        => 'update',
                 'httpMethod'  => 'Put',
-                'path'        => $basePath . '/{' . $paramName . '}',
+                'path'        => $updatePath,
                 'summary'     => "Update {$tag}",
                 'requestBody' => true,
                 'pathParam'   => true,
@@ -569,7 +591,7 @@ class ControllerGenerator
             [
                 'name'        => 'destroy',
                 'httpMethod'  => 'Delete',
-                'path'        => $basePath . '/{' . $paramName . '}',
+                'path'        => $destroyPath,
                 'summary'     => "Delete {$tag}",
                 'requestBody' => false,
                 'pathParam'   => true,
@@ -594,6 +616,18 @@ class ControllerGenerator
                 'schemes' => $securityEnabled ? $configuredSchemes : [],
             ],
         ];
+    }
+
+    private static function fallbackItemPath(string $basePath, string $paramName): string
+    {
+        $normalized = RouteInspector::normalizeUri($basePath);
+        $normalized = rtrim($normalized, '/');
+
+        if ($normalized === '' || $normalized === '/') {
+            return '/{' . $paramName . '}';
+        }
+
+        return $normalized . '/{' . $paramName . '}';
     }
 
     private static function buildUses(array $imports): string

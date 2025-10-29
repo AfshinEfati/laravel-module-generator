@@ -18,6 +18,8 @@ use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\RuntimeFieldParser;
+use Efati\ModuleGenerator\Support\RouteInspector;
+use Efati\ModuleGenerator\Support\SwaggerPathGuesser;
 
 
 class MakeModuleCommand extends Command
@@ -507,6 +509,27 @@ class MakeModuleCommand extends Command
         }
         $basePath .= '/' . $resourceSlug;
 
+        $routeMap = RouteInspector::discoverResourceUris(Str::studly($name) . 'Controller');
+        if (isset($routeMap['index'])) {
+            $basePath = $routeMap['index'];
+        }
+
+        $detectedParam = RouteInspector::extractParamName($routeMap['show'] ?? ($routeMap['update'] ?? ($routeMap['destroy'] ?? null)));
+        if ($detectedParam) {
+            $paramName = $detectedParam;
+        }
+
+        $indexPath   = $routeMap['index'] ?? $basePath;
+        $storePath   = $routeMap['store'] ?? $indexPath;
+        $itemPath    = $routeMap['show'] ?? null;
+        $updatePath  = $routeMap['update'] ?? null;
+        $destroyPath = $routeMap['destroy'] ?? null;
+
+        $fallbackItemPath = self::fallbackItemPath($indexPath, $paramName);
+        $itemPath    = $itemPath ?? $fallbackItemPath;
+        $updatePath  = $updatePath ?? $itemPath;
+        $destroyPath = $destroyPath ?? $itemPath;
+
         $securityConfig = (array) config('module-generator.swagger.security', []);
         $configuredSchemes = (array) ($securityConfig['schemes'] ?? []);
         $defaultScheme = (string) ($securityConfig['default'] ?? array_key_first($configuredSchemes) ?? 'bearerAuth');
@@ -522,7 +545,7 @@ class MakeModuleCommand extends Command
             [
                 'name'        => 'index',
                 'httpMethod'  => 'Get',
-                'path'        => $basePath,
+                'path'        => $indexPath,
                 'summary'     => "List {$tag}",
                 'requestBody' => false,
                 'pathParam'   => false,
@@ -535,7 +558,7 @@ class MakeModuleCommand extends Command
             [
                 'name'        => 'store',
                 'httpMethod'  => 'Post',
-                'path'        => $basePath,
+                'path'        => $storePath,
                 'summary'     => "Create {$tag}",
                 'requestBody' => true,
                 'pathParam'   => false,
@@ -549,7 +572,7 @@ class MakeModuleCommand extends Command
             [
                 'name'        => 'show',
                 'httpMethod'  => 'Get',
-                'path'        => $basePath . '/{' . $paramName . '}',
+                'path'        => $itemPath,
                 'summary'     => "Show {$tag}",
                 'requestBody' => false,
                 'pathParam'   => true,
@@ -563,7 +586,7 @@ class MakeModuleCommand extends Command
             [
                 'name'        => 'update',
                 'httpMethod'  => 'Put',
-                'path'        => $basePath . '/{' . $paramName . '}',
+                'path'        => $updatePath,
                 'summary'     => "Update {$tag}",
                 'requestBody' => true,
                 'pathParam'   => true,
@@ -578,7 +601,7 @@ class MakeModuleCommand extends Command
             [
                 'name'        => 'destroy',
                 'httpMethod'  => 'Delete',
-                'path'        => $basePath . '/{' . $paramName . '}',
+                'path'        => $destroyPath,
                 'summary'     => "Delete {$tag}",
                 'requestBody' => false,
                 'pathParam'   => true,
@@ -603,5 +626,17 @@ class MakeModuleCommand extends Command
                 'schemes' => $securityEnabled ? $configuredSchemes : [],
             ],
         ];
+    }
+
+    private static function fallbackItemPath(string $basePath, string $paramName): string
+    {
+        $normalized = RouteInspector::normalizeUri($basePath);
+        $normalized = rtrim($normalized, '/');
+
+        if ($normalized === '' || $normalized === '/') {
+            return '/{' . $paramName . '}';
+        }
+
+        return $normalized . '/{' . $paramName . '}';
     }
 }
