@@ -491,7 +491,7 @@ class ControllerGenerator
 
         $routeMap = RouteInspector::discoverResourceUris(Str::studly($name) . 'Controller', $slugHints);
         if (isset($routeMap['index'])) {
-            $basePath = $routeMap['index'];
+            $basePath = RouteInspector::pathFromEntry($routeMap['index']) ?? $basePath;
         }
 
         $detectedParam = RouteInspector::extractParamName($routeMap['show'] ?? ($routeMap['update'] ?? ($routeMap['destroy'] ?? null)));
