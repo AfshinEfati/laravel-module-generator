@@ -53,7 +53,7 @@ interface {{ interface }} extends {{ base_interface }}
         array $orWhereNotNull = [],
         array $whereRaw = [],
         array $orWhereRaw = []
-    ): Illuminate\Database\Eloquent\Collection;
+    ): \Illuminate\Database\Eloquent\Collection;
 
     public function store(array $data): {{ model }};
 
