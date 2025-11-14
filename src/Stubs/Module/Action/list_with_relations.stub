@@ -1,0 +1,28 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ base_namespace }}\BaseAction;
+use {{ service_fqcn }};
+use Psr\Log\LoggerInterface;
+
+class ListWithRelations{{ model_class }}Action extends BaseAction
+{
+    public function __construct(
+        private readonly {{ service_class }} $service,
+        ?LoggerInterface $logger = null,
+    ) {
+        parent::__construct($logger);
+    }
+
+    protected function handle(mixed ...$arguments): iterable
+    {
+        $where = $arguments[0]['where'] ?? [];
+        $with  = $arguments[0]['with']  ?? [];
+
+        return $this->service->getByDynamic(
+            where: $where,
+            with: $with
+        );
+    }
+}

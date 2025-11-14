@@ -31,8 +31,8 @@ class ActionGenerator
         $moduleNamespace = $baseNamespaceActions . '\\' . $name;
 
         $serviceFqcn = $baseNamespace . '\\Services\\' . $name . 'Service';
-        $modelFqcn = $baseNamespace . '\\Models\\' . $name;
-        $dtoFqcn = $baseNamespace . '\\DTOs\\' . $name . 'DTO';
+        $modelFqcn   = $baseNamespace . '\\Models\\' . $name;
+        $dtoFqcn     = $baseNamespace . '\\DTOs\\' . $name . 'DTO';
 
         $results = [];
 
@@ -46,22 +46,25 @@ class ActionGenerator
         );
 
         $actions = [
+
             'List' => Stub::render('Action/list', [
-                'namespace'     => $moduleNamespace,
+                'namespace'      => $moduleNamespace,
                 'base_namespace' => $baseNamespaceActions,
-                'service_fqcn'  => $serviceFqcn,
-                'service_class' => $name . 'Service',
-                'model_fqcn'    => $modelFqcn,
-                'model_class'   => $name,
+                'service_fqcn'   => $serviceFqcn,
+                'service_class'  => $name . 'Service',
+                'model_fqcn'     => $modelFqcn,
+                'model_class'    => $name,
             ]),
+
             'Show' => Stub::render('Action/show', [
-                'namespace'     => $moduleNamespace,
+                'namespace'      => $moduleNamespace,
                 'base_namespace' => $baseNamespaceActions,
-                'service_fqcn'  => $serviceFqcn,
-                'service_class' => $name . 'Service',
-                'model_fqcn'    => $modelFqcn,
-                'model_class'   => $name,
+                'service_fqcn'   => $serviceFqcn,
+                'service_class'  => $name . 'Service',
+                'model_fqcn'     => $modelFqcn,
+                'model_class'    => $name,
             ]),
+
             'Create' => Stub::render('Action/create', [
                 'namespace'      => $moduleNamespace,
                 'base_namespace' => $baseNamespaceActions,
@@ -72,6 +75,7 @@ class ActionGenerator
                 'payload_doc'    => $usesDto ? $name . 'DTO|array' : 'array',
                 'dto_import'     => $usesDto ? 'use ' . $dtoFqcn . ';' : '',
             ]),
+
             'Update' => Stub::render('Action/update', [
                 'namespace'      => $moduleNamespace,
                 'base_namespace' => $baseNamespaceActions,
@@ -82,11 +86,22 @@ class ActionGenerator
                 'payload_doc'    => $usesDto ? $name . 'DTO|array' : 'array',
                 'dto_import'     => $usesDto ? 'use ' . $dtoFqcn . ';' : '',
             ]),
+
             'Delete' => Stub::render('Action/delete', [
                 'namespace'      => $moduleNamespace,
                 'base_namespace' => $baseNamespaceActions,
                 'service_fqcn'   => $serviceFqcn,
                 'service_class'  => $name . 'Service',
+                'model_class'    => $name,
+            ]),
+
+            // *** اکشن جدید (ListWithRelations) ***
+            'ListWithRelations' => Stub::render('Action/list_with_relations', [
+                'namespace'      => $moduleNamespace,
+                'base_namespace' => $baseNamespaceActions,
+                'service_fqcn'   => $serviceFqcn,
+                'service_class'  => $name . 'Service',
+                'model_fqcn'     => $modelFqcn,
                 'model_class'    => $name,
             ]),
         ];
@@ -106,7 +121,6 @@ class ActionGenerator
         }
 
         File::put($path, $contents);
-
         return true;
     }
 }
