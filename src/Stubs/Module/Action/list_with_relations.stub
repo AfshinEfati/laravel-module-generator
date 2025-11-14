@@ -5,6 +5,7 @@ namespace {{ namespace }};
 use {{ base_namespace }}\BaseAction;
 use {{ service_fqcn }};
 use Psr\Log\LoggerInterface;
+use ReflectionMethod;
 
 class ListWithRelations{{ model_class }}Action extends BaseAction
 {
@@ -17,12 +18,24 @@ class ListWithRelations{{ model_class }}Action extends BaseAction
 
     protected function handle(mixed ...$arguments): iterable
     {
-        $where = $arguments[0]['where'] ?? [];
-        $with  = $arguments[0]['with']  ?? [];
+        $input = $arguments[0] ?? [];
 
-        return $this->service->getByDynamic(
-            where: $where,
-            with: $with
-        );
+        // Ensure input is a numeric array
+        $input = array_values($input);
+
+        $method = new ReflectionMethod($this->service, 'getByDynamic');
+        $params = $method->getParameters();
+
+        $final = [];
+
+        foreach ($params as $index => $param) {
+            if (array_key_exists($index, $input)) {
+                $final[] = $input[$index];
+            } else {
+                $final[] = $param->getDefaultValue();
+            }
+        }
+
+        return $this->service->getByDynamic(...$final);
     }
 }

@@ -88,8 +88,8 @@ class {{ class }} extends {{ base_class }} implements {{ interface }}
         array $orWhereNotNull = [],
         array $whereRaw = [],
         array $orWhereRaw = []
-    ): \Illuminate\Support\Collection {
-        /** @var \Illuminate\Support\Collection */
+    ): \Illuminate\Database\Eloquent\Collection {
+        /** @var \Illuminate\Database\Eloquent\Collection */
         return parent::getByDynamic(
             $where,
             $with,
