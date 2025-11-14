@@ -16,6 +16,7 @@ use Efati\ModuleGenerator\Generators\ResourceGenerator;
 use Efati\ModuleGenerator\Generators\ActionGenerator;
 use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
+use Efati\ModuleGenerator\Support\ModelInspector;
 use Efati\ModuleGenerator\Support\SchemaParser;
 use Efati\ModuleGenerator\Support\RuntimeFieldParser;
 use Efati\ModuleGenerator\Support\RouteInspector;
@@ -137,7 +138,7 @@ class MakeModuleCommand extends Command
                 $this->input->hasParameterOption(['--from-migration', '--fm']),
                 $this->input->hasParameterOption(['--fields']),
             ]);
-            
+
             if (empty($providedOptions)) {
                 $swaggerOnly = true;
                 $withController = false;
@@ -173,6 +174,11 @@ class MakeModuleCommand extends Command
             $withSwagger = false;
         }
 
+        // Validate parsed fields before generation
+        if (!empty($parsedFields)) {
+            $this->validateParsedFields($parsedFields);
+        }
+
         $modelFqcn       = $baseNamespace . '\\Models\\' . $name;
         $migrationHint   = $this->option('from-migration');
         $parsed          = null;
@@ -187,7 +193,14 @@ class MakeModuleCommand extends Command
             return self::FAILURE;
         }
 
-        if (!empty($schemaDefinitions)) {
+        $runtimeFields     = [];
+        $runtimeRelations  = [];
+        $migrationFields   = [];
+        $migrationRelations = [];
+        $fillableColumns   = [];
+        $hasInlineSchema   = !empty($schemaDefinitions);
+
+        if ($hasInlineSchema) {
             [$parsedFields, $parsedRelations] = $this->prepareSchemaDefinitions($schemaDefinitions);
             $parsedTable = Str::snake(Str::pluralStudly($name));
         }
@@ -198,15 +211,18 @@ class MakeModuleCommand extends Command
                 $parsedTable = $runtime['table'];
             }
 
-            if (empty($parsedFields) && !empty($runtime['fields'])) {
-                $parsedFields    = $runtime['fields'];
-                $parsedRelations = $runtime['relations'];
-            } elseif (empty($parsedFields) && empty($migrationHint) && empty($schemaDefinitions)) {
+            $runtimeFields    = $runtime['fields'] ?? [];
+            $runtimeRelations = $runtime['relations'] ?? [];
+
+            if (empty($runtimeFields) && !$hasInlineSchema && (empty($migrationHint))) {
                 $this->warn('• Unable to inspect database columns for the model. Falling back to migration parsing.');
             }
+
+            $fillableColumns = ModelInspector::extractFillable($modelFqcn);
         }
 
-        if (empty($parsedFields)) {
+        if (!$hasInlineSchema) {
+            $parsed = null;
             if (is_string($migrationHint) && $migrationHint !== '') {
                 $parsed = MigrationFieldParser::parse($name, $migrationHint);
             } else {
@@ -214,18 +230,36 @@ class MakeModuleCommand extends Command
             }
 
             if (is_array($parsed)) {
-                $parsedFields    = $parsed['fields'] ?? [];
-                $parsedRelations = $parsed['relations'] ?? [];
-                $parsedTable     = $parsed['table'] ?? null;
+                $migrationFields    = $parsed['fields'] ?? [];
+                $migrationRelations = $parsed['relations'] ?? [];
+                if ($parsedTable === null && !empty($parsed['table'])) {
+                    $parsedTable = $parsed['table'];
+                }
             }
 
-            if (is_string($migrationHint) && $migrationHint !== '' && empty($parsedFields)) {
+            if (is_string($migrationHint) && $migrationHint !== '' && empty($migrationFields)) {
                 $this->warn('• Unable to extract fields from the provided migration hint.');
-            } elseif (!$modelExists && empty($parsedFields)) {
+            } elseif (!$modelExists && empty($migrationFields) && empty($runtimeFields)) {
                 $this->warn('• Model class not found and fields could not be inferred from migration. Some generators may use empty metadata.');
-            } elseif ($modelExists && empty($parsedFields)) {
+            } elseif ($modelExists && empty($migrationFields) && empty($runtimeFields)) {
                 $this->warn('• Unable to infer fields from database or migrations. Some generators may use empty metadata.');
             }
+        }
+
+        if ($hasInlineSchema) {
+            // keep schema-provided metadata intact
+        } else {
+            $parsedFields = $this->mergeFieldDefinitions($runtimeFields, $migrationFields);
+            $parsedRelations = $this->mergeRelationDefinitions($runtimeRelations, $migrationRelations);
+
+            if (!empty($fillableColumns)) {
+                $parsedFields = $this->alignFieldsToFillable($fillableColumns, $parsedFields, $migrationFields, $runtimeFields);
+                $parsedRelations = $this->rebuildRelationsForFields($parsedFields, $parsedRelations, $migrationRelations, $runtimeRelations);
+            }
+        }
+
+        if ($parsedTable === null && !$hasInlineSchema) {
+            $parsedTable = Str::snake(Str::pluralStudly($name));
         }
 
         // Handle swagger-only generation
@@ -364,52 +398,180 @@ class MakeModuleCommand extends Command
         }
     }
 
-    /**
-     * Convert inline schema definitions into migration-style metadata arrays.
-     *
-     * @param  array<int, array<string, mixed>>  $schema
-     * @return array{0: array<string, array<string, mixed>>, 1: array<string, array<string, mixed>>}
-     */
-    private function prepareSchemaDefinitions(array $schema): array
+    private function mergeFieldDefinitions(array $primary, array $secondary): array
     {
-        $fields    = [];
-        $relations = [];
+        if (empty($primary)) {
+            $primary = [];
+        }
 
-        foreach (SchemaParser::keyByName($schema) as $name => $definition) {
+        foreach ($secondary as $name => $meta) {
             if (!is_string($name) || $name === '') {
                 continue;
             }
 
-            $normalizedType = SchemaParser::normalizeType((string) ($definition['type'] ?? 'string'));
-
-            $fieldMeta = [
-                'name'         => $name,
-                'type'         => $normalizedType,
-                'cast'         => $this->inferCastFromType($normalizedType),
-                'nullable'     => (bool) ($definition['nullable'] ?? false),
-                'unique'       => (bool) ($definition['unique'] ?? false),
-                'auto_managed' => false,
-            ];
-
-            $foreignMeta = $this->buildForeignMetadataFromSchema($name, $definition['foreign'] ?? null);
-
-            if ($foreignMeta !== null) {
-                $fieldMeta['foreign'] = $foreignMeta;
-
-                $relations[$foreignMeta['relation']] = [
-                    'name'          => $foreignMeta['relation'],
-                    'type'          => 'belongsTo',
-                    'foreign_key'   => $name,
-                    'table'         => $foreignMeta['table'],
-                    'references'    => $foreignMeta['references'] ?? 'id',
-                    'related_model' => $foreignMeta['related'],
-                ];
-            }
-
-            $fields[$name] = $fieldMeta;
+            $existing = $primary[$name] ?? [];
+            $primary[$name] = array_merge($existing, $meta);
+            $primary[$name]['name'] = $name;
         }
 
-        return [$fields, $relations];
+        return $primary;
+    }
+
+    private function mergeRelationDefinitions(array $primary, array $secondary): array
+    {
+        if (empty($primary)) {
+            $primary = [];
+        }
+
+        foreach ($secondary as $name => $meta) {
+            if (!is_string($name) || $name === '') {
+                continue;
+            }
+            $primary[$name] = array_merge($primary[$name] ?? [], $meta);
+            $primary[$name]['name'] = $meta['name'] ?? $name;
+        }
+
+        return $primary;
+    }
+
+    private function alignFieldsToFillable(array $fillable, array $fields, array $migrationFields, array $runtimeFields): array
+    {
+        if (empty($fillable)) {
+            return $fields;
+        }
+
+        $aligned = [];
+
+        foreach ($fillable as $column) {
+            if (!is_string($column) || $column === '') {
+                continue;
+            }
+
+            $meta = $fields[$column] ?? $migrationFields[$column] ?? $runtimeFields[$column] ?? null;
+
+            if ($meta === null) {
+                $meta = $this->defaultFieldMetadata($column);
+            } else {
+                $meta['name'] = $column;
+            }
+
+            $aligned[$column] = $meta;
+        }
+
+        return $aligned;
+    }
+
+    private function rebuildRelationsForFields(array $fields, array $existingRelations, array $migrationRelations, array $runtimeRelations): array
+    {
+        $lookup = [];
+
+        foreach ([$existingRelations, $migrationRelations, $runtimeRelations] as $relationSet) {
+            foreach ($relationSet as $key => $meta) {
+                if (is_string($key) && $key !== '' && !isset($lookup[$key])) {
+                    $lookup[$key] = $meta;
+                }
+            }
+        }
+
+        $relations = [];
+
+        foreach ($fields as $name => $meta) {
+            if (!is_array($meta)) {
+                continue;
+            }
+
+            $foreign = $meta['foreign'] ?? null;
+            if (!is_array($foreign)) {
+                continue;
+            }
+
+            $relationName = $foreign['relation'] ?? null;
+
+            if (!is_string($relationName) || $relationName === '') {
+                if (Str::endsWith($name, '_id')) {
+                    $relationName = Str::camel(substr($name, 0, -3));
+                }
+            }
+
+            if (!is_string($relationName) || $relationName === '') {
+                continue;
+            }
+
+            if (isset($lookup[$relationName])) {
+                $relations[$relationName] = array_merge($lookup[$relationName], [
+                    'name' => $lookup[$relationName]['name'] ?? $relationName,
+                ]);
+                continue;
+            }
+
+            $relations[$relationName] = [
+                'name'          => $relationName,
+                'type'          => $foreign['type'] ?? 'belongsTo',
+                'foreign_key'   => $foreign['foreign_key'] ?? $name,
+                'table'         => $foreign['table'] ?? null,
+                'references'    => $foreign['references'] ?? 'id',
+                'related_model' => $foreign['related_model'] ?? $foreign['related'] ?? $this->guessRelatedModel($name),
+            ];
+        }
+
+        return $relations;
+    }
+
+    private function validateParsedFields(array $fields): void
+    {
+        $reserved = [
+            'function', 'class', 'interface', 'trait', 'const', 'public', 'private',
+            'protected', 'static', 'abstract', 'final', 'namespace', 'use', 'return',
+            'echo', 'print', 'array', 'string', 'int', 'float', 'bool', 'null',
+            'true', 'false', 'new', 'clone', 'instanceof', 'extends', 'implements'
+        ];
+
+        $fieldNames = [];
+
+        foreach ($fields as $name => $meta) {
+            if (!is_string($name) || $name === '') {
+                $this->warn("• Skipping invalid field name: empty or non-string");
+                continue;
+            }
+
+            // Check for reserved keywords
+            if (in_array(strtolower($name), $reserved, true)) {
+                $this->error("• Field name '{$name}' is a reserved PHP keyword and cannot be used.");
+                continue;
+            }
+
+            // Check for valid identifier
+            if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
+                $this->error("• Field name '{$name}' is not a valid PHP identifier.");
+                continue;
+            }
+
+            // Check for duplicates
+            if (in_array($name, $fieldNames, true)) {
+                $this->warn("• Duplicate field name detected: '{$name}' (will be skipped)");
+                continue;
+            }
+
+            $fieldNames[] = $name;
+        }
+    }
+
+    private function defaultFieldMetadata(string $name): array
+    {
+        return [
+            'name'         => $name,
+            'method'       => 'inferred',
+            'type'         => 'string',
+            'cast'         => null,
+            'length'       => null,
+            'scale'        => null,
+            'nullable'     => false,
+            'unique'       => false,
+            'default'      => null,
+            'enum'         => null,
+            'auto_managed' => false,
+            'foreign'      => null,
+        ];
     }
 
     /**
@@ -447,8 +609,14 @@ class MakeModuleCommand extends Command
             $table = Str::snake(Str::pluralStudly($related));
         }
 
+        $validRelationTypes = ['belongsTo', 'hasOne', 'hasMany', 'belongsToMany'];
+
+        if (is_array($foreign) && isset($foreign['type']) && !in_array($foreign['type'], $validRelationTypes, true)) {
+            $this->warn("• Invalid relationship type '{$foreign['type']}' for field '{$field}'. Using 'belongsTo' as default.");
+        }
+
         return [
-            'type'       => 'belongsTo',
+            'type'       => $foreign['type'] ?? 'belongsTo',
             'references' => $column,
             'table'      => $table,
             'related'    => $related,
