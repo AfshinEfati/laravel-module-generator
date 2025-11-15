@@ -93,23 +93,25 @@ Generates invokable action classes for each CRUD operation (List, Show, Create, 
 
 ## Command options
 
-| Option                | Alias | Description                                                                                                 |
-| --------------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
-| `--api`               | `-a`  | Generate API controller with form requests and actions. Automatically enables `--requests` and `--actions`. |
-| `--actions`           | –     | Generate invokable action classes for CRUD operations.                                                      |
-| `--requests`          | `-r`  | Generate `Store` and `Update` form requests.                                                                |
-| `--tests`             | `-t`  | Generate CRUD feature tests.                                                                                |
-| `--controller=Subdir` | `-c`  | Place controller in a subfolder (e.g., `Admin`).                                                            |
-| `--swagger`           | `-sg` | Generate OpenAPI documentation in `App\Docs\{Module}Doc`.                                                   |
-| `--from-migration=`   | `-fm` | Infer schema from migration file name or path.                                                              |
-| `--fields=`           | –     | Inline schema: `name:string:unique, email:email, price:decimal(10,2)`                                       |
-| `--no-controller`     | `-nc` | Skip controller generation.                                                                                 |
-| `--no-resource`       | `-nr` | Skip API resource generation.                                                                               |
-| `--no-dto`            | `-nd` | Skip DTO generation.                                                                                        |
-| `--no-test`           | `-nt` | Skip feature tests.                                                                                         |
-| `--no-provider`       | `-np` | Skip provider creation.                                                                                     |
-| `--no-swagger`        | –     | Disable Swagger generation.                                                                                 |
-| `--force`             | `-f`  | Overwrite existing files.                                                                                   |
+| Option                | Alias       | Description                                                                                                 |
+| --------------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| `--api`               | `-a`        | Generate API controller with form requests and actions. Automatically enables `--requests` and `--actions`. |
+| `--actions`           | –           | Generate invokable action classes for CRUD operations.                                                      |
+| `--requests`          | `-r`        | Generate `Store` and `Update` form requests.                                                                |
+| `--tests`             | `-t`        | Generate CRUD feature tests.                                                                                |
+| `--controller=Subdir` | `-c`        | Place controller in a subfolder (e.g., `Admin`).                                                            |
+| `--swagger`           | `-sg`       | Generate OpenAPI documentation in `App\Docs\{Module}Doc`.                                                   |
+| `--no-actions`        | –           | Skip action layer generation (opposite of `--actions`).                                                     |
+| `--all` / `--full`    | `-a` / `-f` | Generate complete stack: controllers, requests, resources, tests, provider, DTOs, swagger, actions.         |
+| `--from-migration=`   | `-fm`       | Infer schema from migration file name or path.                                                              |
+| `--fields=`           | –           | Inline schema: `name:string:unique, email:email, price:decimal(10,2)`                                       |
+| `--no-controller`     | `-nc`       | Skip controller generation.                                                                                 |
+| `--no-resource`       | `-nr`       | Skip API resource generation.                                                                               |
+| `--no-dto`            | `-nd`       | Skip DTO generation.                                                                                        |
+| `--no-test`           | `-nt`       | Skip feature tests.                                                                                         |
+| `--no-provider`       | `-np`       | Skip provider creation.                                                                                     |
+| `--no-swagger`        | –           | Disable Swagger generation.                                                                                 |
+| `--force`             | `-f`        | Overwrite existing files.                                                                                   |
 
 **Default behavior** can be configured in `config/module-generator.php` under the `defaults` section.
 
@@ -372,7 +374,8 @@ public function store(StoreProductRequest $request)
 
 **Problem:** Generator can't find stub templates.
 
-**Solution:** 
+**Solution:**
+
 ```bash
 php artisan vendor:publish \
   --provider="Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider" \
@@ -383,7 +386,8 @@ php artisan vendor:publish \
 
 **Problem:** Generator can't locate your Eloquent model.
 
-**Solution:** 
+**Solution:**
+
 - Ensure model exists at `App\Models\{ModuleName}`
 - Or specify schema with `--fields` or `--from-migration`
 
@@ -400,6 +404,7 @@ php artisan make:module Product -a --from-migration
 **Problem:** Service provider not added to config/app.php or bootstrap/providers.php
 
 **Solution:**
+
 - Check that `--no-provider` was not used
 - Manually add to `bootstrap/providers.php` (Laravel 11):
 
@@ -424,12 +429,15 @@ Or to `config/app.php` (Laravel 10):
 **Problem:** OpenAPI docs not rendering in Swagger UI.
 
 **Solution:**
+
 1. Install swagger package:
+
 ```bash
 composer require zircote/swagger-php
 ```
 
 2. Regenerate API docs:
+
 ```bash
 php artisan l5-swagger:generate
 ```
@@ -441,6 +449,7 @@ php artisan l5-swagger:generate
 **Problem:** Feature tests can't access database tables.
 
 **Solution:**
+
 - Run migrations: `php artisan migrate:fresh`
 - Check test database in `phpunit.xml`
 - Ensure test routes are registered in `routes/api.php`:
@@ -452,8 +461,18 @@ Route::apiResource('test-products', ProductController::class);
 ## Resources
 
 - [Full documentation](https://afshinefati.github.io/laravel-module-generator/)
-- [Changelog](CHABELOG.md)
-- [Contributing guidelines](CONTRIBUTING.md)
+- [Complete Features Guide](FEATURES.md) - All features explained in detail
+- [Usage Examples](EXAMPLES.md) - Real-world examples and scenarios
+- [API Reference](API_REFERENCE.md) - Complete command and class API documentation
+- [Upgrade Guide](UPGRADE.md) - Migrating between versions
+- [Changelog](CHABELOG.md) - Release notes and version history
+- [Contributing guidelines](CONTRIBUTING.md) - How to contribute
+
+## Quick Links
+
+- 🌐 **Website**: [https://afshinefati.github.io/laravel-module-generator/](https://afshinefati.github.io/laravel-module-generator/)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/AfshinEfati/laravel-module-generator/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/AfshinEfati/laravel-module-generator/discussions)
 
 ## License
 

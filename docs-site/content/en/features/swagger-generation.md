@@ -1,55 +1,102 @@
-# Swagger Generation
+# OpenAPI/Swagger Generation
 
-This package provides two ways to generate Swagger documentation for your API: model-based and route-based.
+Generate interactive API documentation automatically with inline annotations and route scanning.
 
-## Model-Based Generation
+## Getting Started
 
-You can generate Swagger documentation for a specific module by using the `--swagger` option with the `make:module` command.
+First, install a Swagger package (optional but recommended):
+
+```bash
+composer require darkaonline/l5-swagger
+# or
+composer require zircote/swagger-php
+```
+
+Then generate your module with Swagger support:
 
 ```bash
 php artisan make:module Product --api --swagger
 ```
 
-This command will generate a `ProductDoc.php` file in the `app/Docs` directory. This file will contain the OpenAPI annotations for the module's API.
+This creates `App/Docs/ProductDoc.php` with OpenAPI 3.0 annotations.
 
-You can also generate only the Swagger documentation for a module by using the `--swagger` option without any other options.
+## Model-Based Generation
+
+The `--swagger` flag generates comprehensive OpenAPI documentation for your module:
 
 ```bash
-php artisan make:module Product --swagger
+php artisan make:module Product \
+  --api --swagger \
+  --fields="name:string, price:decimal(10,2), is_active:boolean"
 ```
+
+Generated annotations include:
+
+- **Paths** – All CRUD endpoints (GET, POST, PUT, DELETE)
+- **Schemas** – Request/response models with properties
+- **Parameters** – Query filters, pagination, includes
+- **Security** – Bearer token authentication
+- **Examples** – Sample requests and responses
 
 ## Route-Based Generation
 
-The package also provides a `make:swagger` command that can generate Swagger documentation by scanning your existing Laravel routes.
+Scan existing routes to auto-generate docs:
 
 ```bash
 php artisan make:swagger
 ```
 
-This command will scan all of your application's routes and generate a separate documentation file for each controller.
+Generates separate doc files for each controller with:
+
+- Method signatures from code analysis
+- Parameter detection from form requests
+- Response type hints from resources
+- HTTP status codes
 
 ### Filtering Routes
 
-You can filter the routes that are scanned by using the `--path` and `--controller` options.
-
-The `--path` option allows you to filter the routes by a path prefix. For example, the following command will only scan the routes that start with `api/v1`:
-
 ```bash
+# Only document api/v1/* routes
 php artisan make:swagger --path=api/v1
-```
 
-The `--controller` option allows you to filter the routes by a controller namespace. For example, the following command will only scan the routes that are handled by controllers in the `Api` namespace:
-
-```bash
+# Only document specific controller namespace
 php artisan make:swagger --controller=Api
-```
 
-You can also combine these options to further filter the routes.
-
-### Overwriting Files
-
-By default, the `make:swagger` command will not overwrite existing documentation files. You can use the `--force` option to force the command to overwrite existing files.
-
-```bash
+# Force regeneration (overwrite existing docs)
 php artisan make:swagger --force
 ```
+
+## Viewing Documentation
+
+If using `l5-swagger`:
+
+```bash
+php artisan l5-swagger:generate
+```
+
+Then visit: `http://yourapp.test/api/documentation`
+
+## Custom Annotations
+
+Extend generated docs in your action classes:
+
+```php
+/**
+ * @OA\Post(
+ *     path="/api/v1/products",
+ *     summary="Create a new product",
+ *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/ProductDTO")),
+ *     @OA\Response(response=201, description="Product created")
+ * )
+ */
+class CreateAction extends BaseAction
+{
+    // ...
+}
+```
+
+## OpenAPI Spec Locations
+
+- **Generated Docs:** `App/Docs/{Module}Doc.php`
+- **Generated Config:** `config/swagger.php` (if published)
+- **API Endpoint:** `/api/v1/*` (routes with OpenAPI annotations)

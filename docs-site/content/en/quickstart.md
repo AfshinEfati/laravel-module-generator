@@ -1,54 +1,127 @@
 # Quickstart
 
-[🇮🇷 فارسی](../fa/quickstart.md){ .language-switcher }
+Get up and running with your first generated module in under 5 minutes.
 
-Follow this checklist to scaffold your first module in less than five minutes.
-
-## 1. Install the package
+## Step 1: Install the Package
 
 ```bash
 composer require efati/laravel-module-generator
 ```
 
-The docs site (Nuxt + Tailwind) lives in `docs-site/` and deploys automatically from GitHub Actions, so installing the package is the only prerequisite.
+The service provider auto-registers during console initialization. No extra publish commands required!
 
-## 2. Publish configuration and stubs (optional)
+## Step 2: Define Your Schema (Choose One)
 
-```bash
-php artisan vendor:publish
-```
-
-From the provider list pick `Efati\ModuleGenerator\ModuleGeneratorServiceProvider`, then choose the `module-generator` tag to publish the configuration and helper classes. Run the command again, select the same provider, and choose the `module-generator-stubs` tag (add `--force` if you need to overwrite existing templates). The exported stubs in `resources/stubs/module-generator` let you customise controllers, requests, or tests and can be refreshed after pulling upstream changes.
-
-## 3. Describe the schema once
-
-Pick one of the supported strategies:
-
-- **Inline fields** — pass a comma-separated list with name, type, and modifiers (e.g. `price:decimal(10,2):nullable`).
-- **Existing migration** — point the generator to a migration path and reuse the column metadata that already exists in your project.
-
-## 4. Run the generator
+### Option A: Inline Fields
 
 ```bash
 php artisan make:module Product \
-  --api --requests --tests \
-  --fields="name:string:unique, price:decimal(10,2), is_active:boolean"
+  --fields="name:string:unique, price:decimal(10,2), stock:integer, is_active:boolean"
 ```
 
-The command creates:
+### Option B: From Migration
 
-- Controller, request classes, DTO, resource, service, repository, and service provider.
-- Feature test suite with happy-path and validation scenarios.
-- Route registration entries based on the flags you pass.
+```bash
+# If migration exists:
+php artisan make:module Product --from-migration
 
-## 5. Verify and commit
+# Or specify migration path:
+php artisan make:module Product --from-migration=database/migrations/2024_01_15_create_products_table.php
+```
 
-1. Run `phpunit` to execute the generated feature tests.
-2. Tailor the published stubs or generated classes if your domain requires additional logic.
-3. Commit both the generated files and the configuration/stubs so future teammates inherit the same setup.
+## Step 3: Generate the Module
 
-## Next steps
+For a **complete API module**:
 
-- Review the [usage guide](usage.md) for flag combinations and recipes.
-- Explore [advanced customisation](advanced.md) to add hooks or entirely new generators.
-- Scan the [CLI reference](reference.md) when you need an at-a-glance list of options.
+```bash
+php artisan make:module Product \
+  --api \
+  --requests \
+  --tests \
+  --swagger \
+  --fields="name:string:unique, price:decimal(10,2), stock:integer, is_active:boolean"
+```
+
+This generates:
+
+✅ Repository + Interface
+✅ Service + Interface
+✅ DTO with validation
+✅ API Controller
+✅ Form Requests
+✅ API Resource
+✅ Action Layer (7 actions)
+✅ Feature Tests
+✅ Service Provider (auto-registered)
+✅ OpenAPI Documentation
+
+## Step 4: Register Routes
+
+```php
+// routes/api.php
+Route::apiResource('products', ProductController::class);
+
+// Or with custom prefix:
+Route::prefix('v1')->group(function () {
+    Route::apiResource('products', ProductController::class);
+});
+```
+
+## Step 5: Test It
+
+```bash
+# Run feature tests
+php artisan test tests/Feature/ProductCrudTest.php
+
+# View Swagger docs (if installed l5-swagger)
+php artisan l5-swagger:generate
+# Visit: http://yourapp.test/api/documentation
+```
+
+## Customize Generated Files (Optional)
+
+Publish stubs for custom templates:
+
+```bash
+php artisan vendor:publish \
+  --provider="Efati\ModuleGenerator\ModuleGeneratorServiceProvider" \
+  --tag=module-generator-stubs
+```
+
+Edit files in `resources/stubs/module-generator/` then regenerate with `--force`:
+
+```bash
+php artisan make:module Product --api --force
+```
+
+## What's Generated?
+
+```
+App/
+├── Models/Product.php
+├── Services/ProductService.php
+├── Services/ProductServiceInterface.php
+├── Repositories/Eloquent/ProductRepository.php
+├── Repositories/Contracts/ProductRepositoryInterface.php
+├── DTOs/ProductDTO.php
+├── Http/Controllers/Api/V1/ProductController.php
+├── Http/Requests/Product/StoreProductRequest.php
+├── Http/Requests/Product/UpdateProductRequest.php
+├── Http/Resources/ProductResource.php
+├── Actions/Product/
+│   ├── CreateAction.php
+│   ├── UpdateAction.php
+│   └── ... (5 more actions)
+├── Providers/ProductServiceProvider.php
+└── Docs/ProductDoc.php
+
+tests/
+└── Feature/ProductCrudTest.php
+```
+
+## Next Steps
+
+- Explore [generating modules](features/generating-modules.md) for all available options
+- Learn about [schema-aware features](features/schema-aware-generation.md)
+- Review [action layer patterns](features/action-layer.md)
+- Check the [API reference](reference.md) for complete CLI options

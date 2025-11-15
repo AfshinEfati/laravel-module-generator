@@ -1,74 +1,211 @@
-# CLI & file reference
+# CLI Reference
 
-[🇮🇷 فارسی](../fa/reference.md){ .language-switcher }
+Quick reference for all available command options and generated file structure.
 
+## Command Signature
 
-Use this reference when you need a concise view of the available options and generated files.
+```bash
+php artisan make:module {name} [options]
+```
 
-## Command options
+## Required Arguments
 
-| Option | Description |
-| --- | --- |
-| `--api` | Generates an API controller with RESTful routes. |
-| `--requests` | Creates form requests for store/update actions with validation rules derived from the schema. |
-| `--actions` | Scaffolds use-case classes (List/Show/Create/Update/Delete) and rewires controllers to invoke them. |
-| `--dto` | Produces a Data Transfer Object that mirrors the fields passed to the command. |
-| `--resource` | Generates a Laravel API resource for consistent response formatting. |
-| `--tests` | Builds a feature test suite covering CRUD scenarios. |
-| `--policy` | Scaffolds a policy class and registers it with the module provider. |
-| `--fields=` | Accepts inline schema definitions (`name:type:modifier`). |
-| `--from-migration=` | Points to a migration file to reuse its column metadata. |
-| `--force` | Overwrites existing files without prompting. |
+| Argument | Description                                                          |
+| -------- | -------------------------------------------------------------------- |
+| `name`   | Module name in StudlyCase (e.g., `Product`, `BlogPost`, `OrderItem`) |
 
-Combine flags as needed to match your module requirements. Inline schema and migration parsing can be used together—fields found in the migration are merged with inline overrides.
+## Generation Options
 
-## Generated structure
+| Option                | Short | Description                            |
+| --------------------- | ----- | -------------------------------------- |
+| `--api`               | `-a`  | Generate API controller (default: web) |
+| `--requests`          | `-r`  | Generate Store/Update form requests    |
+| `--tests`             | `-t`  | Generate CRUD feature tests            |
+| `--actions`           |       | Generate action layer (7 actions)      |
+| `--swagger`           | `-sg` | Generate OpenAPI documentation         |
+| `--controller=Subdir` | `-c`  | Place controller in subfolder          |
+| `--from-migration=`   | `-fm` | Infer schema from migration file       |
+| `--fields=`           |       | Inline schema definition               |
+| `--force`             | `-f`  | Overwrite existing files               |
+| `--no-controller`     | `-nc` | Skip controller                        |
+| `--no-resource`       | `-nr` | Skip API Resource                      |
+| `--no-dto`            | `-nd` | Skip DTO                               |
+| `--no-test`           | `-nt` | Skip tests                             |
+| `--no-provider`       | `-np` | Skip service provider                  |
+| `--no-actions`        |       | Skip actions                           |
+| `--no-swagger`        |       | Disable Swagger                        |
 
-A typical module created with `--api --requests --dto --resource --tests` results in the following directories:
+## Generated File Structure
+
+### Complete Module (`--api --tests --swagger`)
 
 ```
-app/Modules/{Module}/
-├── Contracts/
-├── DTOs/
-├── Http/
-│   ├── Controllers/
-│   └── Requests/
-├── Providers/
+App/
+├── Models/Product.php
+├── Services/
+│   ├── ProductService.php
+│   └── ProductServiceInterface.php
 ├── Repositories/
-├── Resources/
-└── Services/
+│   ├── Contracts/ProductRepositoryInterface.php
+│   └── Eloquent/ProductRepository.php
+├── DTOs/ProductDTO.php
+├── Http/
+│   ├── Controllers/Api/V1/ProductController.php
+│   ├── Requests/Product/
+│   │   ├── StoreProductRequest.php
+│   │   └── UpdateProductRequest.php
+│   └── Resources/ProductResource.php
+├── Actions/Product/
+│   ├── CreateAction.php
+│   ├── UpdateAction.php
+│   ├── DeleteAction.php
+│   ├── ForceDeleteAction.php
+│   ├── RestoreAction.php
+│   ├── ListAction.php
+│   └── ShowAction.php
+├── Providers/ProductServiceProvider.php
+└── Docs/ProductDoc.php
+
+tests/
+└── Feature/ProductCrudTest.php
 ```
 
-The generator also registers the service provider and, when tests are enabled, creates feature tests under `tests/Feature/Modules/{Module}`.
+## Field Definition Syntax
 
-## Base repository & service API
+### Basic Types
 
-Both base classes are published into your application the first time Artisan boots. They expose a consistent surface area regardless of the module you generate.
+```
+--fields="name:string, age:integer, active:boolean"
+```
 
-| Class | Method | Description |
-| --- | --- | --- |
-| `BaseRepository` | `find(int|string $id)` | Looks up a model by primary key. |
-|  | `findDynamic(array ...$clauses)` | Builds a fluent query based on the arrays you pass (supports `where`, `orWhere`, `whereBetween`, `whereNull`, `whereRaw`, …) and returns the first match. |
-|  | `getByDynamic(array ...$clauses)` | Same signature as `findDynamic`, but returns an `Illuminate\Support\Collection` of all matching records. |
-|  | `buildDynamicQuery()` | Protected helper that you can reuse inside custom repository methods if you want to add additional clauses. |
-| `BaseService` | `index()` / `show()` / `store()` / `update()` / `destroy()` | Wrapper methods that proxy to the repository while normalising DTO payloads. |
-|  | `findDynamic()` / `getByDynamic()` | Delegate to the repository so higher layers never need to touch Eloquent directly. |
+### With Modifiers
 
-If you publish and customise the base classes, the generator will automatically extend or implement your versions.
+```
+--fields="name:string:unique, email:string:nullable"
+```
 
-## Schema syntax cheatsheet
+### Advanced Types
 
-| Example | Meaning |
-| --- | --- |
-| `name:string:unique` | Required string column with unique constraint. |
-| `price:decimal(10,2):nullable` | Nullable decimal column with precision and scale. |
-| `user_id:foreignId:constrained(users)` | Foreign key column referencing the `users` table. |
-| `metadata:json:nullable` | Optional JSON column. |
+```
+--fields="
+  id:id,
+  name:string:unique,
+  email:email:unique,
+  age:integer:nullable,
+  price:decimal(10,2),
+  metadata:json:nullable,
+  status:enum(pending,active,archived),
+  user_id:foreignId:constrained(users),
+  created_at:timestamp,
+  updated_at:timestamp
+"
+```
+
+## Available Modifiers
+
+| Modifier               | Meaning                     |
+| ---------------------- | --------------------------- |
+| `unique`               | Unique constraint           |
+| `nullable`             | Column allows NULL          |
+| `foreign=table.column` | Foreign key                 |
+| `constrained(table)`   | Foreign key with constraint |
+| `unique(name)`         | Named unique index          |
+| `index`                | Add index                   |
+| `fulltext`             | Fulltext search             |
+| `default(value)`       | Default value               |
+
+## Repository API
+
+### BaseRepository Methods
+
+```php
+// Find by primary key
+$product = $repository->find($id);
+
+// Dynamic queries
+$products = $repository->getByDynamic(
+    where: ['status' => 'active'],
+    with: ['category'],
+    limit: 20
+);
+
+// Find single record
+$product = $repository->findDynamic(
+    where: ['slug' => 'awesome-product'],
+    with: ['category']
+);
+```
+
+## Service API
+
+### BaseService Methods
+
+```php
+// Standard CRUD
+$product = $service->store($dto);
+$product = $service->show($id);
+$products = $service->index($filters);
+$updated = $service->update($id, $dto);
+$deleted = $service->destroy($id);
+
+// Dynamic queries
+$products = $service->getByDynamic(
+    where: ['active' => true],
+    with: ['reviews']
+);
+```
+
+## Common Command Examples
+
+### API Module - Complete
+
+```bash
+php artisan make:module Product --api --tests --swagger \
+  --fields="name:string:unique, price:decimal(10,2), category_id:foreignId"
+```
+
+### Web Module - Simple
+
+```bash
+php artisan make:module BlogPost --tests \
+  --fields="title:string, content:text, published_at:timestamp"
+```
+
+### From Existing Migration
+
+```bash
+php artisan make:module Product --api --from-migration
+```
+
+### Minimal (Services Only)
+
+```bash
+php artisan make:module Calculator \
+  --no-controller --no-resource --no-test
+```
+
+## Environment Variables
+
+```bash
+MODULE_GENERATOR_FORCE_OVERWRITE=true   # Auto-overwrite files
+MODULE_GENERATOR_DISABLE_TESTS=true     # Skip test generation
+MODULE_GENERATOR_LOG_CHANNEL=module     # Custom logging channel
+```
 
 ## Troubleshooting
 
-- **Validation rules look incorrect** – double-check the field definitions. Modifiers like `nullable` and `unique` map directly to validation rules.
-- **Providers are not registered** – confirm that `bootstrap/providers.php` (Laravel 11) or `config/app.php` (Laravel 10) is tracked in git and writable.
-- **Tests fail to run** – ensure the `.env` database credentials point to a test database with migration history.
+**Issue:** Validation rules don't match schema
 
-When in doubt, re-run the generator with `--verbose` to inspect detailed output.
+- **Solution:** Check field modifiers in `--fields` (e.g., `nullable`, `unique`)
+
+**Issue:** Provider not auto-registered
+
+- **Solution:** Verify `bootstrap/providers.php` (Laravel 11) or `config/app.php` (Laravel 10) is writable
+
+**Issue:** Tests fail to execute
+
+- **Solution:** Ensure `.env.testing` has valid database credentials
+
+**Issue:** Controller not generated
+
+- **Solution:** Use `--api` flag or `--controller=Subdir` to force generation

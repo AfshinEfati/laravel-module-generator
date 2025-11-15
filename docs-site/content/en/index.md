@@ -50,8 +50,22 @@ title: Laravel Module Generator
   </div>
 </div>
 
+## Core Features
+
+- **Repository Pattern** – Auto-generated Eloquent repositories with dynamic query methods
+- **Service Layer** – Business logic separation with dependency injection
+- **Data Transfer Objects** – Type-safe DTOs with validation and casting
+- **Form Requests** – Automatic validation rules based on schema
+- **API Resources** – JSON response formatting with relationship loading
+- **Feature Tests** – CRUD test suites with inferred payloads
+- **Actions Layer** – Invokable action classes for clean separation
+- **OpenAPI Docs** – Swagger annotations for automatic API documentation
+- **Jalali Support** – Persian calendar helpers and Carbon macros
+- **Smart Stubs** – Customizable templates for all generated files
+
 ## Keep exploring
 
-- Follow the [installation checklist](installation.md) to publish configuration, factories, and stubs.
+- Follow the [installation checklist](installation.md) to get started with the package.
 - Use the [quickstart recipes](quickstart.md) for inline schemas or existing migrations.
-- Dive into [usage patterns](usage.md), [advanced guides](advanced.md), and the [CLI reference](reference.md) whenever you need more control.
+- Explore [core features](features/generating-modules.md) to understand each component.
+- Check [advanced patterns](features/action-layer.md) and the [CLI reference](reference.md) for more control.

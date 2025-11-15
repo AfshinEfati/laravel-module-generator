@@ -2,7 +2,7 @@ name: Docs (Nuxt → GitHub Pages)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NUXT_PUBLIC_BASE_URL: /laravel-module-generator/
+      NODE_OPTIONS: --max-old-space-size=4096
     defaults:
       run:
         working-directory: docs-site
@@ -29,16 +30,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "20"
 
       - name: Clean dependencies
-        run: rm -rf package-lock.json node_modules
+        run: rm -rf package-lock.json node_modules .nuxt
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --legacy-peer-deps
 
       - name: Generate static site
         run: npm run generate
+        env:
+          CI: true
+          NODE_ENV: production
 
       - name: Upload build output
         uses: actions/upload-pages-artifact@v3

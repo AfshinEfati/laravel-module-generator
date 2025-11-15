@@ -1,44 +1,136 @@
 # Configuration
 
-[🇮🇷 فارسی](../fa/configuration.md){ .language-switcher }
+Customize the generator defaults so all your team members generate consistent module structures.
 
+## Publishing Configuration
 
-Fine-tune the generator once so every teammate creates modules with the same structure.
+```bash
+php artisan vendor:publish \
+  --provider="Efati\ModuleGenerator\ModuleGeneratorServiceProvider" \
+  --tag=module-generator
+```
 
-## Global options
+This creates `config/module-generator.php` with sensible defaults.
 
-The published `config/module-generator.php` file exposes the defaults that control namespace, output paths, and enabled generators. Review these sections after installation:
+## Configuration Options
 
-- **`namespace`** – Sets the root namespace for generated classes. Align this with your domain layer (e.g. `App\Modules`).
-- **`paths`** – Controls where controllers, repositories, resources, tests, and documentation files are stored. Adjust values such as `controller`, `resource`, and the new `docs` path if you keep Swagger docs outside `app/Docs`.
-- **`defaults`** – Toggles for enabling DTOs, resources, API controllers, tests, and policies globally. You can also seed `controller_middleware` here to attach middleware (for example `auth:sanctum`) to every generated API controller. Command-line flags still override the defaults per module.
-- **`swagger`** – Configure security schemes exposed in generated Swagger docs. Set the list of middleware names that imply authentication and describe the corresponding security scheme (type, scheme, bearer format, etc.).
+### Namespace
 
-## Stubs
+```php
+'namespace' => 'App',  // Root namespace for all generated classes
+```
 
-If you publish the stubs, the generator reads templates from `resources/stubs/module-generator`. Each stub matches a specific artefact and can include Blade variables:
+### Paths
 
-- `controller.api.stub`, `controller.web.stub`
-- `dto.stub`, `resource.stub`, `repository.stub`, `service.stub`
-- `request.store.stub`, `request.update.stub`
-- `tests.feature.stub`
+```php
+'paths' => [
+    'controller' => 'Http/Controllers/Api/V1',
+    'request' => 'Http/Requests',
+    'resource' => 'Http/Resources',
+    'repository' => [
+        'contracts' => 'Repositories/Contracts',
+        'eloquent' => 'Repositories/Eloquent',
+    ],
+    'service' => [
+        'contracts' => 'Services/Contracts',
+        'concretes' => 'Services',
+    ],
+    'dto' => 'DTOs',
+    'action' => 'Actions',
+    'provider' => 'Providers',
+    'tests' => 'tests/Feature',
+    'docs' => 'Docs',
+],
+```
 
-Use the same placeholders as the package stubs. When upstream updates introduce new placeholders, re-publish to diff and merge changes.
+### Defaults
 
-## Registering modules automatically
+```php
+'defaults' => [
+    'api' => false,                    // Generate API controller by default
+    'requests' => false,               // Generate form requests
+    'dto' => true,                     // Generate DTOs
+    'resource' => true,                // Generate API Resources
+    'repository' => true,              // Generate repositories
+    'service' => true,                 // Generate services
+    'test' => false,                   // Generate tests
+    'actions' => false,                // Generate action layer
+    'swagger' => false,                // Generate OpenAPI docs
+    'controller_middleware' => [],     // Middleware for controllers (e.g., ['auth:sanctum'])
+],
+```
 
-Generated service providers register repositories and services in the container. Ensure the provider path configured in `config/module-generator.php` matches one of the auto-discovery locations:
+### Swagger/OpenAPI
 
-- Laravel 10 – `config/app.php`
-- Laravel 11 – `bootstrap/providers.php`
+```php
+'swagger' => [
+    'security_schemes' => [
+        'BearerAuth' => [
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
+        ]
+    ],
+    'authentication_middleware' => ['auth', 'auth:api', 'auth:sanctum'],
+],
+```
 
-The generator appends the new provider entry automatically when the file exists.
+## Publishing Stubs
 
-## Environment variables
+Customize templates for all generated files:
 
-A few behaviours can be adjusted via environment variables:
+```bash
+php artisan vendor:publish \
+  --provider="Efati\ModuleGenerator\ModuleGeneratorServiceProvider" \
+  --tag=module-generator-stubs
+```
 
-- `MODULE_GENERATOR_FORCE_OVERWRITE=true` – treat existing files as overwritable without using the `--force` flag.
-- `MODULE_GENERATOR_DISABLE_TESTS=true` – skip generating feature tests globally.
+Creates `resources/stubs/module-generator/` with templates:
 
-Use the flags sparingly and prefer checking them into `.env.example` to document the behaviour for new contributors.
+- `controller.api.stub` – API controller template
+- `controller.web.stub` – Web controller template
+- `service.stub` – Service class
+- `repository.stub` – Repository class
+- `dto.stub` – Data Transfer Object
+- `resource.stub` – API Resource
+- `request.store.stub` – Store request
+- `request.update.stub` – Update request
+- `tests/feature.stub` – Feature test template
+- `provider.stub` – Service provider template
+
+## Available Placeholders
+
+Use these in stub templates:
+
+- `{{ namespace }}` – Configured namespace
+- `{{ modelName }}` – Generated model name (e.g., "Product")
+- `{{ modelNamePlural }}` – Plural form (e.g., "Products")
+- `{{ tableName }}` – Database table name
+- `{{ properties }}` – DTO properties
+- `{{ rules }}` – Validation rules
+- `{{ relationships }}` – Model relationships
+- `{{ fillable }}` – Fillable columns
+
+## Automatic Provider Registration
+
+Generated service providers auto-register in:
+
+- **Laravel 10** – `config/app.php`
+- **Laravel 11** – `bootstrap/providers.php`
+
+Ensure the configured provider path exists or enable it in your application before running the generator.
+
+## Environment Variables
+
+```bash
+# Force overwrite without --force flag
+MODULE_GENERATOR_FORCE_OVERWRITE=true
+
+# Disable test generation globally
+MODULE_GENERATOR_DISABLE_TESTS=true
+
+# Custom logging channel for actions
+MODULE_GENERATOR_LOG_CHANNEL=module
+```
+
+Document these in `.env.example` for new team members.

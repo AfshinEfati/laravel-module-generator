@@ -1,57 +1,83 @@
 # Action Layer
 
-This package provides an option to generate an action layer for your modules. The action layer is a set of invokable classes that encapsulate the business logic of your application.
+The action layer provides invokable classes that encapsulate business logic and keep controllers clean and focused on HTTP concerns.
 
 ## Generating Actions
 
-You can generate actions for a module by using the `--actions` flag with the `make:module` command.
+Use the `--api` flag to generate actions automatically (included in comprehensive module generation):
 
 ```bash
-php artisan make:module Product --actions
+php artisan make:module Product --api
 ```
 
-This command will generate a set of action classes in the `app/Actions/Product` directory. The generated actions will correspond to the CRUD operations of the module:
+This generates 7 action classes in `App/Actions/Product/`:
 
-- `ListProductAction`
-- `CreateProductAction`
-- `ShowProductAction`
-- `UpdateProductAction`
-- `DeleteProductAction`
+- `CreateAction.php` – Handle creation logic
+- `UpdateAction.php` – Handle update logic
+- `DeleteAction.php` – Handle deletion logic
+- `ForceDeleteAction.php` – Hard delete
+- `RestoreAction.php` – Restore soft-deleted
+- `ListAction.php` – Fetch collections
+- `ShowAction.php` – Fetch single record
 
 ## Using Actions
 
-The generated controller for the module will be automatically wired to use the new action classes. Here's an example of how the `store` method in the controller would look:
+Generated controller automatically uses actions:
 
 ```php
-public function store(StoreProductRequest $request, CreateProductAction $createProductAction)
+public function store(StoreProductRequest $request, CreateAction $action)
 {
     $dto = ProductDTO::fromRequest($request);
-    $product = $createProductAction($dto);
-    return ApiResponseHelper::successResponse(new ProductResource($product), 'created', 201);
+    $product = $action($dto);
+    return new ProductResource($product);
+}
+
+public function update(UpdateProductRequest $request, Product $product, UpdateAction $action)
+{
+    $updated = $action($product, $request->validated());
+    return new ProductResource($updated);
+}
+
+public function destroy(Product $product, DeleteAction $action)
+{
+    $action($product);
+    return response()->noContent();
 }
 ```
 
-As you can see, the controller is now much leaner, and the business logic is encapsulated in the `CreateProductAction` class.
+## Action Benefits
 
-## BaseAction
+- **Testability** – Actions are easily testable in isolation
+- **Reusability** – Use same action in console commands, jobs, webhooks
+- **Clean Controllers** – Controllers become HTTP marshals only
+- **Logging** – All actions automatically log via configured channel
+- **Exception Handling** – Consistent error handling across actions
 
-All generated actions extend a `BaseAction` class. This class provides a few helpful features, such as logging.
+## Custom Actions
 
-### Logging
-
-The `BaseAction` class has a `logger` property that you can use to log messages. The logger is automatically configured to use the logging channel that is defined in the `config/module-generator.php` file.
-
-Here's an example of how you can use the logger in an action:
+Override default actions by editing generated files:
 
 ```php
-class CreateProductAction extends BaseAction
+class CreateAction extends BaseAction
 {
-    // ...
-
-    protected function handle(mixed ...$payload): mixed
+    public function __invoke(ProductDTO $dto): Product
     {
-        $this->logger->info('Creating a new product...');
-        return $this->service->store(...$payload);
+        Log::info("Creating product: {$dto->name}");
+
+        $product = Product::create($dto->toArray());
+
+        Event::dispatch(new ProductCreated($product));
+
+        return $product;
     }
 }
 ```
+
+## BaseAction Features
+
+All actions extend `BaseAction` with:
+
+- `$this->logger` – Pre-configured logging
+- `$this->service` – Injected service dependency
+- `$this->repository` – Injected repository dependency
+- Exception handling and response formatting
