@@ -6,7 +6,19 @@
 
 API documentation کامل و خوشگل به صورت built-in فراهم شده است.
 
-## 📋 مراحل
+**NEW:** تمام تنظیمات از طریق `.env` یا `php artisan swagger:config` ✨
+
+## 📋 مراحل (۵ دقیقه)
+
+### 0️⃣ Configuration (اختیاری)
+```bash
+# روش A: Edit .env
+echo "SWAGGER_THEME=dark" >> .env
+echo "SWAGGER_COLOR_PRIMARY=#8b5cf6" >> .env
+
+# روش B: Interactive CLI
+php artisan swagger:config
+```
 
 ### 1️⃣ Initialize کردن
 ```bash
@@ -44,10 +56,11 @@ Route::middleware(['api'])->group(function () {
 ## 🎨 ویژگی‌های UI
 
 ✅ طراحی منحصر به فرد و زیبا
-✅ رنگ‌های جذاب (Blue, Cyan, Green, Amber, Red)
+✅ رنگ‌های جذاب (۵ preset: Blue, Purple, Green, Gray, Orange)
 ✅ Navigation Sidebar
 ✅ Expandable Endpoints
 ✅ Parameter Extraction
+✅ Dark Mode Support (جدید!)
 ✅ Response Documentation
 ✅ Security Information
 ✅ Copy Spec Button
@@ -96,10 +109,64 @@ php artisan swagger:generate \
 
 ## 🔧 Configuration
 
+### روش ۱: .env فایل (سریع‌ترین)
+
+```env
+# Theme
+SWAGGER_THEME=dark
+
+# Colors
+SWAGGER_COLOR_PRIMARY=#8b5cf6
+SWAGGER_COLOR_SECONDARY=#d946ef
+
+# Display
+SWAGGER_UI_TITLE=My Company API
+
+# Dark Mode
+SWAGGER_DARK_MODE_DEFAULT=dark
+```
+
+### روش ۲: Interactive CLI
+
+```bash
+php artisan swagger:config
+# Menu ظاهر می‌شود برای انتخاب theme و colors
+```
+
+### روش ۳: Direct Command
+
+```bash
+php artisan swagger:config --theme=dark --primary-color=#ff5722
+```
+
+### تمام Available Options
+
+```env
+SWAGGER_THEME=vanilla|tailwind|dark
+SWAGGER_COLOR_PRIMARY=<hex color>
+SWAGGER_COLOR_SECONDARY=<hex color>
+SWAGGER_COLOR_SUCCESS=<hex color>
+SWAGGER_COLOR_WARNING=<hex color>
+SWAGGER_COLOR_DANGER=<hex color>
+SWAGGER_UI_TITLE=<title>
+SWAGGER_UI_DESCRIPTION=<description>
+SWAGGER_DARK_MODE_DEFAULT=auto|light|dark
+SWAGGER_SERVER_PORT=8000
+SWAGGER_SERVER_HOST=localhost
+```
+
+### Config File
+
 در `config/module-generator.php`:
 
 ```php
 'swagger' => [
+    'theme' => env('SWAGGER_THEME', 'vanilla'),
+    'colors' => [
+        'primary' => env('SWAGGER_COLOR_PRIMARY', '#3b82f6'),
+        'secondary' => env('SWAGGER_COLOR_SECONDARY', '#06b6d4'),
+        // ... more colors
+    ],
     'security' => [
         'auth_middleware' => ['auth', 'auth:api', 'auth:sanctum'],
         'default' => 'bearerAuth',
@@ -120,22 +187,22 @@ php artisan swagger:generate \
 | Command | مقصد |
 |---------|--------|
 | `php artisan swagger:init` | Initialize UI files |
+| `php artisan swagger:config` | Interactive configuration |
+| `php artisan swagger:config --show` | Show current config |
 | `php artisan swagger:generate` | Generate OpenAPI spec |
 | `php artisan swagger:ui` | Start dev server |
 
-### Options برای swagger:generate
+### swagger:config Options
 
 ```bash
-php artisan swagger:generate \
-    --title="My API"              # عنوان API
-    --version="2.0.0"             # ورژن
-    --host="api.example.com"      # Override host
-    --output="public/docs/spec.json" # جای output
+php artisan swagger:config --show              # Show config
+php artisan swagger:config --theme=dark        # Set theme
+php artisan swagger:config --primary-color=#ff5722  # Set color
+php artisan swagger:config --export-env        # Export to .env
+php artisan swagger:config --reset             # Reset to defaults
 ```
 
-### Options برای swagger:ui
-
-```bash
+### swagger:generate Optionsbash
 php artisan swagger:ui \
     --port=3000                   # تغییر port
     --host=0.0.0.0                # تغییر host
