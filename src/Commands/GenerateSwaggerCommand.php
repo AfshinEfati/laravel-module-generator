@@ -27,27 +27,45 @@ class GenerateSwaggerCommand extends Command
 
     public function handle(): int
     {
-        $this->warn('⚠️  This command has been changed to use JSON-based Swagger generation without dependencies.');
-        $this->info('');
+        $pathFilter = $this->option('path');
+        $controllerFilter = $this->option('controller');
+        $force = $this->option('force');
+        $outputDir = $this->option('output') ?: app_path('Docs');
 
-        // Redirect to the new swagger:generate command which has no external dependencies
-        $this->info('📄 Generating Swagger documentation from routes...');
-        $this->info('');
+        File::ensureDirectoryExists($outputDir);
 
-        try {
-            return $this->call('swagger:generate');
-        } catch (\Exception $e) {
-            $this->error('❌ Failed to generate Swagger documentation: ' . $e->getMessage());
-            $this->info('');
-            $this->info('💡 Make sure you have initialized Swagger UI:');
-            $this->line('   php artisan swagger:init');
-            $this->line('   php artisan swagger:generate');
-            $this->line('   php artisan swagger:ui');
+        // Reset security scheme flag
+        self::$securitySchemeGenerated = false;
+
+        $this->info('🔍 Scanning Laravel routes...');
+
+        $routes = $this->getFilteredRoutes($pathFilter, $controllerFilter);
+
+        if (empty($routes)) {
+            $this->warn('⚠️  No routes found matching the filters.');
             return self::FAILURE;
         }
-    }
 
-    /**
+        $this->info(sprintf('📋 Found %d routes to document.', count($routes)));
+
+        // Generate main Info file first
+        $this->generateMainInfoFile($outputDir, $force);
+
+        $groupedRoutes = $this->groupRoutesByController($routes);
+
+        $generatedFiles = 0;
+        foreach ($groupedRoutes as $controllerName => $controllerRoutes) {
+            $docClass = $this->generateSwaggerDoc($controllerName, $controllerRoutes, $outputDir, $force);
+            if ($docClass) {
+                $this->line(sprintf('  ✓ Generated: %s', $docClass));
+                $generatedFiles++;
+            }
+        }
+
+        $this->info(sprintf('✅ Successfully generated %d swagger documentation file(s).', $generatedFiles));
+
+        return self::SUCCESS;
+    }    /**
      * Get filtered routes based on options
      */
     private function getFilteredRoutes(?string $pathFilter, ?string $controllerFilter): array

@@ -170,10 +170,6 @@ class MakeModuleCommand extends Command
             $isApi = true;
             $this->warn('• --swagger implicitly enables API controllers.');
         }
-        if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
-            $this->warn('• Swagger annotations requested but the swagger-php package is missing. Install it via `composer require darkaonline/l5-swagger` or `composer require zircote/swagger-php` to use --swagger.');
-            $withSwagger = false;
-        }
 
         // Validate parsed fields before generation
         if (!empty($parsedFields)) {
