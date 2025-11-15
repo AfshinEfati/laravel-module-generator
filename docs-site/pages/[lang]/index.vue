@@ -1,61 +1,38 @@
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue'
-import { useState } from '#imports'
-import { createError } from 'h3'
+import { queryContent, createError } from '#imports'
 
 const route = useRoute()
 const langParam = Array.isArray(route.params.lang) ? route.params.lang[0] : (route.params.lang as string)
 
-// Content path for Nuxt Content v2 (underscore prefix for index files)
-const contentPath = `${langParam}`
+// Try fetching by exact _path match
+let doc = await queryContent().where({ _path: `/${langParam}` }).findOne()
 
-const { data: doc } = await useAsyncData(`doc-${langParam}`, () => queryContent(contentPath).findOne())
+// If not found, try looking for index.md in the directory
+if (!doc) {
+  doc = await queryContent(`${langParam}`).findOne()
+}
 
-if (!doc.value) {
+// If still not found, try alternative paths
+if (!doc) {
+  const allDocs = await queryContent().find()
+  const match = allDocs.find(d =>
+    d._path === `/${langParam}` ||
+    d._path === `${langParam}` ||
+    d._dir === langParam ||
+    d._file === 'index'
+  )
+  doc = match || null
+}
+
+if (!doc) {
   throw createError({ statusCode: 404, statusMessage: 'Document not found' })
 }
 
-const hideNavigationState = useState<boolean>('hide-navigation', () => false)
-
-const resolveHideNavigation = (hide: unknown): boolean => {
-  if (!hide) {
-    return false
-  }
-
-  if (Array.isArray(hide)) {
-    return hide.includes('navigation')
-  }
-
-  if (typeof hide === 'string') {
-    return hide === 'navigation'
-  }
-
-  if (typeof hide === 'object') {
-    return Boolean((hide as Record<string, unknown>).navigation)
-  }
-
-  if (typeof hide === 'boolean') {
-    return hide
-  }
-
-  return false
-}
-
-watchEffect(() => {
-  hideNavigationState.value = resolveHideNavigation(doc.value?.hide)
-})
-
-const pageTitle = computed(() =>
-  doc.value?.title ? `${doc.value.title} · Laravel Module Generator` : 'Laravel Module Generator'
-)
-
-useHead(() => ({
-  title: pageTitle.value
-}))
+const { data } = await useAsyncData(`doc-${langParam}-index`, () => Promise.resolve(doc))
 </script>
 
 <template>
-  <NuxtLayout :lang="langParam" :doc="doc">
-    <ContentRenderer :value="doc" />
+  <NuxtLayout>
+    <ContentRenderer :value="data || doc" />
   </NuxtLayout>
 </template>
