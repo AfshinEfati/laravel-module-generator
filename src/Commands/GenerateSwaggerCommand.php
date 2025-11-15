@@ -141,9 +141,8 @@ class GenerateSwaggerCommand extends Command
     {
         $filePath = $outputDir . DIRECTORY_SEPARATOR . 'OpenApiInfo.php';
 
-        if (!$force && File::exists($filePath)) {
-            return;
-        }
+        // Always regenerate OpenApiInfo.php to ensure it has latest @OA\Info annotation
+        // This is essential for l5-swagger:generate to work properly
 
         $baseNamespace = config('module-generator.base_namespace', 'App');
         $namespace = $baseNamespace . '\\Docs';
