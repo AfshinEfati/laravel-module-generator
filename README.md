@@ -196,6 +196,37 @@ Visit: `http://localhost:8000/api/docs`
 
 👉 [Full Swagger Documentation](SWAGGER_NO_DEPENDENCIES.md)
 
+### PHPDoc Annotations (OpenAPI-compatible)
+
+Generate PHPDoc documentation files with `@OA\` annotations:
+
+```bash
+# Add Swagger documentation to a module
+php artisan make:module Product --swagger
+
+# Or generate documentation for all routes
+php artisan make:swagger --force
+```
+
+This creates PHPDoc files in `app/Docs/` that are **automatically compatible with optional packages** like `zircote/swagger-php` or `l5-swagger`:
+
+```php
+<?php
+
+namespace App\Docs;
+
+/**
+ * @OA\Tag(name="Product")
+ * @OA\Get(path="/api/products", ...)
+ * @OA\Post(path="/api/products", ...)
+ */
+class ProductDoc { }
+```
+
+**Zero dependencies** – works standalone or integrates seamlessly with optional packages.
+
+👉 [PHPDoc Generation Guide](SWAGGER_PHPDOC_GENERATION.md)
+
 ## Jalali date support
 
 Built-in `goli()` helper for Persian calendar conversions:
