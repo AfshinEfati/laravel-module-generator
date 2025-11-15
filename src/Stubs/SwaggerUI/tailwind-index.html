@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div x-data="apiDocs()" x-cloak class="min-h-screen">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold">
+                            📚
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-slate-900" x-text="spec?.info?.title || 'API Documentation'"></h1>
+                            <p class="text-xs text-slate-500" x-text="spec?.info?.version ? 'v' + spec.info.version : ''"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button @click="refreshSpec()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition">
+                            🔄 Refresh
+                        </button>
+                        <button @click="downloadSpec()" class="px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition">
+                            📥 Download
+                        </button>
+                        <button @click="darkMode = !darkMode" class="p-2 hover:bg-slate-100 rounded-lg transition">
+                            <span x-show="!darkMode">🌙</span>
+                            <span x-show="darkMode">☀️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:col-span-1">
+                    <div class="sticky top-24 space-y-6">
+                        <template x-for="tag in tags" :key="tag">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                                    <span x-text="tag"></span>
+                                </h3>
+                                <ul class="space-y-1">
+                                    <template x-for="(endpoint, idx) in getEndpointsByTag(tag)" :key="idx">
+                                        <li>
+                                            <button @click="selectedEndpoint = idx"
+                                                :class="{
+                                                    'bg-primary-50 text-primary-700 border-l-2 border-l-primary-500': selectedEndpoint === idx,
+                                                    'text-slate-600 hover:text-slate-900 hover:bg-slate-50': selectedEndpoint !== idx
+                                                }"
+                                                class="w-full text-left px-3 py-2 rounded text-sm transition">
+                                                <span class="font-mono text-xs" x-text="endpoint.method.toUpperCase()"></span>
+                                                <span class="text-xs" x-text="endpoint.path.slice(0, 20) + (endpoint.path.length > 20 ? '...' : '')"></span>
+                                            </button>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="lg:col-span-3">
+                    <div x-show="selectedEndpoint !== null" class="space-y-8">
+                        <template x-if="currentEndpoint">
+                            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                                <!-- Endpoint Header -->
+                                <div class="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div>
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <span :class="{
+                                                    'bg-blue-100 text-blue-700': currentEndpoint.method === 'get',
+                                                    'bg-green-100 text-green-700': currentEndpoint.method === 'post',
+                                                    'bg-amber-100 text-amber-700': currentEndpoint.method === 'put' || currentEndpoint.method === 'patch',
+                                                    'bg-red-100 text-red-700': currentEndpoint.method === 'delete',
+                                                }"
+                                                class="px-2 py-1 rounded text-xs font-bold"
+                                                x-text="currentEndpoint.method.toUpperCase()"></span>
+                                                <code class="text-sm font-mono text-slate-900" x-text="currentEndpoint.path"></code>
+                                            </div>
+                                            <h2 class="text-2xl font-bold text-slate-900" x-text="currentEndpoint.summary || 'Endpoint'"></h2>
+                                            <p class="text-sm text-slate-600 mt-2" x-text="currentEndpoint.description"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabs -->
+                                <div class="border-b border-slate-200">
+                                    <div class="flex">
+                                        <button @click="activeTab = 'overview'"
+                                            :class="{ 'border-b-2 border-b-primary-500 text-primary-600': activeTab === 'overview', 'text-slate-600': activeTab !== 'overview' }"
+                                            class="px-6 py-4 text-sm font-medium hover:text-slate-900 transition">
+                                            Overview
+                                        </button>
+                                        <button @click="activeTab = 'parameters'" x-show="currentEndpoint.parameters?.length"
+                                            :class="{ 'border-b-2 border-b-primary-500 text-primary-600': activeTab === 'parameters', 'text-slate-600': activeTab !== 'parameters' }"
+                                            class="px-6 py-4 text-sm font-medium hover:text-slate-900 transition">
+                                            Parameters
+                                        </button>
+                                        <button @click="activeTab = 'request'" x-show="currentEndpoint.requestBody"
+                                            :class="{ 'border-b-2 border-b-primary-500 text-primary-600': activeTab === 'request', 'text-slate-600': activeTab !== 'request' }"
+                                            class="px-6 py-4 text-sm font-medium hover:text-slate-900 transition">
+                                            Request
+                                        </button>
+                                        <button @click="activeTab = 'responses'"
+                                            :class="{ 'border-b-2 border-b-primary-500 text-primary-600': activeTab === 'responses', 'text-slate-600': activeTab !== 'responses' }"
+                                            class="px-6 py-4 text-sm font-medium hover:text-slate-900 transition">
+                                            Responses
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Content -->
+                                <div class="p-6 space-y-6">
+                                    <!-- Overview Tab -->
+                                    <div x-show="activeTab === 'overview'" class="space-y-4">
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-slate-900 mb-2">Description</h4>
+                                            <p class="text-sm text-slate-600" x-text="currentEndpoint.description || 'No description provided'"></p>
+                                        </div>
+                                        <template x-if="currentEndpoint.security?.length">
+                                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                                <h4 class="text-sm font-semibold text-amber-900 mb-2">🔐 Authentication Required</h4>
+                                                <p class="text-xs text-amber-800">This endpoint requires authentication</p>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Parameters Tab -->
+                                    <div x-show="activeTab === 'parameters'" x-cloak>
+                                        <template x-if="currentEndpoint.parameters?.length">
+                                            <div class="space-y-3">
+                                                <template x-for="param in currentEndpoint.parameters" :key="param.name">
+                                                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                                        <div class="flex items-start justify-between mb-2">
+                                                            <code class="text-sm font-mono text-slate-900" x-text="param.name"></code>
+                                                            <span class="flex items-center gap-2">
+                                                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-mono rounded" x-text="param.schema?.type || 'string'"></span>
+                                                                <span x-show="param.required" class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">Required</span>
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-xs text-slate-600" x-text="param.description"></p>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="!currentEndpoint.parameters?.length">
+                                            <p class="text-sm text-slate-500">No parameters required</p>
+                                        </template>
+                                    </div>
+
+                                    <!-- Request Tab -->
+                                    <div x-show="activeTab === 'request'" x-cloak>
+                                        <template x-if="currentEndpoint.requestBody">
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <h4 class="text-sm font-semibold text-slate-900 mb-2">Content Type</h4>
+                                                    <p class="text-xs font-mono text-slate-600">application/json</p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-sm font-semibold text-slate-900 mb-2">Example</h4>
+                                                    <pre class="bg-slate-900 text-slate-100 rounded p-4 text-xs overflow-x-auto"><code>{ "key": "value" }</code></pre>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Responses Tab -->
+                                    <div x-show="activeTab === 'responses'" x-cloak>
+                                        <div class="space-y-3">
+                                            <template x-for="(response, code) in currentEndpoint.responses" :key="code">
+                                                <div :class="{
+                                                    'bg-green-50 border-green-200': code.startsWith('2'),
+                                                    'bg-red-50 border-red-200': code.startsWith('4') || code.startsWith('5'),
+                                                }" class="rounded-lg p-4 border">
+                                                    <div class="flex items-center gap-2 mb-2">
+                                                        <span class="font-bold font-mono" x-text="code"></span>
+                                                        <span class="text-sm text-slate-600" x-text="response.description"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Empty State -->
+                    <template x-if="selectedEndpoint === null">
+                        <div class="flex flex-col items-center justify-center py-20">
+                            <div class="text-6xl mb-4">📖</div>
+                            <h2 class="text-2xl font-bold text-slate-900 mb-2">Select an Endpoint</h2>
+                            <p class="text-slate-600">Choose an endpoint from the sidebar to view details</p>
+                        </div>
+                    </template>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        function apiDocs() {
+            return {
+                spec: null,
+                endpoints: [],
+                tags: [],
+                selectedEndpoint: null,
+                activeTab: 'overview',
+                darkMode: false,
+
+                get currentEndpoint() {
+                    return this.endpoints[this.selectedEndpoint];
+                },
+
+                async init() {
+                    await this.loadSpec();
+                    this.extractTags();
+                },
+
+                async loadSpec() {
+                    try {
+                        const response = await fetch('./swagger.json');
+                        if (!response.ok) throw new Error('Failed to load spec');
+                        this.spec = await response.json();
+                        this.extractEndpoints();
+                    } catch (error) {
+                        console.error('Error loading spec:', error);
+                    }
+                },
+
+                extractEndpoints() {
+                    this.endpoints = [];
+                    Object.entries(this.spec.paths || {}).forEach(([path, methods]) => {
+                        Object.entries(methods).forEach(([method, details]) => {
+                            if (method !== 'parameters') {
+                                this.endpoints.push({
+                                    path,
+                                    method,
+                                    summary: details.summary || '',
+                                    description: details.description || '',
+                                    tags: details.tags || ['General'],
+                                    parameters: details.parameters || [],
+                                    requestBody: details.requestBody,
+                                    responses: details.responses || {},
+                                    security: details.security || [],
+                                });
+                            }
+                        });
+                    });
+                },
+
+                extractTags() {
+                    const tagSet = new Set();
+                    this.endpoints.forEach(ep => {
+                        ep.tags.forEach(tag => tagSet.add(tag));
+                    });
+                    this.tags = Array.from(tagSet).sort();
+                },
+
+                getEndpointsByTag(tag) {
+                    return this.endpoints.filter(ep => ep.tags.includes(tag));
+                },
+
+                async refreshSpec() {
+                    await this.loadSpec();
+                    this.extractTags();
+                    this.selectedEndpoint = null;
+                },
+
+                downloadSpec() {
+                    const json = JSON.stringify(this.spec, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'swagger-spec.json';
+                    a.click();
+                }
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('alpine:init', () => {
+            // Load spec on component init
+        });
+
+        // Alternative init without Alpine hooks
+        async function initDocs() {
+            const response = await fetch('./swagger.json');
+            if (response.ok) {
+                // Docs will be loaded by Alpine
+            }
+        }
+
+        window.addEventListener('load', initDocs);
+    </script>
+</body>
+</html>
