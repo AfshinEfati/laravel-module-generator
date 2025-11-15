@@ -2,7 +2,7 @@
 title: Laravel Module Generator
 ---
 
-[🇮🇷 فارسی](../fa/index.md){ .language-switcher }
+<a href="/fa/" class="language-switcher">🇮🇷 فارسی</a>
 
 <section class="hero" markdown="1">
   <div class="hero__content" markdown="1">
@@ -65,7 +65,7 @@ title: Laravel Module Generator
 
 ## Keep exploring
 
-- Follow the [installation checklist](./installation.md) to get started with the package.
-- Use the [quickstart recipes](./quickstart.md) for inline schemas or existing migrations.
-- Explore [core features](./features/generating-modules.md) to understand each component.
-- Check [advanced patterns](./features/action-layer.md) and the [CLI reference](./reference.md) for more control.
+- Follow the [installation checklist](/en/installation) to get started with the package.
+- Use the [quickstart recipes](/en/quickstart) for inline schemas or existing migrations.
+- Explore [core features](/en/features/generating-modules) to understand each component.
+- Check [advanced patterns](/en/features/action-layer) and the [CLI reference](/en/reference) for more control.

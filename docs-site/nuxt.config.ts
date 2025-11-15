@@ -9,6 +9,14 @@ const faviconHref =
 const rootRedirect = joinURL(siteBaseURL, "en");
 
 export default defineNuxtConfig({
+  ssr: true,
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      routes: ["/en", "/fa"],
+      ignore: ["/sitemap.xml", "/admin"],
+    },
+  },
   modules: ["@nuxt/content", "@nuxtjs/tailwindcss"],
   css: ["~/assets/css/main.css"],
   build: {
@@ -110,11 +118,6 @@ export default defineNuxtConfig({
     public: {
       siteName: "Laravel Module Generator",
       basePath: siteBaseURL,
-    },
-  },
-  nitro: {
-    prerender: {
-      crawlLinks: true,
     },
   },
   devtools: { enabled: false },
