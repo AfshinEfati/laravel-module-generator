@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - Laravel Module Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --primary-light: #eff6ff;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--primary-light) 0%, #f0f9ff 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-list {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 6px;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-link.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            border-left-color: var(--primary);
+        }
+
+        /* Content */
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        /* API Section */
+        .api-section {
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .api-section:last-child {
+            border-bottom: none;
+        }
+
+        .api-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            scroll-margin-top: 100px;
+        }
+
+        /* Endpoint */
+        .endpoint {
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .endpoint:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--light);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .endpoint-header:hover {
+            background: #f3f4f6;
+        }
+
+        .method-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .method-get {
+            background: #3b82f6;
+        }
+
+        .method-post {
+            background: #10b981;
+        }
+
+        .method-put {
+            background: #f59e0b;
+        }
+
+        .method-patch {
+            background: #8b5cf6;
+        }
+
+        .method-delete {
+            background: #ef4444;
+        }
+
+        .endpoint-path {
+            flex: 1;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: var(--dark);
+            word-break: break-all;
+        }
+
+        .endpoint-summary {
+            color: var(--text-light);
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .endpoint-detail {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid var(--border);
+        }
+
+        .endpoint.active .endpoint-detail {
+            display: block;
+        }
+
+        .endpoint.active .endpoint-header {
+            background: var(--primary-light);
+            border-bottom: 1px solid var(--primary);
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .parameter {
+            display: grid;
+            grid-template-columns: 150px 1fr auto;
+            gap: 20px;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .param-name {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .param-type {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .param-required {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .response-box {
+            background: var(--light);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .response-box.error {
+            border-left-color: var(--danger);
+        }
+
+        .response-box.warning {
+            border-left-color: var(--warning);
+        }
+
+        .response-code {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .response-desc {
+            color: var(--text-light);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            gap: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+            border-bottom-color: var(--border);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .parameter {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <div class="logo-icon">📚</div>
+                    <span>API Docs</span>
+                </a>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="refreshBtn" onclick="refreshSpec()">
+                        🔄 Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="copySpec()">
+                        📋 Copy Spec
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section" id="tagsList"></div>
+            </aside>
+
+            <!-- Content -->
+            <main class="content" id="apiContent">
+                <h1 id="apiTitle">API Documentation</h1>
+                <p class="subtitle" id="apiSubtitle">Loading documentation...</p>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading endpoints...
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer>
+        <p>Generated by <strong>Laravel Module Generator</strong> • OpenAPI 3.0.0</p>
+        <p style="margin-top: 5px;">No external dependencies required</p>
+    </footer>
+
+    <script>
+        let spec = null;
+
+        // Load Swagger spec
+        async function loadSpec() {
+            try {
+                const response = await fetch('./swagger.json');
+                if (!response.ok) throw new Error('Failed to load swagger.json');
+                spec = await response.json();
+                renderUI();
+            } catch (error) {
+                showError('Failed to load API specification: ' + error.message);
+            }
+        }
+
+        function renderUI() {
+            renderHeader();
+            renderSidebar();
+            renderEndpoints();
+        }
+
+        function renderHeader() {
+            document.getElementById('apiTitle').textContent = spec.info?.title || 'API Documentation';
+            document.getElementById('apiSubtitle').textContent = spec.info?.description || 'API endpoints documentation';
+        }
+
+        function renderSidebar() {
+            const tags = getTags();
+            const sidebar = document.getElementById('tagsList');
+            sidebar.innerHTML = '';
+
+            tags.forEach(tag => {
+                const section = document.createElement('div');
+                section.className = 'sidebar-section';
+                section.innerHTML = `
+                    <div class="sidebar-title">${tag}</div>
+                    <ul class="sidebar-list" id="tag-${tag}"></ul>
+                `;
+                sidebar.appendChild(section);
+            });
+
+            // Add endpoints to sections
+            Object.entries(spec.paths || {}).forEach(([path, methods]) => {
+                Object.entries(methods).forEach(([method, details]) => {
+                    if (method === 'parameters') return;
+                    const tag = details.tags?.[0] || 'General';
+                    const list = document.getElementById(`tag-${tag}`);
+                    if (list) {
+                        const item = document.createElement('li');
+                        item.className = 'sidebar-item';
+                        item.innerHTML = `<a href="#${method}-${path}" class="sidebar-link">${method.toUpperCase()} ${path}</a>`;
+                        list.appendChild(item);
+                    }
+                });
+            });
+        }
+
+        function renderEndpoints() {
+            const content = document.getElementById('apiContent');
+            let html = `<h1>${spec.info?.title || 'API Documentation'}</h1>
+                        <p class="subtitle">${spec.info?.description || ''}</p>`;
+
+            const tags = getTags();
+            tags.forEach(tag => {
+                html += `<div class="api-section"><h2 class="api-title">${tag}</h2>`;
+
+                Object.entries(spec.paths || {}).forEach(([path, methods]) => {
+                    Object.entries(methods).forEach(([method, details]) => {
+                        if (method === 'parameters') return;
+                        if (details.tags?.[0] !== tag) return;
+
+                        html += renderEndpoint(path, method, details);
+                    });
+                });
+
+                html += '</div>';
+            });
+
+            content.innerHTML = html;
+            attachEventListeners();
+        }
+
+        function renderEndpoint(path, method, details) {
+            const badge = `<span class="method-badge method-${method}">${method}</span>`;
+            const id = `${method}-${path}`;
+
+            let detail = `
+                <div class="endpoint" id="${id}">
+                    <div class="endpoint-header" onclick="this.parentElement.classList.toggle('active')">
+                        ${badge}
+                        <div>
+                            <div class="endpoint-path">${path}</div>
+                            <div class="endpoint-summary">${details.summary || ''}</div>
+                        </div>
+                    </div>
+                    <div class="endpoint-detail">
+            `;
+
+            // Parameters
+            if (details.parameters?.length) {
+                detail += `<div class="detail-section">
+                    <div class="detail-section-title">📥 Parameters</div>`;
+                details.parameters.forEach(param => {
+                    detail += `<div class="parameter">
+                        <div class="param-name">${param.name}</div>
+                        <div>${param.description || ''}</div>
+                        <div>
+                            <span class="param-type">${param.schema?.type || 'string'}</span>
+                            ${param.required ? '<span class="param-required">required</span>' : ''}
+                        </div>
+                    </div>`;
+                });
+                detail += '</div>';
+            }
+
+            // Request Body
+            if (details.requestBody) {
+                detail += `<div class="detail-section">
+                    <div class="detail-section-title">📤 Request Body</div>
+                    <div class="parameter">
+                        <div>application/json</div>
+                        <div>${details.requestBody.description || 'Request payload'}</div>
+                    </div>
+                </div>`;
+            }
+
+            // Responses
+            if (details.responses) {
+                detail += '<div class="detail-section"><div class="detail-section-title">📋 Responses</div>';
+                Object.entries(details.responses).forEach(([code, response]) => {
+                    const statusClass = code.startsWith('2') ? '' : (code.startsWith('4') ? 'warning' : 'error');
+                    detail += `<div class="response-box ${statusClass}">
+                        <div class="response-code">${code} - ${response.description}</div>
+                    </div>`;
+                });
+                detail += '</div>';
+            }
+
+            // Security
+            if (details.security?.length) {
+                detail += `<div class="detail-section">
+                    <div class="detail-section-title">🔐 Security</div>
+                    <div class="response-box">
+                        <div class="response-desc">Requires authentication</div>
+                    </div>
+                </div>`;
+            }
+
+            detail += '</div></div>';
+            return detail;
+        }
+
+        function getTags() {
+            const tags = new Set();
+            Object.values(spec.paths || {}).forEach(methods => {
+                Object.values(methods).forEach(details => {
+                    if (details.tags) details.tags.forEach(tag => tags.add(tag));
+                });
+            });
+            return Array.from(tags).sort();
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('.endpoint-header').forEach(header => {
+                header.addEventListener('click', function () {
+                    document.querySelectorAll('.endpoint.active').forEach(ep => {
+                        if (ep !== this.parentElement) ep.classList.remove('active');
+                    });
+                    this.parentElement.classList.toggle('active');
+                });
+            });
+        }
+
+        function showError(message) {
+            const content = document.getElementById('apiContent');
+            content.innerHTML = `
+                <h1>❌ Error Loading Documentation</h1>
+                <p class="subtitle">${message}</p>
+                <p>Make sure to run: <code>php artisan swagger:generate</code></p>
+            `;
+        }
+
+        function refreshSpec() {
+            loadSpec();
+        }
+
+        function copySpec() {
+            const json = JSON.stringify(spec, null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                alert('OpenAPI spec copied to clipboard!');
+            });
+        }
+
+        // Initialize
+        loadSpec();
+    </script>
+</body>
+</html>

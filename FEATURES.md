@@ -9,6 +9,33 @@
 - Support for complex queries with relationships
 - Dynamic method forwarding to services
 
+### 2. **API Documentation (No Dependencies)**
+
+✨ **New!** Built-in Swagger/OpenAPI documentation system - no L5-Swagger or external packages required!
+
+```bash
+# Initialize UI
+php artisan swagger:init
+
+# Generate documentation from routes
+php artisan swagger:generate
+
+# View in browser
+php artisan swagger:ui
+# Or integrate with your app:
+# Route::registerSwaggerRoutes(); in routes/api.php
+```
+
+**Features:**
+- ✅ Automatic route scanning
+- ✅ Beautiful, responsive UI
+- ✅ OpenAPI 3.0 compliant
+- ✅ Zero external dependencies
+- ✅ Customizable colors and layout
+- ✅ Security schemes support
+- ✅ Parameter extraction
+- ✅ Response documentation
+
 ```php
 // Generated Repository Interface
 interface ProductRepositoryInterface extends BaseRepositoryInterface

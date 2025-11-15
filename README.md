@@ -20,14 +20,14 @@ Generate complete, test-ready Laravel modules from a single Artisan command. The
 - **Action layer support** – optional invokable action classes for clean separation of concerns.
 - **Opinionated feature tests** – CRUD tests exercise success and failure flows using inferred field metadata.
 - **Jalali date tooling** – built-in `goli()` helper and Carbon macros for Persian calendar support.
-- **OpenAPI documentation** – generate Swagger annotations with `--swagger` flag.
+- **✨ Built-in API Docs** – generate OpenAPI documentation **without L5-Swagger or any external packages**!
 - **Module-scoped requests** – form requests live under `Http/Requests/{Module}` for better organization.
 
 ## Requirements
 
 - PHP 8.1 or newer
 - Laravel framework 10.x or 11.x
-- (Optional for `--swagger`) Install `darkaonline/l5-swagger` **or** `zircote/swagger-php` so OpenAPI annotations can be generated without warnings.
+- ✅ **No external dependencies** – API documentation included!
 
 ## Installation
 
@@ -156,19 +156,45 @@ Tests include:
 
 ## OpenAPI/Swagger documentation
 
-Generate OpenAPI documentation with the `--swagger` flag:
+### ✨ New: Built-in Swagger without external dependencies!
+
+Generate interactive API documentation with **zero external packages**:
 
 ```bash
-# Generate module with Swagger docs
-php artisan make:module Product -a --swagger
+# 1. Initialize Swagger UI
+php artisan swagger:init
 
-# Generate only Swagger docs (no module files)
-php artisan make:module Product --swagger
+# 2. Generate documentation from routes
+php artisan swagger:generate
+
+# 3. View in browser
+php artisan swagger:ui
+# Visits: http://localhost:8000/docs
 ```
 
-Documentation is generated in `App\Docs\{Module}Doc` with `@OA` annotations.
+**Or integrate with your Laravel app:**
 
-**Note:** Requires `darkaonline/l5-swagger` or `zircote/swagger-php` package.
+In `routes/api.php`:
+```php
+use Efati\ModuleGenerator\Traits\RegistersSwaggerRoutes;
+
+Route::middleware(['api'])->group(function () {
+    Route::registerSwaggerRoutes(); // Adds /api/docs
+    Route::apiResource('products', ProductController::class);
+});
+```
+
+Visit: `http://localhost:8000/api/docs`
+
+**Features:**
+- ✅ No L5-Swagger or Swagger-PHP dependency
+- ✅ Beautiful, responsive UI
+- ✅ Automatic route scanning
+- ✅ OpenAPI 3.0 compliant
+- ✅ Fully customizable
+- ✅ Production-ready
+
+👉 [Full Swagger Documentation](SWAGGER_NO_DEPENDENCIES.md)
 
 ## Jalali date support
 
