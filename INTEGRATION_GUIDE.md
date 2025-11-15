@@ -62,10 +62,10 @@ class SwaggerProcess extends Command
         $path = app_path('Docs');
 
         $command = "./vendor/bin/openapi --output {$output} {$path}";
-        
+
         $this->line("Processing: $path");
         passthru($command);
-        
+
         $this->info("Generated: $output");
     }
 }

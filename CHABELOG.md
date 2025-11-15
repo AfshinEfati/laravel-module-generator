@@ -6,16 +6,28 @@ All notable changes to this package are documented here. The current release lin
 ### ✨ Added
 - **NEW Command: `make:swagger`** - Route-based Swagger documentation generator that scans existing Laravel routes and generates OpenAPI documentation independently of models. Supports filtering by path prefix and controller namespace.【F:src/Commands/GenerateSwaggerCommand.php†L1-L450】
 - Swagger-only generation mode: using `--swagger` flag alone now generates only the Swagger documentation file without creating other module files (Repository, Service, DTO, Controller, etc.).【F:src/Commands/MakeModuleCommand.php†L102-L213】
+- **NEW: Built-in Swagger UI** - Generate beautiful Swagger documentation without external dependencies. Interactive configuration, customizable themes (vanilla, tailwind, dark), and zero-dependency operation.【F:src/Commands/SwaggerUICommand.php†L1-L120】【F:src/Commands/SwaggerConfigCommand.php†L1-L280】【F:src/Commands/SwaggerInitCommand.php†L1-L95】
+- **NEW: Comprehensive Documentation Suite:**
+  - `SWAGGER_PHPDOC_GENERATION.md` - Guide for PHPDoc `@OA\` annotation generation
+  - `COMMAND_REFERENCE.md` - Complete command reference with all options and examples
+  - `INTEGRATION_GUIDE.md` - Integration with optional external packages (swagger-php, l5-swagger)
+  - `DOCUMENTATION_INDEX.md` - Main documentation index with quick links and learning paths
+  - `TESTING_GUIDE.md` - Step-by-step testing guide for all features
+  - Updated `README.md` with new swagger documentation links
 
 ### 🔧 Changed
 - Swagger documentation now includes proper JSON response content types with `@OA\JsonContent()` annotations for all endpoints.【F:src/Generators/SwaggerDocGenerator.php†L103-L122】
 - All Swagger endpoints now document 401 (Unauthenticated) responses with proper JSON error format when authentication is required.【F:src/Generators/ControllerGenerator.php†L511-L582】【F:src/Commands/MakeModuleCommand.php†L492-L563】
 - Enhanced error responses (404, 422) in Swagger documentation with structured JSON examples including message properties.【F:src/Generators/SwaggerDocGenerator.php†L110-L121】
+- Fixed `GenerateSwaggerCommand` to properly handle validation rule objects (Password, Email, Unique, etc.) without external dependencies.【F:src/Commands/GenerateSwaggerCommand.php†L189-L215】
+- Removed external dependency checks from `MakeModuleCommand` - now supports zero-dependency operation.【F:src/Commands/MakeModuleCommand.php†L173】
+- Updated swagger.stub template to work without `use OpenApi\Annotations` statement.【F:src/Stubs/Module/Doc/swagger.stub†L1-L10】
 
 ### 📚 Documentation
 - Added comprehensive route-based Swagger documentation guide with examples and troubleshooting.【F:ROUTE_BASED_SWAGGER.md†L1-L500】
 - Added comprehensive Swagger/OpenAPI documentation section in README with usage examples and Laravel configuration tips for proper JSON responses.【F:README.md†L132-L200】
 - Updated command options table to clarify swagger-only behavior.【F:README.md†L94】
+- **NEW Documentation Files:** See additions above - complete ecosystem of guides covering all aspects of Swagger documentation generation, configuration, testing, and integration
 
 ## [7.1.6] - 2025-09-14
 ### ✨ Added
