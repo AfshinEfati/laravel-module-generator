@@ -21,74 +21,29 @@ class GenerateSwaggerCommand extends Command
                             {--f|force : Overwrite existing swagger files}
                             {--output= : Output directory for swagger files (default: app/Docs)}';
 
-    protected $description = 'Generate Swagger documentation by scanning Laravel routes';
+    protected $description = '[DEPRECATED] Use php artisan swagger:generate instead. This command now redirects to the new JSON-based Swagger generator without external dependencies.';
 
     private static $securitySchemeGenerated = false;
 
     public function handle(): int
     {
-        $pathFilter = $this->option('path');
-        $controllerFilter = $this->option('controller');
-        $force = $this->option('force');
-        $outputDir = $this->option('output') ?: app_path('Docs');
+        $this->warn('⚠️  This command has been changed to use JSON-based Swagger generation without dependencies.');
+        $this->info('');
 
-        File::ensureDirectoryExists($outputDir);
+        // Redirect to the new swagger:generate command which has no external dependencies
+        $this->info('📄 Generating Swagger documentation from routes...');
+        $this->info('');
 
-        // Reset security scheme flag
-        self::$securitySchemeGenerated = false;
-
-        $this->info('🔍 Scanning Laravel routes...');
-
-        $routes = $this->getFilteredRoutes($pathFilter, $controllerFilter);
-
-        if (empty($routes)) {
-            $this->warn('⚠️  No routes found matching the filters.');
+        try {
+            return $this->call('swagger:generate');
+        } catch (\Exception $e) {
+            $this->error('❌ Failed to generate Swagger documentation: ' . $e->getMessage());
+            $this->info('');
+            $this->info('💡 Make sure you have initialized Swagger UI:');
+            $this->line('   php artisan swagger:init');
+            $this->line('   php artisan swagger:generate');
+            $this->line('   php artisan swagger:ui');
             return self::FAILURE;
-        }
-
-        $this->info(sprintf('📋 Found %d routes to document.', count($routes)));
-
-        // Generate main Info file first
-        $this->generateMainInfoFile($outputDir, $force);
-
-        $groupedRoutes = $this->groupRoutesByController($routes);
-
-        $generatedFiles = 0;
-        foreach ($groupedRoutes as $controllerName => $controllerRoutes) {
-            $docClass = $this->generateSwaggerDoc($controllerName, $controllerRoutes, $outputDir, $force);
-            if ($docClass) {
-                $this->line(sprintf('  ✓ Generated: %s', $docClass));
-                $generatedFiles++;
-            }
-        }
-
-        $this->info(sprintf('✅ Successfully generated %d swagger documentation file(s).', $generatedFiles));
-
-        $this->maybeRunL5SwaggerGenerate();
-
-        return self::SUCCESS;
-    }
-
-    /**
-     * Run l5-swagger:generate if the command is available.
-     */
-    private function maybeRunL5SwaggerGenerate(): void
-    {
-        try {
-            $commands = Artisan::all();
-        } catch (\Throwable $e) {
-            return;
-        }
-
-        if (!array_key_exists('l5-swagger:generate', $commands)) {
-            return;
-        }
-
-        try {
-            Artisan::call('l5-swagger:generate');
-            $this->info('🧾 l5-swagger documentation refreshed.');
-        } catch (\Throwable $e) {
-            $this->warn('⚠️ Unable to run `l5-swagger:generate`: ' . $e->getMessage());
         }
     }
 
@@ -163,6 +118,8 @@ class GenerateSwaggerCommand extends Command
 
     /**
      * Generate main OpenAPI Info file
+     *
+     * Note: Uses comments instead of OpenApi\Annotations to avoid dependency
      */
     private function generateMainInfoFile(string $outputDir, bool $force): void
     {
@@ -177,26 +134,20 @@ class GenerateSwaggerCommand extends Command
         $appName = config('app.name', 'Laravel API');
         $appVersion = '1.0.0';
 
-        $content = <<<PHP
+        $content = <<<'PHP'
 <?php
 
 namespace {$namespace};
 
-use OpenApi\Annotations as OA;
-
 /**
- * @OA\Info(
- *     title="{$appName}",
- *     version="{$appVersion}",
- *     description="API Documentation",
- *     @OA\Contact(
- *         email="api@example.com"
- *     )
- * )
- * @OA\Server(
- *     url="/",
- *     description="API Server"
- * )
+ * This file contains documentation metadata for the API.
+ *
+ * Note: This file is generated without external dependencies.
+ * If you need OpenAPI/Swagger annotations, install:
+ * composer require zircote/openapi-php
+ *
+ * Then add your annotations here or use the Swagger UI
+ * generated in storage/swagger-ui/
  */
 class OpenApiInfo
 {
@@ -204,6 +155,7 @@ class OpenApiInfo
 
 PHP;
 
+        $content = str_replace('{$namespace}', $namespace, $content);
         File::put($filePath, $content);
         $this->line('  ✓ Generated: OpenApiInfo.php');
     }
@@ -217,7 +169,7 @@ PHP;
 
         foreach ($routes as $route) {
             $action = $route['action'];
-            
+
             // Extract controller class and method
             if (Str::contains($action, '@')) {
                 [$controller, $method] = explode('@', $action);
@@ -228,7 +180,7 @@ PHP;
             }
 
             $controllerName = class_basename($controller);
-            
+
             if (!isset($grouped[$controllerName])) {
                 $grouped[$controllerName] = [
                     'controller_class' => $controller,
@@ -592,7 +544,7 @@ PHP;
     private function extractRequestProperties(array $route): array
     {
         $action = $route['action'];
-        
+
         // Try to find FormRequest class
         if (!Str::contains($action, '@')) {
             return [];
@@ -620,7 +572,7 @@ PHP;
                 }
 
                 $typeName = $type->getName();
-                
+
                 // Check if it's a FormRequest
                 if (class_exists($typeName) && is_subclass_of($typeName, 'Illuminate\\Foundation\\Http\\FormRequest')) {
                     return $this->extractPropertiesFromFormRequest($typeName);
@@ -640,7 +592,7 @@ PHP;
     {
         try {
             $formRequest = new $formRequestClass();
-            
+
             if (!method_exists($formRequest, 'rules')) {
                 return [];
             }
@@ -664,6 +616,30 @@ PHP;
      */
     private function inferTypeFromRule($rule): string
     {
+        // Handle Rule objects (e.g., Password, Unique, etc.)
+        if (is_object($rule)) {
+            $className = class_basename($rule);
+
+            // Map common rule classes to types
+            $typeMap = [
+                'Password' => 'string',
+                'Email' => 'string',
+                'Url' => 'string',
+                'Unique' => 'string',
+                'Exists' => 'string',
+                'Json' => 'string',
+                'Ip' => 'string',
+                'DateTime' => 'string',
+                'Date' => 'string',
+                'Time' => 'string',
+                'TimeZone' => 'string',
+                'Uuid' => 'string',
+                'Ulid' => 'string',
+            ];
+
+            return $typeMap[$className] ?? 'string';
+        }
+
         if (is_array($rule)) {
             $rule = implode('|', $rule);
         }
