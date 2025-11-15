@@ -91,7 +91,16 @@ const navigation = computed(() => {
       label: 'Reference',
       links: [
         { title: 'CLI Reference', path: '/en/reference' },
+        { title: 'API Reference', path: '/en/api-reference' },
         { title: 'Changelog', path: '/en/changelog' }
+      ]
+    },
+    {
+      label: 'Learn',
+      links: [
+        { title: 'Usage Examples', path: '/en/usage-examples' },
+        { title: 'Complete Features Guide', path: '/en/complete-features-guide' },
+        { title: 'Route-Based Swagger', path: '/en/route-based-swagger' }
       ]
     }
   ]
@@ -121,7 +130,16 @@ const navigation = computed(() => {
       label: 'مرجع',
       links: [
         { title: 'مرجع CLI', path: '/fa/reference' },
+        { title: 'مرجع API', path: '/fa/api-reference' },
         { title: 'تغییرات', path: '/fa/changelog' }
+      ]
+    },
+    {
+      label: 'یادگیری',
+      links: [
+        { title: 'نمونه‌های استفاده', path: '/fa/usage-examples' },
+        { title: 'راهنمای کامل ویژگی‌ها', path: '/fa/complete-features-guide' },
+        { title: 'مستندات Swagger مبتنی بر Route', path: '/fa/route-based-swagger' }
       ]
     }
   ]
@@ -146,10 +164,13 @@ useHead({
           <span class="hidden text-sm text-slate-500 sm:inline">Docs</span>
         </div>
         <nav class="flex items-center gap-4 text-sm font-medium text-slate-600">
-          <NuxtLink to="/en" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'en' }">English</NuxtLink>
+          <NuxtLink to="/en" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'en' }">
+            English</NuxtLink>
           <span class="text-slate-300">·</span>
-          <NuxtLink to="/fa" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی</NuxtLink>
-          <a href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-primary-500 hover:text-primary-600">
+          <NuxtLink to="/fa" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی
+          </NuxtLink>
+          <a href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-primary-500 hover:text-primary-600">
             <span>GitHub</span>
           </a>
         </nav>
@@ -161,16 +182,15 @@ useHead({
         <div class="sticky top-24 space-y-8">
           <template v-for="section in navigation" :key="section.label">
             <div>
-              <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500" :class="{ 'text-right': isRtl }">{{ section.label }}</p>
+              <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                :class="{ 'text-right': isRtl }">{{ section.label }}</p>
               <ul class="space-y-2" :class="{ 'text-right': isRtl }">
                 <li v-for="link in section.links" :key="link.path">
-                  <NuxtLink
-                    :to="link.path"
+                  <NuxtLink :to="link.path"
                     class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600"
                     :class="{
                       'bg-primary-100 text-primary-700 font-semibold': isActiveLink(link.path)
-                    }"
-                  >
+                    }">
                     {{ link.title }}
                   </NuxtLink>
                 </li>
@@ -181,7 +201,8 @@ useHead({
       </aside>
 
       <main :class="['min-w-0 flex-1', hideNavigation ? 'w-full' : '']">
-        <article class="prose prose-slate max-w-none" :class="{ 'prose-lg text-right' : isRtl, 'prose-code:font-mono': true }">
+        <article class="prose prose-slate max-w-none"
+          :class="{ 'prose-lg text-right': isRtl, 'prose-code:font-mono': true }">
           <slot />
         </article>
       </main>
