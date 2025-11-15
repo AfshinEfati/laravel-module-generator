@@ -78,20 +78,45 @@ class ResourceGenerator
         if (!class_exists($modelFqcn)) {
             return [];
         }
-        $m = new $modelFqcn();
+
+        try {
+            $m = new $modelFqcn();
+        } catch (\Throwable $e) {
+            return [];
+        }
+
         $rels = [];
 
-        foreach (get_class_methods($m) as $method) {
-            if (in_array($method, ['boot', 'booted'])) {
+        $methods = get_class_methods($m);
+        if (!is_array($methods)) {
+            return [];
+        }
+
+        foreach ($methods as $method) {
+            if (in_array($method, ['boot', 'booted', '__construct'], true)) {
                 continue;
             }
+
             try {
+                $reflection = new \ReflectionMethod($m, $method);
+
+                // Skip static and private methods
+                if ($reflection->isStatic() || $reflection->isPrivate()) {
+                    continue;
+                }
+
+                // Skip methods that require parameters
+                if ($reflection->getNumberOfRequiredParameters() > 0) {
+                    continue;
+                }
+
                 $ret = $m->$method();
                 if (is_object($ret) && method_exists($ret, 'getRelated')) {
                     $rels[$method] = get_class($ret->getRelated());
                 }
             } catch (\Throwable $e) {
                 // ignore relation that throws
+                continue;
             }
         }
 

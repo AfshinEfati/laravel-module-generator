@@ -15,13 +15,21 @@ class ModelInspector
             return [];
         }
 
-        $model = new $modelFqcn();
+        try {
+            $model = new $modelFqcn();
+        } catch (\Throwable $e) {
+            return [];
+        }
 
         $fillable = [];
         if (method_exists($model, 'getFillable')) {
-            $fillable = array_filter((array) $model->getFillable(), static fn ($value) => is_string($value) && $value !== '');
-            if (!empty($fillable)) {
-                return array_values(array_unique($fillable));
+            try {
+                $fillable = array_filter((array) $model->getFillable(), static fn ($value) => is_string($value) && $value !== '');
+                if (!empty($fillable)) {
+                    return array_values(array_unique($fillable));
+                }
+            } catch (\Throwable $e) {
+                // Fall through to next method
             }
         }
 

@@ -45,18 +45,28 @@ class ProviderGenerator
     {
         $results = [];
         $bootstrapProviders = base_path('bootstrap/providers.php');
+
         if (File::exists($bootstrapProviders)) {
-            $contents = File::get($bootstrapProviders);
-            if (!str_contains($contents, $fqcn . '::class')) {
-                $contents = preg_replace(
-                    '/return\s+\[(.*)\];/sU',
-                    "return [\n    {$fqcn}::class,\n$1];",
-                    $contents,
-                    1
-                );
-                File::put($bootstrapProviders, $contents);
-                $results[$bootstrapProviders] = true;
-            } else {
+            try {
+                $contents = File::get($bootstrapProviders);
+                if (!str_contains($contents, $fqcn . '::class')) {
+                    $newContents = preg_replace(
+                        '/return\s+\[(.*)\];/sU',
+                        "return [\n    {$fqcn}::class,\n$1];",
+                        $contents,
+                        1
+                    );
+
+                    if ($newContents !== null && $newContents !== $contents) {
+                        File::put($bootstrapProviders, $newContents);
+                        $results[$bootstrapProviders] = true;
+                    } else {
+                        $results[$bootstrapProviders] = false;
+                    }
+                } else {
+                    $results[$bootstrapProviders] = false;
+                }
+            } catch (\Throwable $e) {
                 $results[$bootstrapProviders] = false;
             }
             return $results;
@@ -64,18 +74,27 @@ class ProviderGenerator
 
         $configApp = config_path('app.php');
         if (File::exists($configApp)) {
-            $contents = File::get($configApp);
-            if (!str_contains($contents, $fqcn . '::class')) {
-                $pattern = '/\'providers\'\s*=>\s*\[(.*?)\],/s';
-                if (preg_match($pattern, $contents, $m)) {
-                    $block = rtrim($m[1]) . "\n        {$fqcn}::class,\n    ";
-                    $contents = preg_replace($pattern, "'providers' => [\n{$block}],", $contents, 1);
-                    File::put($configApp, $contents);
-                    $results[$configApp] = true;
+            try {
+                $contents = File::get($configApp);
+                if (!str_contains($contents, $fqcn . '::class')) {
+                    $pattern = '/\'providers\'\s*=>\s*\[(.*?)\],/s';
+                    if (preg_match($pattern, $contents, $m)) {
+                        $block = rtrim($m[1]) . "\n        {$fqcn}::class,\n    ";
+                        $newContents = preg_replace($pattern, "'providers' => [\n{$block}],", $contents, 1);
+
+                        if ($newContents !== null && $newContents !== $contents) {
+                            File::put($configApp, $newContents);
+                            $results[$configApp] = true;
+                        } else {
+                            $results[$configApp] = false;
+                        }
+                    } else {
+                        $results[$configApp] = false;
+                    }
                 } else {
                     $results[$configApp] = false;
                 }
-            } else {
+            } catch (\Throwable $e) {
                 $results[$configApp] = false;
             }
         }

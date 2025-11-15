@@ -56,28 +56,32 @@ class FormRequestGenerator
         }
 
         if (class_exists($modelFqcn)) {
-            $m = new $modelFqcn();
-            if (property_exists($m, 'table') && $m->table) {
-                return $m->table;
+            try {
+                $m = new $modelFqcn();
+                if (property_exists($m, 'table') && is_string($m->table) && $m->table !== '') {
+                    return $m->table;
+                }
+            } catch (\Throwable $e) {
+                // Unable to instantiate model, fall back to default
             }
-            return Str::snake(Str::pluralStudly(class_basename($modelFqcn)));
         }
-        return Str::snake(Str::pluralStudly(class_basename($modelFqcn)));
+
+        $modelBasename = class_basename($modelFqcn);
+        return Str::snake(Str::pluralStudly($modelBasename));
     }
 
     private static function buildRules(string $modelFqcn, string $table, ?array $fieldMeta = null): array
-
     {
         $schema = [];
-        if (is_array($fieldMeta)) {
+        if (is_array($fieldMeta) && !empty($fieldMeta)) {
             $schema = $fieldMeta;
-
-            if (!empty($schema)) {
-                return MigrationFieldParser::buildValidationRules($schema, $table);
-            }
+            return MigrationFieldParser::buildValidationRules($schema, $table);
         }
 
         $fillable = ModelInspector::extractFillable($modelFqcn);
+        if (empty($fillable)) {
+            return [[], []];
+        }
 
         if (empty($fillable) && !empty($schema)) {
             $fillable = SchemaParser::fieldNames($schema);

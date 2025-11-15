@@ -135,15 +135,27 @@ abstract class BaseService implements BaseServiceInterface
 
     public function __call(string $method, array $parameters): mixed
     {
-        if (method_exists($this->repository, $method)) {
-            return $this->repository->{$method}(...$parameters);
+        if (!is_string($method) || $method === '') {
+            throw new BadMethodCallException('Method name must be a non-empty string.');
         }
 
-        throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $method));
+        if (!method_exists($this->repository, $method)) {
+            throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $method));
+        }
+
+        try {
+            return $this->repository->{$method}(...$parameters);
+        } catch (\Throwable $e) {
+            throw new BadMethodCallException(sprintf('Error calling method %s::%s: %s', static::class, $method, $e->getMessage()), 0, $e);
+        }
     }
 
     protected function callRepository(string $method, array $arguments = []): mixed
     {
+        if (!is_string($method) || $method === '') {
+            throw new BadMethodCallException('Repository method name must be a non-empty string.');
+        }
+
         if (!method_exists($this->repository, $method)) {
             throw new BadMethodCallException(sprintf('Repository method %s::%s not found.', get_class($this->repository), $method));
         }

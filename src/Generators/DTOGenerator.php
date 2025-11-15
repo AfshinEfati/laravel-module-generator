@@ -11,24 +11,31 @@ use Illuminate\Support\Facades\File;
 class DTOGenerator
 {
     public static function generate(string $name, string $baseNamespace = 'App', bool $force = false, ?array $fields = null): array
-
     {
-        $paths = config('module-generator.paths', []);
-        $dtoRel = $paths['dto'] ?? ($paths['dtos'] ?? 'DTOs');
+        try {
+            $paths = config('module-generator.paths', []);
+            $dtoRel = $paths['dto'] ?? ($paths['dtos'] ?? 'DTOs');
 
-        $dtoPath = app_path($dtoRel);
-        File::ensureDirectoryExists($dtoPath);
+            $dtoPath = app_path($dtoRel);
+            File::ensureDirectoryExists($dtoPath);
 
-        $className = "{$name}DTO";
-        $filePath  = $dtoPath . "/{$className}.php";
+            $className = "{$name}DTO";
+            $filePath  = $dtoPath . "/{$className}.php";
 
-        $modelFqcn = "{$baseNamespace}\\Models\\{$name}";
-        $fillable  = self::resolveFillable($modelFqcn, $fields);
+            $modelFqcn = "{$baseNamespace}\\Models\\{$name}";
+            $fillable  = self::resolveFillable($modelFqcn, $fields);
 
+            if (empty($fillable)) {
+                // Return empty DTO if no fields found
+                $fillable = [];
+            }
 
-        $content   = self::build($className, $baseNamespace, $fillable);
+            $content   = self::build($className, $baseNamespace, $fillable);
 
-        return [$filePath => self::writeFile($filePath, $content, $force)];
+            return [$filePath => self::writeFile($filePath, $content, $force)];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     private static function resolveFillable(string $modelFqcn, ?array $fields): array
@@ -41,7 +48,6 @@ class DTOGenerator
     }
 
     private static function getFillable(string $modelFqcn): array
-
     {
         return ModelInspector::extractFillable($modelFqcn);
     }

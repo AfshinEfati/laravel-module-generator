@@ -46,7 +46,6 @@ class ActionGenerator
         );
 
         $actions = [
-
             'List' => Stub::render('Action/list', [
                 'namespace'      => $moduleNamespace,
                 'base_namespace' => $baseNamespaceActions,

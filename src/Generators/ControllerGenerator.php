@@ -43,12 +43,22 @@ class ControllerGenerator
         $controllerMiddleware = array_values(array_filter((array) config('module-generator.defaults.controller_middleware', [])));
 
         $relationsLoad = self::relationsLoadSnippet($modelFqcn, $withActions ? 'model' : null);
+
+        // Validate that relationsLoad is properly initialized
+        if (!is_string($relationsLoad)) {
+            $relationsLoad = '';
+        }
+
         $namespace     = self::controllerNamespace($baseNamespace, $controllerRel, $controllerSubfolder);
         $className     = "{$name}Controller";
         $actionsNamespace = $baseNamespace . '\\Actions\\' . $name;
         $swaggerDocs   = self::swaggerDocs($withSwagger, $isApi, $name, $controllerSubfolder, $baseNamespace, $controllerMiddleware);
         if ($swaggerDocs !== null) {
-            SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $fields, $force);
+            try {
+                SwaggerDocGenerator::generate($name, $baseNamespace, $swaggerDocs, $fields, $force);
+            } catch (\Throwable $e) {
+                // Log warning but continue generation
+            }
         }
 
         if ($isApi) {

@@ -59,69 +59,73 @@ class SwaggerFormatter
      */
     public static function buildJsonContent(array $fields, array $options = []): string
     {
-        $normalized = self::normalizeFields($fields);
+        try {
+            $normalized = self::normalizeFields($fields);
 
-        if (empty($normalized)) {
+            if (empty($normalized)) {
+                return '@OA\\JsonContent()';
+            }
+
+            $collection      = (bool) ($options['collection'] ?? false);
+            $required        = $options['required'] ?? null;
+            $includeExample  = array_key_exists('include_example', $options) ? (bool) $options['include_example'] : true;
+            $indentSize      = is_int($options['indent'] ?? null) ? (int) $options['indent'] : 8;
+            $indent          = str_repeat(' ', max(0, $indentSize));
+            $innerIndent     = $indent . '    ';
+            $innerInnerIndent = $innerIndent . '    ';
+
+            if ($required === null) {
+                $required = self::requiredFieldNames($normalized);
+            }
+
+            $lines   = [];
+            $lines[] = '@OA\\JsonContent(';
+
+            if ($collection) {
+                $lines[] = $indent . 'type="array",';
+                $lines[] = $indent . '@OA\\Items(';
+                $lines[] = $innerIndent . 'type="object",';
+
+                $propertyLines = self::buildPropertyLines($normalized, $innerIndent);
+                $propertyCount = count($propertyLines);
+
+                foreach ($propertyLines as $index => $propertyLine) {
+                    $suffix = $index === $propertyCount - 1 && !$includeExample ? '' : ',';
+                    $lines[] = $propertyLine . $suffix;
+                }
+
+                if ($includeExample) {
+                    $itemExample = self::formatJsonExample(self::exampleData($normalized));
+                    $lines[]     = $innerIndent . 'example=' . $itemExample;
+                }
+
+                $lines[] = $indent . ')';
+            } else {
+                $lines[] = $indent . 'type="object",';
+
+                if (!empty($required)) {
+                    $lines[] = $indent . 'required={' . self::quoteList($required) . '},';
+                }
+
+                $propertyLines = self::buildPropertyLines($normalized, $indent);
+                $propertyCount = count($propertyLines);
+
+                foreach ($propertyLines as $index => $propertyLine) {
+                    $suffix = $index === $propertyCount - 1 && !$includeExample ? '' : ',';
+                    $lines[] = $propertyLine . $suffix;
+                }
+
+                if ($includeExample) {
+                    $lines[] = $indent . 'example=' . self::formatJsonExample(self::exampleData($normalized));
+                }
+            }
+
+            $lines[] = '    )';
+
+            return implode("\n", $lines);
+        } catch (\Throwable $e) {
             return '@OA\\JsonContent()';
         }
-
-        $collection      = (bool) ($options['collection'] ?? false);
-        $required        = $options['required'] ?? null;
-        $includeExample  = array_key_exists('include_example', $options) ? (bool) $options['include_example'] : true;
-        $indentSize      = is_int($options['indent'] ?? null) ? (int) $options['indent'] : 8;
-        $indent          = str_repeat(' ', max(0, $indentSize));
-        $innerIndent     = $indent . '    ';
-        $innerInnerIndent = $innerIndent . '    ';
-
-        if ($required === null) {
-            $required = self::requiredFieldNames($normalized);
-        }
-
-        $lines   = [];
-        $lines[] = '@OA\\JsonContent(';
-
-        if ($collection) {
-            $lines[] = $indent . 'type="array",';
-            $lines[] = $indent . '@OA\\Items(';
-            $lines[] = $innerIndent . 'type="object",';
-
-            $propertyLines = self::buildPropertyLines($normalized, $innerIndent);
-            $propertyCount = count($propertyLines);
-
-            foreach ($propertyLines as $index => $propertyLine) {
-                $suffix = $index === $propertyCount - 1 && !$includeExample ? '' : ',';
-                $lines[] = $propertyLine . $suffix;
-            }
-
-            if ($includeExample) {
-                $itemExample = self::formatJsonExample(self::exampleData($normalized));
-                $lines[]     = $innerIndent . 'example=' . $itemExample;
-            }
-
-            $lines[] = $indent . ')';
-        } else {
-            $lines[] = $indent . 'type="object",';
-
-            if (!empty($required)) {
-                $lines[] = $indent . 'required={' . self::quoteList($required) . '},';
-            }
-
-            $propertyLines = self::buildPropertyLines($normalized, $indent);
-            $propertyCount = count($propertyLines);
-
-            foreach ($propertyLines as $index => $propertyLine) {
-                $suffix = $index === $propertyCount - 1 && !$includeExample ? '' : ',';
-                $lines[] = $propertyLine . $suffix;
-            }
-
-            if ($includeExample) {
-                $lines[] = $indent . 'example=' . self::formatJsonExample(self::exampleData($normalized));
-            }
-        }
-
-        $lines[] = '    )';
-
-        return implode("\n", $lines);
     }
 
     /**

@@ -126,6 +126,7 @@ class MakeModuleCommand extends Command
                 $this->input->hasParameterOption(['--controller', '--c', '-c']),
                 $this->input->hasParameterOption(['--api']),
                 $this->input->hasParameterOption(['--all', '--a', '-a']),
+                $this->input->hasParameterOption(['--full', '--f', '-f']),
                 $this->input->hasParameterOption(['--requests', '--r', '-r']),
                 $this->input->hasParameterOption(['--tests', '--t', '-t']),
                 $this->input->hasParameterOption(['--no-controller', '--nc', '-nc']),
@@ -167,7 +168,7 @@ class MakeModuleCommand extends Command
         }
         if ($withSwagger && !$isApi && !$swaggerOnly) {
             $isApi = true;
-            $this->warn('• --swagger implicitly enables API controllers. Generating ProductController as API.');
+            $this->warn('• --swagger implicitly enables API controllers.');
         }
         if ($withSwagger && !class_exists('\\OpenApi\\Annotations\\OpenApi')) {
             $this->warn('• Swagger annotations requested but the swagger-php package is missing. Install it via `composer require darkaonline/l5-swagger` or `composer require zircote/swagger-php` to use --swagger.');

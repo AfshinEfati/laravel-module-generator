@@ -47,13 +47,23 @@ class RuntimeFieldParser
             return ['table' => $table, 'fields' => [], 'relations' => []];
         }
 
-        $columns = self::fetchColumns($schema, $table);
+        try {
+            $columns = self::fetchColumns($schema, $table);
+        } catch (\Throwable $e) {
+            return ['table' => $table, 'fields' => [], 'relations' => []];
+        }
+
         if (empty($columns)) {
             return ['table' => $table, 'fields' => [], 'relations' => []];
         }
 
-        $uniqueColumns  = self::detectUniqueColumns($connection, $table);
-        $foreignColumns = self::detectForeignKeys($connection, $table);
+        try {
+            $uniqueColumns  = self::detectUniqueColumns($connection, $table);
+            $foreignColumns = self::detectForeignKeys($connection, $table);
+        } catch (\Throwable $e) {
+            $uniqueColumns  = [];
+            $foreignColumns = [];
+        }
 
         $fields    = [];
         $relations = [];

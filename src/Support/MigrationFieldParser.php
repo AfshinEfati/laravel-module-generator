@@ -11,33 +11,42 @@ class MigrationFieldParser
 {
     public static function parse(string $modelName, ?string $hint = null): array
     {
-        $studly = Str::studly($modelName);
-        $path   = self::resolveMigrationPath($studly, $hint);
+        try {
+            $studly = Str::studly($modelName);
+            $path   = self::resolveMigrationPath($studly, $hint);
 
-        if (!$path || !is_file($path)) {
-            return [
-                'path'       => null,
-                'table'      => null,
-                'fields'     => [],
-                'relations'  => [],
-            ];
-        }
+            if (!$path || !is_file($path)) {
+                return [
+                    'path'       => null,
+                    'table'      => null,
+                    'fields'     => [],
+                    'relations'  => [],
+                ];
+            }
 
-        $code = file_get_contents($path);
-        if ($code === false) {
-            return [
-                'path'       => $path,
-                'table'      => null,
-                'fields'     => [],
-                'relations'  => [],
-            ];
-        }
+            $code = file_get_contents($path);
+            if ($code === false) {
+                return [
+                    'path'       => $path,
+                    'table'      => null,
+                    'fields'     => [],
+                    'relations'  => [],
+                ];
+            }
 
-        $code = self::stripComments($code);
+            $code = self::stripComments($code);
+            $blocks = self::extractSchemaBlocks($code);
 
-        $blocks = self::extractSchemaBlocks($code);
+            if (empty($blocks)) {
+                return [
+                    'path'       => $path,
+                    'table'      => null,
+                    'fields'     => [],
+                    'relations'  => [],
+                ];
+            }
 
-        $fields    = [];
+            $fields    = [];
         $relations = [];
         $tableName = null;
 
@@ -167,6 +176,14 @@ class MigrationFieldParser
             'fields'    => $fields,
             'relations' => $relations,
         ];
+        } catch (\Throwable $e) {
+            return [
+                'path'       => null,
+                'table'      => null,
+                'fields'     => [],
+                'relations'  => [],
+            ];
+        }
     }
 
     public static function buildFillableFromFields(array $fields): array

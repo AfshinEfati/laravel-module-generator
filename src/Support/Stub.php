@@ -42,6 +42,14 @@ class Stub
             return $package;
         }
 
-        throw new \RuntimeException("Stub file [{$stub}] not found.");
+        // Fallback: try without the Module prefix
+        $alternativePackage = __DIR__ . '/../Stubs/' . $normalized . '.stub';
+        if (File::exists($alternativePackage)) {
+            return $alternativePackage;
+        }
+
+        throw new \RuntimeException(
+            "Stub file [{$stub}] not found at [{$published}], [{$package}], or [{$alternativePackage}]."
+        );
     }
 }
