@@ -70,8 +70,8 @@ export default defineNuxtConfig({
     documentDriven: false,
     highlight: {
       theme: {
-        default: "min-light",
-        dark: "min-light",
+        default: "one-dark-pro",
+        dark: "one-dark-pro",
       },
       preload: ["php", "bash", "json", "yaml", "diff"],
     },
