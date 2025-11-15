@@ -19,8 +19,15 @@ class SwaggerUICommand extends Command
     {
         $this->info('🚀 Starting Custom Swagger UI...');
 
-        $port = $this->option('port');
-        $host = $this->option('host');
+        // Use config values if not overridden by options
+        $port = $this->option('port') !== 8000
+            ? $this->option('port')
+            : config('module-generator.swagger.server.port', 8000);
+
+        $host = $this->option('host') !== 'localhost'
+            ? $this->option('host')
+            : config('module-generator.swagger.server.host', 'localhost');
+
         $refresh = $this->option('refresh');
 
         if ($refresh) {
@@ -40,6 +47,13 @@ class SwaggerUICommand extends Command
         $this->info('');
         $this->info('✨ Swagger UI is running at: ' . $this->formatOutput($url, 'fg=cyan'));
         $this->info('📊 API Documentation: ' . $this->formatOutput("{$url}/docs", 'fg=green'));
+        $this->info('');
+
+        // Show current configuration
+        $theme = config('module-generator.swagger.theme', 'vanilla');
+        $this->line("🎨 Theme: <fg=cyan>{$theme}</>");
+        $this->line("📁 Path: <fg=cyan>{$uiPath}</>");
+
         $this->info('');
         $this->info('Press Ctrl+C to stop the server');
         $this->info('');

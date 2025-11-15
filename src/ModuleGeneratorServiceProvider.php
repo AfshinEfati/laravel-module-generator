@@ -10,6 +10,7 @@ use Efati\ModuleGenerator\Commands\MakeModuleCommand;
 use Efati\ModuleGenerator\Commands\GenerateSwaggerCommand;
 use Efati\ModuleGenerator\Commands\SwaggerUICommand;
 use Efati\ModuleGenerator\Commands\SwaggerInitCommand;
+use Efati\ModuleGenerator\Commands\SwaggerConfigCommand;
 use Efati\ModuleGenerator\Support\Goli;
 
 class ModuleGeneratorServiceProvider extends ServiceProvider
@@ -35,6 +36,7 @@ class ModuleGeneratorServiceProvider extends ServiceProvider
             GenerateSwaggerCommand::class,
             SwaggerUICommand::class,
             SwaggerInitCommand::class,
+            SwaggerConfigCommand::class,
         ]);
     }
 

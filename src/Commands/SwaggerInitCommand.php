@@ -31,6 +31,9 @@ class SwaggerInitCommand extends Command
             $this->info('✓ Copied Swagger UI files');
         }
 
+        // Initialize with configured theme
+        $this->initializeTheme($storagePath);
+
         // Create .htaccess for routing
         $htaccessPath = $storagePath . '/.htaccess';
         if (!File::exists($htaccessPath) || $this->option('force')) {
@@ -41,13 +44,49 @@ class SwaggerInitCommand extends Command
         $this->info('');
         $this->info('✨ Swagger UI initialized successfully!');
         $this->info('');
+
+        // Show current configuration
+        $theme = config('module-generator.swagger.theme', 'vanilla');
+        $this->line("  🎨 Current theme: <fg=green>{$theme}</>");
+        $this->line('  💡 To change theme, edit: <fg=cyan>.env</>');
+        $this->line('     Set: <fg=yellow>SWAGGER_THEME=tailwind</> or <fg=yellow>SWAGGER_THEME=dark</>');
+
+        $this->info('');
         $this->info('Next steps:');
-        $this->line('  1. Generate Swagger docs: <fg=cyan>php artisan swagger:generate</>');
-        $this->line('  2. Start the server:      <fg=cyan>php artisan swagger:ui</>');
-        $this->line('  3. Open in browser:       <fg=cyan>http://localhost:8000/docs</>');
+        $this->line('  1. Configure colors in <fg=cyan>.env</> (optional)');
+        $this->line('  2. Generate Swagger docs: <fg=cyan>php artisan swagger:generate</>');
+        $this->line('  3. Start the server:      <fg=cyan>php artisan swagger:ui</>');
+        $this->line('  4. Open in browser:       <fg=cyan>http://localhost:8000/docs</>');
         $this->info('');
 
         return 0;
+    }
+
+    protected function initializeTheme(string $storagePath): void
+    {
+        $theme = config('module-generator.swagger.theme', 'vanilla');
+        $indexPath = $storagePath . '/index.html';
+
+        // Determine which theme file to use
+        $themeFile = match($theme) {
+            'tailwind' => $storagePath . '/tailwind-index.html',
+            'dark' => $storagePath . '/dark-mode-index.html',
+            default => $storagePath . '/index.html', // vanilla
+        };
+
+        // If theme file exists and is different, use it
+        if ($theme !== 'vanilla' && File::exists($themeFile)) {
+            // Backup original vanilla version
+            if (!File::exists($storagePath . '/vanilla-index.html') && File::exists($indexPath)) {
+                File::copy($indexPath, $storagePath . '/vanilla-index.html');
+            }
+
+            // Use theme version
+            if ($themeFile !== $indexPath) {
+                File::copy($themeFile, $indexPath);
+                $this->info("✓ Applied '{$theme}' theme");
+            }
+        }
     }
 
     protected function getHtaccessContent(): string

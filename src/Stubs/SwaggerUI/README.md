@@ -1,6 +1,6 @@
 # 🎨 Swagger UI Themes
 
-ُ## ۳ نسخه کامل Swagger UI
+## ۳ نسخه کامل Swagger UI
 
 ### 📁 فایل‌ها
 
@@ -14,101 +14,146 @@
 
 ## 🚀 سریع‌ترین راه
 
-### گام ۱: انتخاب Theme
+### روش ۱: Config File (.env) - **پیشنهاد شده**
 
-```bash
-cd /path/to/project
-./switch-swagger-theme.sh tailwind
+Edit `.env`:
+
+```env
+SWAGGER_THEME=tailwind
+SWAGGER_COLOR_PRIMARY=#8b5cf6
+SWAGGER_UI_TITLE=My API
 ```
 
-**گزینه‌ها:**
-- `vanilla` - پیش‌فرض (بدون dependency)
-- `tailwind` - Tailwind CDN (fully customizable)
-- `dark` - Dark Mode (toggle included)
-
-### گام ۲: Generate
+سپس:
 
 ```bash
+php artisan swagger:init --force
 php artisan swagger:generate
+php artisan swagger:ui
 ```
 
-### گام ۳: View
+**فایل‌های مرتبط:**
+- `.env.swagger.example` - تمام تنظیمات موجود
+- `config/module-generator.php` - پیکربندی
+
+---
+
+### روش ۲: Interactive Command
 
 ```bash
+php artisan swagger:config
+# Menu برای انتخاب theme و colors
+```
+
+---
+
+### روش ۳: Direct Command
+
+```bash
+php artisan swagger:config --theme=dark --primary-color=#ff5722
+```
+
+---
+
+### روش ۴: Bash Script (قدیم)
+
+```bash
+./switch-swagger-theme.sh tailwind  # Manual theme switching
+```
+
+---
+
+## 🎨 تغییر رنگ‌ها - از طریق .env
+
+### مثال ۱: تغییر Theme
+
+```env
+# .env
+SWAGGER_THEME=dark
+```
+
+سپس: `php artisan swagger:init --force`
+
+---
+
+### مثال ۲: Purple Color Scheme
+
+```env
+SWAGGER_THEME=tailwind
+SWAGGER_COLOR_PRIMARY=#8b5cf6
+SWAGGER_COLOR_PRIMARY_DARK=#7c3aed
+SWAGGER_COLOR_PRIMARY_LIGHT=#f5f3ff
+SWAGGER_COLOR_SECONDARY=#d946ef
+```
+
+سپس: `php artisan swagger:init --force`
+
+---
+
+### مثال ۳: Dark Mode Configuration
+
+```env
+SWAGGER_THEME=dark
+SWAGGER_DARK_MODE_DEFAULT=dark      # Start dark by default
+SWAGGER_DARK_MODE_PERSIST=true      # Remember user choice
+```
+
+---
+
+## 📋 تمام تنظیمات
+
+| تنظیم | مثال | توضیح |
+|--------|------|--------|
+| `SWAGGER_THEME` | `tailwind` | vanilla, tailwind, dark |
+| `SWAGGER_COLOR_PRIMARY` | `#8b5cf6` | رنگ اصلی |
+| `SWAGGER_COLOR_SECONDARY` | `#d946ef` | رنگ ثانویه |
+| `SWAGGER_UI_TITLE` | `My API` | عنوان صفحه |
+| `SWAGGER_DARK_MODE_DEFAULT` | `auto` | auto, light, dark |
+| `SWAGGER_SERVER_PORT` | `8000` | پورت سرور |
+
+👉 **اطلاعات کامل:** `SWAGGER_CONFIG.md`
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Edit .env
+nano .env
+# Set SWAGGER_THEME=dark
+
+# 2. Apply
+php artisan swagger:init --force
+
+# 3. Generate
+php artisan swagger:generate
+
+# 4. View
 php artisan swagger:ui
 ```
 
 ---
 
-## 🎨 تغییر رنگ‌ها
+## ✅ All Themes Include
 
-### Vanilla Theme
-Edit `storage/swagger-ui/index.html`:
-
-```html
-<style>
-    :root {
-        --primary: #3b82f6;        /* تغییر رنگ */
-        --secondary: #06b6d4;
-        --success: #10b981;
-        --warning: #f59e0b;
-        --danger: #ef4444;
-    }
-</style>
-```
-
-### Tailwind Theme
-Edit `storage/swagger-ui/index.html`:
-
-```html
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    primary: {
-                        50: '#f0f9ff',
-                        500: '#22c55e',   /* Change here */
-                        600: '#16a34a',
-                    }
-                }
-            }
-        }
-    }
-</script>
-```
-
----
-
-## 🎯 Which Theme to Choose?
-
-### Vanilla ✅
-- If you want **zero dependencies**
-- If you want **fast loading**
-- If you understand **CSS**
-
-### Tailwind ✅
-- If you want **full customization**
-- If you use **Tailwind in your project**
-- If you want **easy color switching**
-
-### Dark Mode ✅
-- If you want **modern UI**
-- If users prefer **dark mode**
-- If you want **user preference saved**
-
----
-
-## 📱 Responsive
-
-All themes are **fully responsive**:
-- Mobile (320px)
-- Tablet (768px)
-- Desktop (1024px)
+- ✅ Responsive design
+- ✅ Method badges (GET/POST/PUT/PATCH/DELETE)
+- ✅ Status code colors
+- ✅ Parameter extraction
+- ✅ Response display
+- ✅ Search functionality
+- ✅ Copy-to-clipboard
+- ✅ Beautiful UI
 
 ---
 
 ## 📚 More Info
+
+👉 See `SWAGGER_CONFIG.md` for:
+- All configuration options
+- .env setup
+- Command reference
+- Color presets
 
 👉 See `SWAGGER_UI_CUSTOMIZATION.md` for:
 - ۵ color palette examples
