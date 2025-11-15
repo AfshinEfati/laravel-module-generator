@@ -135,9 +135,7 @@ class GenerateSwaggerCommand extends Command
     }
 
     /**
-     * Generate main OpenAPI Info file
-     *
-     * Note: Uses comments instead of OpenApi\Annotations to avoid dependency
+     * Generate main OpenAPI Info file with required @OA\OpenApi and @OA\Info annotations
      */
     private function generateMainInfoFile(string $outputDir, bool $force): void
     {
@@ -157,15 +155,28 @@ class GenerateSwaggerCommand extends Command
 
 namespace {$namespace};
 
+use OpenApi\Annotations as OA;
+
 /**
- * This file contains documentation metadata for the API.
- *
- * Note: This file is generated without external dependencies.
- * If you need OpenAPI/Swagger annotations, install:
- * composer require zircote/openapi-php
- *
- * Then add your annotations here or use the Swagger UI
- * generated in storage/swagger-ui/
+ * @OA\OpenApi(
+ *     openapi="3.0.0",
+ *     @OA\Info(
+ *         version="{$version}",
+ *         title="{$appName}",
+ *         description="API Documentation",
+ *         @OA\Contact(
+ *             name="API Support"
+ *         )
+ *     ),
+ *     @OA\Server(
+ *         url="http://localhost",
+ *         description="Development Server"
+ *     ),
+ *     @OA\Server(
+ *         url="https://api.example.com",
+ *         description="Production Server"
+ *     )
+ * )
  */
 class OpenApiInfo
 {
@@ -173,7 +184,7 @@ class OpenApiInfo
 
 PHP;
 
-        $content = str_replace('{$namespace}', $namespace, $content);
+        $content = str_replace(['{$namespace}', '{$appName}', '{$version}'], [$namespace, $appName, $appVersion], $content);
         File::put($filePath, $content);
         $this->line('  ✓ Generated: OpenApiInfo.php');
     }
