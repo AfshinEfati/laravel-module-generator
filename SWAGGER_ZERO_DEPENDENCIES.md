@@ -2,253 +2,250 @@
 
 ## مشکل قبلی
 
-Command `make:swagger` سعی می‌کرد از `OpenApi\Annotations` (zircote/openapi-php package) استفاده کند:
+Generated swagger documentation files شامل:
+
+```php
+use OpenApi\Annotations as OA;
+```
+
+این خط عارض error می‌شود **اگر** `zircote/swagger-php` یا `darkaonline/l5-swagger` نصب نباشند:
+
+```
+Fatal error: Uncaught Error: Class "OpenApi\Annotations" not found
+```
+
+همچنین validation rule objects (Password, Email, etc.) باعث error می‌شدند:
 
 ```
 Error: Object of class Illuminate\Validation\Rules\Password could not be converted to string
 ```
 
-همچنین generated files نیاز به external dependencies داشتند.
+## ✅ حل جدید (اکنون فعال)
 
-## ✅ حل جدید
+### 1. PHPDoc Annotations Without Use Statement
 
-### 1. JSON-based Generation (No Dependencies)
+Generated files **اکنون** بدون `use OpenApi\Annotations` ایجاد می‌شوند:
 
-استفاده از `swagger:generate` (قبلاً ساخته شده):
+```php
+<?php
+namespace App\Docs;
 
-```bash
-php artisan swagger:generate
-# Generates: storage/swagger-ui/swagger.json
-# Zero external dependencies needed
+/**
+ * @OA\Tag(name="Product")
+ *
+ * Note: This file contains OpenAPI annotations that work WITHOUT any external dependencies.
+ */
+class ProductDoc
+{
+    /**
+     * @OA\Get(path="/api/products", ...)
+     */
+    public function get_api_products(){}
+}
 ```
 
-### 2. Old Command Deprecated
+✅ این فایل **بدون هیچ external package** کار می‌کند!
 
-`make:swagger` اکنون redirect می‌کند:
+### 2. Why This Works
+
+- `@OA\` annotations موجود در **PHP comments** هستند
+- PHP انها را نادیده می‌گیرد (comments فقط برای documentation هستند)
+- External packages (swagger-php) آنها را parse می‌کنند و به JSON تبدیل می‌کنند
+
+### 3. Recommended Workflow
+
+#### ✅ روش جدید (Recommended)
 
 ```bash
+# 1. Generate PHPDoc files from routes
 php artisan make:swagger --force
-# ✅ Works without errors
-# ℹ️ Redirects to swagger:generate internally
+
+# 2. Files created in app/Docs/ without errors
+ls -la app/Docs/
+
+# 3. (اختیاری) Install swagger-php for UI generation
+composer require zircote/swagger-php
+
+# 4. Process with swagger-php
+./vendor/bin/openapi --output public/docs/swagger.json app/Docs/
 ```
 
-### 3. HTML UI Without Dependencies
+#### یا استفاده از Standalone UI
 
 ```bash
-php artisan swagger:init
-php artisan swagger:ui
-# Opens Swagger UI at http://localhost:8000/docs
-# Completely self-contained
-```
-
----
-
-## 🚀 Recommended Workflow
-
-### New Way (Recommended)
-
-```bash
-# 1. Initialize UI
+# 1. Initialize Swagger UI
 php artisan swagger:init
 
-# 2. Generate JSON spec from routes
+# 2. Generate JSON spec
 php artisan swagger:generate
 
-# 3. View documentation
+# 3. View
 php artisan swagger:ui
 # Open: http://localhost:8000/docs
 ```
 
+#### یا استفاده با L5-Swagger (اختیاری)
+
+```bash
+# 1. Install L5-Swagger (optional)
+composer require darkaonline/l5-swagger
+
+# 2. Generate PHPDoc files
+php artisan make:swagger --force
+
+# 3. Generate UI
+php artisan l5-swagger:generate
+
+# 4. View at: http://localhost:8000/docs
+```
+
 **Benefits:**
+
 - ✅ Zero external dependencies
 - ✅ No OpenAPI\Annotations needed
 - ✅ Completely self-contained
 - ✅ Easy to customize themes
 
-### Old Way (Still Works - Backward Compatible)
+---
+
+## 🎯 مقایسه روش‌ها
+
+| روش               | Dependencies | Output         | استفاده          |
+| ----------------- | ------------ | -------------- | ---------------- |
+| **PHPDoc فقط**    | ❌ None      | `.php` files   | Development      |
+| **Standalone UI** | ❌ None      | JSON + HTML UI | Production       |
+| **+ Swagger-PHP** | ✅ Optional  | JSON file      | Integration      |
+| **+ L5-Swagger**  | ✅ Optional  | Full UI        | Production-ready |
+
+---
+
+## 🔧 مثال عملی
+
+### Step 1: Generate PHPDoc Files
 
 ```bash
 php artisan make:swagger --force
-# Now redirects to new method
 ```
 
----
-
-## 🔍 What Changed
-
-### Before
-```bash
-php artisan make:swagger
-# ❌ Requires: zircote/openapi-php
-# ❌ Generates PHP files with @OA\ annotations
-# ❌ Error on Password validation rule
-```
-
-### After
-```bash
-php artisan swagger:generate
-# ✅ No external dependencies
-# ✅ Generates JSON swagger.json
-# ✅ Handles all validation rules
-# ✅ Easy to customize
-```
-
----
-
-## 📋 Validation Rules Support
-
-Now handles all Laravel validation rules including objects:
+**Result:** `app/Docs/ProductDoc.php` بدون `use OpenApi\Annotations`:
 
 ```php
-// All these work without errors:
-'password' => 'required|min:8', // String rule
-'password' => Password::defaults(), // Object rule
-'email' => 'required|email', // Multiple rules
-'age' => ['required', 'integer', 'min:18'], // Array rules
+<?php
+namespace App\Docs;
+
+/**
+ * @OA\Tag(name="Product")
+ * Note: This file contains OpenAPI annotations that work WITHOUT any external dependencies.
+ */
+class ProductDoc
+{
+    /**
+     * @OA\Get(
+     *     path="/api/products",
+     *     summary="List Products",
+     *     @OA\Response(response=200, description="Success")
+     * )
+     */
+    public function get_api_products(){}
+}
+```
+
+✅ **فایل بدون errors ایجاد می‌شود!**
+
+### Step 2 (اختیاری): استفاده از Swagger-PHP
+
+```bash
+composer require zircote/swagger-php
+./vendor/bin/openapi --output public/docs/api.json app/Docs/
+```
+
+✅ `@OA\` annotations توسط swagger-php parse می‌شوند
+
+### Step 3 (اختیاری): استفاده از L5-Swagger
+
+```bash
+composer require darkaonline/l5-swagger
+php artisan l5-swagger:generate
+php artisan serve
+# Visit: http://localhost:8000/docs
+```
+
+✅ Full UI ready!
+
+---
+
+## ✅ تایید کنید همه چیز کار می‌کند
+
+```bash
+# 1. Generate
+php artisan make:swagger --force
+
+# 2. Check syntax
+php -l app/Docs/ProductDoc.php
+# Should output: No syntax errors detected
+
+# 3. Check file content
+cat app/Docs/ProductDoc.php | head -20
+# Should NOT show: "use OpenApi\Annotations"
+# Should show: "@OA\ annotations in comments only"
 ```
 
 ---
 
-## 📚 Complete Setup Guide
+## 🚨 Troubleshooting
 
-### Step 1: Initialize
+### Problem: "Class OpenApi\Annotations not found"
+
+**Reason:** Old files have `use OpenApi\Annotations`
+
+**Solution:**
 
 ```bash
-php artisan swagger:init
+# Regenerate with --force
+php artisan make:swagger --force
 ```
 
-Creates files in `storage/swagger-ui/`:
-- `index.html` - UI interface
-- `.htaccess` - Routing configuration
+### Problem: "Validation rule error"
 
-### Step 2: Generate Documentation
+**Reason:** Password/Email rule objects can't be converted to string
 
-```bash
-php artisan swagger:generate
-```
+**Solution:** ✅ Fixed! Now automatically detects rule objects
 
-Creates: `storage/swagger-ui/swagger.json`
+### Problem: "@OA\ annotations not appearing in file"
 
-From your routes:
-- GET `/api/users`
-- POST `/api/users`
-- GET `/api/users/{id}`
-- etc.
+**Reason:** File wasn't generated properly
 
-### Step 3: View & Share
+**Solution:**
 
 ```bash
-# Development
-php artisan swagger:ui
-open http://localhost:8000/docs
-
-# Production
-# Copy storage/swagger-ui/ to public/api/docs/
-# Access at: https://yoursite.com/api/docs/
+rm -rf app/Docs/
+php artisan make:swagger --force
+ls -la app/Docs/
 ```
 
 ---
 
-## 🎨 Customization (No Dependencies)
+## 📚 مستندات مرتبط
 
-### Change Theme
-
-Edit `.env`:
-```env
-SWAGGER_THEME=dark
-SWAGGER_COLOR_PRIMARY=#8b5cf6
-```
-
-Apply:
-```bash
-php artisan swagger:init --force
-```
-
-### Change Colors
-
-```env
-SWAGGER_COLOR_PRIMARY=#3b82f6
-SWAGGER_COLOR_SECONDARY=#06b6d4
-SWAGGER_COLOR_SUCCESS=#10b981
-SWAGGER_COLOR_WARNING=#f59e0b
-SWAGGER_COLOR_DANGER=#ef4444
-```
-
-No dependencies needed!
+- [PHPDoc Generation](SWAGGER_PHPDOC_GENERATION.md) - How to generate docs
+- [Integration Guide](INTEGRATION_GUIDE.md) - Using optional packages
+- [Command Reference](COMMAND_REFERENCE.md) - All available commands
 
 ---
 
-## 🚫 What's Not Needed
+## خلاصه
 
-❌ `zircote/openapi-php`
-❌ `l5-swagger/l5-swagger`
-❌ `swagger-php`
-❌ Any PHP OpenAPI libraries
+**Zero Dependencies Approach** اکنون کامل است:
 
-All documentation is generated from your Laravel routes!
+✅ `make:swagger` command PHP files ایجاد می‌کند **بدون external packages**
+✅ `@OA\` annotations در comments موجود هستند (PHP error نمی‌دهند)
+✅ Validation rule objects (Password, Email, etc.) مدیریت می‌شوند
+✅ Optional: swagger-php یا l5-swagger برای UI generation
+✅ Standalone UI بدون هیچ dependency
 
----
+**یکی از این گزینه‌ها را انتخاب کنید:**
 
-## 📦 Composer Require
-
-```bash
-# Only need the base package
-composer require efati/laravel-module-generator
-
-# NO additional swagger/openapi packages needed!
-```
-
----
-
-## 🔧 Troubleshooting
-
-### Error: "Command not found"
-
-```bash
-php artisan cache:clear
-composer dump-autoload
-php artisan package:discover
-```
-
-### Storage Permission Error
-
-```bash
-chmod -R 755 storage/swagger-ui
-chmod -R 755 storage/
-```
-
-### Port Already in Use
-
-```bash
-# Use different port
-php artisan swagger:ui --port=3000
-# Open: http://localhost:3000/docs
-```
-
----
-
-## 📚 Related Documentation
-
-- `SWAGGER_QUICKSTART.md` - Quick setup guide
-- `SWAGGER_CONFIG.md` - Full configuration options
-- `SWAGGER_CONFIG_SUMMARY.md` - Configuration summary
-- `src/Stubs/SwaggerUI/README.md` - UI themes
-
----
-
-## ✨ Summary
-
-✅ **Zero Dependencies** - No external packages needed
-✅ **Easy Setup** - 3 commands to get started
-✅ **Fully Customizable** - Change theme, colors, fonts
-✅ **Always Works** - Built-in to Laravel ecosystem
-✅ **Backward Compatible** - Old commands still work
-
-**Start with:**
-```bash
-php artisan swagger:init
-php artisan swagger:generate
-php artisan swagger:ui
-```
-
-**Done!** 🎉
+1. **صرفاً PHPDoc files** - Development
+2. **+ Standalone UI** - Quick viewing
+3. **+ Swagger-PHP** - Advanced integration
+4. **+ L5-Swagger** - Production-ready
