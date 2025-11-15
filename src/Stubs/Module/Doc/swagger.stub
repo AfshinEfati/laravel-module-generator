@@ -5,13 +5,12 @@ namespace {{ namespace }};
 /**
  * @OA\Tag(name="{{ tag }}")
  *
- * Note: This file contains OpenAPI annotations that work WITHOUT any external dependencies.
+ * Note: This file contains OpenAPI annotations that can be processed by:
+ * - zircote/swagger-php (https://github.com/zircote/swagger-php)
+ * - darkaonline/l5-swagger (wrapper for swagger-php)
  *
- * The @OA\ annotations here are processed by:
- * - zircote/swagger-php (https://github.com/zircote/swagger-php) - optional
- * - darkaonline/l5-swagger (wrapper for swagger-php) - optional
- *
- * You can use this file standalone OR integrate it with optional packages.
+ * These packages are optional. If not installed, you can still use
+ * php artisan swagger:generate for JSON-based documentation.
  */
 class {{ class }}
 {
