@@ -123,9 +123,9 @@ tests/
 
 ## گام‌های بعدی
 
-- [تولید ماژول‌ها](features/generating-modules.md) را برای تمام گزینه‌های دستور بخوانید
-- درباره [ویژگی‌های Schema-Aware](features/schema-aware-generation.md) بیاموزید
-- الگوهای [لایهٔ Action](features/action-layer.md) را بررسی کنید
-- [مرجع API](reference.md) را برای تمام فلگ‌های CLI مشاهده کنید
+- [تولید ماژول‌ها](./features/generating-modules.md) را برای تمام گزینه‌های دستور بخوانید
+- درباره [ویژگی‌های Schema-Aware](./features/schema-aware-generation.md) بیاموزید
+- الگوهای [لایهٔ Action](./features/action-layer.md) را بررسی کنید
+- [مرجع API](./reference.md) را برای تمام فلگ‌های CLI مشاهده کنید
 
 </div>

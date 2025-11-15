@@ -121,7 +121,7 @@ tests/
 
 ## Next Steps
 
-- Explore [generating modules](features/generating-modules.md) for all available options
-- Learn about [schema-aware features](features/schema-aware-generation.md)
-- Review [action layer patterns](features/action-layer.md)
-- Check the [API reference](reference.md) for complete CLI options
+- Explore [generating modules](./features/generating-modules.md) for all available options
+- Learn about [schema-aware features](./features/schema-aware-generation.md)
+- Review [action layer patterns](./features/action-layer.md)
+- Check the [API reference](./reference.md) for complete CLI options

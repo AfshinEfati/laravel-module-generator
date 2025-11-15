@@ -65,7 +65,7 @@ title: Laravel Module Generator
 
 ## Keep exploring
 
-- Follow the [installation checklist](installation.md) to get started with the package.
-- Use the [quickstart recipes](quickstart.md) for inline schemas or existing migrations.
-- Explore [core features](features/generating-modules.md) to understand each component.
-- Check [advanced patterns](features/action-layer.md) and the [CLI reference](reference.md) for more control.
+- Follow the [installation checklist](./installation.md) to get started with the package.
+- Use the [quickstart recipes](./quickstart.md) for inline schemas or existing migrations.
+- Explore [core features](./features/generating-modules.md) to understand each component.
+- Check [advanced patterns](./features/action-layer.md) and the [CLI reference](./reference.md) for more control.

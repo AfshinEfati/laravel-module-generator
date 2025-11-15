@@ -11,11 +11,6 @@ const rootRedirect = joinURL(siteBaseURL, "en");
 export default defineNuxtConfig({
   modules: ["@nuxt/content", "@nuxtjs/tailwindcss"],
   css: ["~/assets/css/main.css"],
-  nitro: {
-    prerender: {
-      crawlLinks: true,
-    },
-  },
   build: {
     transpile: ["tailwindcss"],
   },
@@ -120,33 +115,6 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: [
-        "/",
-        "/en",
-        "/fa",
-        "/en/installation",
-        "/en/quickstart",
-        "/en/configuration",
-        "/en/reference",
-        "/en/changelog",
-        "/en/features/generating-modules",
-        "/en/features/schema-aware-generation",
-        "/en/features/web-ui",
-        "/en/features/swagger-generation",
-        "/en/features/action-layer",
-        "/en/features/jalali-support",
-        "/fa/installation",
-        "/fa/quickstart",
-        "/fa/configuration",
-        "/fa/reference",
-        "/fa/changelog",
-        "/fa/features/generating-modules",
-        "/fa/features/schema-aware-generation",
-        "/fa/features/web-ui",
-        "/fa/features/swagger-generation",
-        "/fa/features/action-layer",
-        "/fa/features/jalali-support",
-      ],
     },
   },
   devtools: { enabled: false },
