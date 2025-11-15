@@ -59,28 +59,28 @@ class SwaggerConfigCommand extends Command
         $this->line('<fg=cyan>Theme:</> ' . ($config['theme'] ?? 'vanilla'));
         $this->line('');
 
-        $this->line('<fg=cyan>Colors:</>");
+        $this->line('<fg=cyan>Colors:</>');
         $colors = $config['colors'] ?? [];
         foreach ($colors as $name => $value) {
             $this->line("  {$name}: <fg=cyan>{$value}</>");
         }
 
         $this->line('');
-        $this->line('<fg=cyan>Fonts:</>");
+        $this->line('<fg=cyan>Fonts:</>');
         $fonts = $config['fonts'] ?? [];
         foreach ($fonts as $name => $value) {
             $this->line("  {$name}: <fg=cyan>{$value}</>");
         }
 
         $this->line('');
-        $this->line('<fg=cyan>Dark Mode:</>");
+        $this->line('<fg=cyan>Dark Mode:</>');
         $darkMode = $config['dark_mode'] ?? [];
         $this->line("  enabled: " . ($darkMode['enabled'] ? '<fg=green>yes</>' : '<fg=red>no</>'));
         $this->line("  default: <fg=cyan>" . ($darkMode['default'] ?? 'auto') . '</>', 2);
         $this->line("  persist: " . ($darkMode['persist'] ? '<fg=green>yes</>' : '<fg=red>no</>'));
 
         $this->line('');
-        $this->line('<fg=cyan>Display:</>");
+        $this->line('<fg=cyan>Display:</>');
         $display = $config['display'] ?? [];
         $this->line("  title: <fg=cyan>" . ($display['title'] ?? 'API Documentation') . '</>', 2);
         $this->line("  show_models: " . ($display['show_models'] ? '<fg=green>yes</>' : '<fg=red>no</>'));
