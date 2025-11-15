@@ -3,13 +3,13 @@
 /**
  * This is an example of what the make:swagger command generates
  * when scanning Laravel routes.
- *
+ * 
  * Command used:
  * php artisan make:swagger
- *
+ * 
  * This file works WITHOUT any external dependencies.
  * The @OA\ annotations are just PHP comments.
- *
+ * 
  * Routes scanned:
  * Route::apiResource('products', ProductController::class);
  */
@@ -20,7 +20,7 @@ namespace App\Docs;
  * @OA\Tag(name="Product")
  *
  * Note: This file contains OpenAPI annotations that work WITHOUT any external dependencies.
- *
+ * 
  * The @OA\ annotations here are processed by:
  * - zircote/swagger-php (https://github.com/zircote/swagger-php) - optional
  * - darkaonline/l5-swagger (wrapper for swagger-php) - optional
