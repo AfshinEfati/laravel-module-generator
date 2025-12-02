@@ -242,7 +242,7 @@ php artisan l5-swagger:generate
 ### Step 1: Install
 
 ```bash
-composer require efati/laravel-module-generator
+composer require efati/Laravel-Scaffolder
 composer require darkaonline/l5-swagger
 ```
 

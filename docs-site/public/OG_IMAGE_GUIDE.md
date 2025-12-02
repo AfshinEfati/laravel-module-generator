@@ -50,7 +50,7 @@ inkscape og-image.svg --export-filename=og-image.png --export-width=1200 --expor
 ### Testing
 After deployment, test your OG tags:
 ```
-https://afshinefati.github.io/laravel-module-generator/
+https://afshinefati.github.io/Laravel-Scaffolder/
 ```
 
 The preview should show:

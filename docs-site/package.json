@@ -1,5 +1,5 @@
 {
-  "name": "laravel-module-generator-docs",
+  "name": "Laravel-Scaffolder-docs",
   "private": true,
   "type": "module",
   "scripts": {

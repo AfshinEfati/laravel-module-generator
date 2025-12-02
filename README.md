@@ -1,10 +1,10 @@
 # Laravel Module Generator
 
-[![Docs Deployment Status](https://github.com/AfshinEfati/laravel-module-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/AfshinEfati/laravel-module-generator/actions/workflows/docs.yml)
+[![Docs Deployment Status](https://github.com/AfshinEfati/Laravel-Scaffolder/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/AfshinEfati/Laravel-Scaffolder/actions/workflows/docs.yml)
 
 ## 📖 Documentation
 
-**Full documentation:** 👉 [Laravel Module Generator Docs](https://afshinefati.github.io/laravel-module-generator/)
+**Full documentation:** 👉 [Laravel Module Generator Docs](https://afshinefati.github.io/Laravel-Scaffolder/)
 
 ---
 

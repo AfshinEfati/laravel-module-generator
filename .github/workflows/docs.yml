@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NUXT_PUBLIC_BASE_URL: /laravel-module-generator/
+      NUXT_PUBLIC_BASE_URL: /Laravel-Scaffolder/
       NODE_OPTIONS: --max-old-space-size=4096
     defaults:
       run:

@@ -63,7 +63,7 @@
     
     <!-- Footer -->
     <text x="600" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#475569" text-anchor="middle">
-      afshinefati.github.io/laravel-module-generator
+      afshinefati.github.io/Laravel-Scaffolder
     </text>
   </g>
 </svg>

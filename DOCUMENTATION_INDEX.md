@@ -221,7 +221,7 @@ Laravel Module Generator
 ## 📝 File Organization
 
 ```
-laravel-module-generator/
+Laravel-Scaffolder/
 ├── README.md                           ← Start here
 ├── SWAGGER_QUICKSTART.md               ← 5-minute setup
 ├── SWAGGER_PHPDOC_GENERATION.md        ← How to generate docs
@@ -300,9 +300,9 @@ MIT License. See [LICENSE](LICENSE) file.
 
 ## 🔗 Links
 
-- **GitHub:** [laravel-module-generator](https://github.com/AfshinEfati/laravel-module-generator)
-- **Docs Site:** [afshinefati.github.io](https://afshinefati.github.io/laravel-module-generator/)
-- **Packagist:** [efati/laravel-module-generator](https://packagist.org/packages/efati/laravel-module-generator)
+- **GitHub:** [Laravel-Scaffolder](https://github.com/AfshinEfati/Laravel-Scaffolder)
+- **Docs Site:** [afshinefati.github.io](https://afshinefati.github.io/Laravel-Scaffolder/)
+- **Packagist:** [efati/Laravel-Scaffolder](https://packagist.org/packages/efati/Laravel-Scaffolder)
 
 ---
 

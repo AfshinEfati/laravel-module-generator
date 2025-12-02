@@ -321,7 +321,7 @@ php artisan swagger:generate --force
 
 - [SWAGGER_NO_DEPENDENCIES.md](SWAGGER_NO_DEPENDENCIES.md) - راهنمای کامل
 - [SWAGGER_IMPLEMENTATION.md](SWAGGER_IMPLEMENTATION.md) - جزئیات تکنیکی
-- [Documentation Site](https://afshinefati.github.io/laravel-module-generator/)
+- [Documentation Site](https://afshinefati.github.io/Laravel-Scaffolder/)
 
 ---
 

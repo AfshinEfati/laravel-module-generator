@@ -348,4 +348,4 @@ Can be used with:
 
 ---
 
-**Questions?** Check docs at: https://afshinefati.github.io/laravel-module-generator/
+**Questions?** Check docs at: https://afshinefati.github.io/Laravel-Scaffolder/

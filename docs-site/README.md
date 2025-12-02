@@ -54,7 +54,7 @@ npm run generate
 # Output will be in .output/public/
 ```
 
-The site is deployed at: `https://afshinefati.github.io/laravel-module-generator/`
+The site is deployed at: `https://afshinefati.github.io/Laravel-Scaffolder/`
 
 ## 📝 Adding Content
 

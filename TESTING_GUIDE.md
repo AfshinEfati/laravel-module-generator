@@ -29,7 +29,7 @@ cd test-module-generator
 ### Step 2: Install Package
 
 ```bash
-composer require efati/laravel-module-generator
+composer require efati/Laravel-Scaffolder
 ```
 
 ### Step 3: Verify Installation

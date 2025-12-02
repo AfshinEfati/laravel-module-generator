@@ -263,4 +263,4 @@ Part of Laravel Module Generator - MIT License
 
 ---
 
-**Need help?** Check the documentation at: https://afshinefati.github.io/laravel-module-generator/
+**Need help?** Check the documentation at: https://afshinefati.github.io/Laravel-Scaffolder/

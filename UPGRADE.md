@@ -431,4 +431,4 @@ If you encounter issues during upgrade:
 1. Check [CHANGELOG](CHABELOG.md)
 2. Review [API Reference](API_REFERENCE.md)
 3. See [Examples](EXAMPLES.md)
-4. Open an issue on [GitHub](https://github.com/AfshinEfati/laravel-module-generator/issues)
+4. Open an issue on [GitHub](https://github.com/AfshinEfati/Laravel-Scaffolder/issues)

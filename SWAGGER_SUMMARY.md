@@ -242,7 +242,7 @@ Works seamlessly with:
 
 Questions or issues? Check:
 1. [SWAGGER_NO_DEPENDENCIES.md](SWAGGER_NO_DEPENDENCIES.md) - Usage guide
-2. [Documentation Site](https://afshinefati.github.io/laravel-module-generator/)
+2. [Documentation Site](https://afshinefati.github.io/Laravel-Scaffolder/)
 3. GitHub Issues
 
 ---

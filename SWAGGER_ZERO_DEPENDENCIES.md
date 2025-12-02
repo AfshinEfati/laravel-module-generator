@@ -193,7 +193,7 @@ All documentation is generated from your Laravel routes!
 
 ```bash
 # Only need the base package
-composer require efati/laravel-module-generator
+composer require efati/Laravel-Scaffolder
 
 # NO additional swagger/openapi packages needed!
 ```
