@@ -81,11 +81,15 @@ const navigation = computed(() => {
       links: [
         { title: 'Generating Modules', path: '/en/features/generating-modules' },
         { title: 'Schema-Aware Generation', path: '/en/features/schema-aware-generation' },
-        { title: 'Web UI', path: '/en/features/web-ui' },
-        { title: 'Swagger Generation', path: '/en/features/swagger-generation' },
         { title: 'Action Layer', path: '/en/features/action-layer' },
-        { title: 'Jalali Support', path: '/en/features/jalali-support' }
-      ]
+        { title: 'Swagger Generation', path: '/en/features/swagger-generation' },
+        { title: 'Policy Generation', path: '/en/features/policy-generation' },
+        { title: 'Criteria Pattern', path: '/en/features/criteria-pattern' },
+        { title: 'DTO Generation', path: '/en/features/dto-generation' },
+        { title: 'Test Generation', path: '/en/features/test-generation' },
+        { title: 'Jalali Support', path: '/en/features/jalali-support' },
+        { title: 'Web UI', path: '/en/features/web-ui' },
+      ],
     },
     {
       label: 'Reference',
@@ -117,14 +121,18 @@ const navigation = computed(() => {
     },
     {
       label: 'امکانات',
-      links: [
+      items: [
         { title: 'تولید ماژول‌ها', path: '/fa/features/generating-modules' },
-        { title: 'تولید آگاه از طرح‌واره', path: '/fa/features/schema-aware-generation' },
-        { title: 'رابط کاربری تحت وب', path: '/fa/features/web-ui' },
-        { title: 'تولید مستندات Swagger', path: '/fa/features/swagger-generation' },
-        { title: 'لایهٔ اکشن', path: '/fa/features/action-layer' },
-        { title: 'پشتیبانی از تاریخ شمسی', path: '/fa/features/jalali-support' }
-      ]
+        { title: 'تولید هوشمند از Schema', path: '/fa/features/schema-aware-generation' },
+        { title: 'لایه Actions', path: '/fa/features/action-layer' },
+        { title: 'تولید Swagger', path: '/fa/features/swagger-generation' },
+        { title: 'تولید Policy', path: '/fa/features/policy-generation' },
+        { title: 'الگوی Criteria', path: '/fa/features/criteria-pattern' },
+        { title: 'تولید DTO', path: '/fa/features/dto-generation' },
+        { title: 'تولید تست', path: '/fa/features/test-generation' },
+        { title: 'پشتیبانی جلالی', path: '/fa/features/jalali-support' },
+        { title: 'رابط کاربری وب', path: '/fa/features/web-ui' },
+      ],
     },
     {
       label: 'مرجع',
