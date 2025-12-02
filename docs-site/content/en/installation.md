@@ -15,7 +15,7 @@ Get up and running with Laravel Module Generator by following the checklist belo
 ## 1. Require the package
 
 ```bash
-composer require efati/laravel-module-generator
+composer require afshinefati/laravel-scaffolder --dev
 ```
 
 Composer registers `ModuleGeneratorServiceProvider`, which exposes the `make:module` command and helper classes out of the box.

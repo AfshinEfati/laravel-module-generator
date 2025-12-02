@@ -2,7 +2,7 @@
 
 [🇮🇷 فارسی](../fa/changelog.md){ .language-switcher }
 
-A summary of notable releases for Laravel Module Generator. For the full history see [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) and [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md).
+A summary of notable releases for Laravel Scaffolder. For the full history see [`CHANGELOG.md`](https://github.com/AfshinEfati/Laravel-Scaffolder/blob/main/CHANGELOG.md).
 
 
 ## v7.1.1

@@ -7,7 +7,7 @@
 ## مرحلهٔ ۱: نصب بسته
 
 ```bash
-composer require efati/laravel-module-generator
+composer require afshinefati/laravel-scaffolder --dev
 ```
 
 Service Provider به‌صورت خودکار هنگام راه‌اندازی کنسول رجیستر می‌شود. نیاز به دستور انتشار اضافی نیست!

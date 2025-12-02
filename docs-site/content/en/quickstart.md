@@ -5,7 +5,7 @@ Get up and running with your first generated module in under 5 minutes.
 ## Step 1: Install the Package
 
 ```bash
-composer require efati/laravel-module-generator
+composer require afshinefati/laravel-scaffolder --dev
 ```
 
 The service provider auto-registers during console initialization. No extra publish commands required!

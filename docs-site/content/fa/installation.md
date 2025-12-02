@@ -17,7 +17,7 @@
 ## ۱. نصب بسته
 
 ```bash
-composer require efati/laravel-module-generator
+composer require afshinefati/laravel-scaffolder --dev
 ```
 
 با این کار `ModuleGeneratorServiceProvider` ثبت می‌شود و دستور `make:module` در دسترس قرار می‌گیرد.

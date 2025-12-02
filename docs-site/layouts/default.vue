@@ -168,7 +168,7 @@ useHead({
     <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-3">
-          <NuxtLink to="/en" class="text-lg font-semibold text-primary-600">Laravel Module Generator</NuxtLink>
+          <NuxtLink to="/en" class="text-lg font-semibold text-primary-600">Laravel Scaffolder</NuxtLink>
           <span class="hidden text-sm text-slate-500 sm:inline">Docs</span>
         </div>
         <nav class="flex items-center gap-4 text-sm font-medium text-slate-600">
@@ -177,7 +177,7 @@ useHead({
           <span class="text-slate-300">·</span>
           <NuxtLink to="/fa" class="hover:text-primary-600" :class="{ 'text-primary-600': currentLang === 'fa' }">فارسی
           </NuxtLink>
-          <a href="https://github.com/AfshinEfati/laravel-module-generator" target="_blank" rel="noopener"
+          <a href="https://github.com/AfshinEfati/Laravel-Scaffolder" target="_blank" rel="noopener"
             class="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-primary-500 hover:text-primary-600">
             <span>GitHub</span>
           </a>
