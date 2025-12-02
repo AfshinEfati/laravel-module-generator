@@ -132,7 +132,7 @@ const navigation = computed(() => {
     },
     {
       label: 'امکانات',
-      items: [
+      links: [
         { title: 'تولید ماژول‌ها', path: '/fa/features/generating-modules' },
         { title: 'تولید هوشمند از Schema', path: '/fa/features/schema-aware-generation' },
         { title: 'لایه Actions', path: '/fa/features/action-layer' },
