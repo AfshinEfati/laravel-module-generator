@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useHead, useRuntimeConfig, useState } from '#imports'
 import { joinURL } from 'ufo'
 
@@ -8,12 +8,23 @@ const runtimeConfig = useRuntimeConfig()
 const hideNavigationState = useState<boolean>('hide-navigation', () => false)
 const isDark = ref(false)
 
+onMounted(() => {
+  // Check localStorage or system preference
+  const stored = localStorage.getItem('theme')
+  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+  }
+})
+
 const toggleDark = () => {
   isDark.value = !isDark.value
   if (isDark.value) {
     document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
   } else {
     document.documentElement.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
   }
 }
 
