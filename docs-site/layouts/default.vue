@@ -218,14 +218,14 @@ useHead({
         <div class="sticky top-24 space-y-8">
           <template v-for="section in navigation" :key="section.label">
             <div>
-              <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500"
+              <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 :class="{ 'text-right': isRtl }">{{ section.label }}</p>
               <ul class="space-y-2" :class="{ 'text-right': isRtl }">
                 <li v-for="link in section.links" :key="link.path">
                   <NuxtLink :to="link.path"
-                    class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600"
+                    class="block rounded-md px-3 py-2 text-sm transition hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/20 dark:hover:text-primary-400 dark:text-slate-300"
                     :class="{
-                      'bg-primary-100 text-primary-700 font-semibold': isActiveLink(link.path)
+                      'bg-primary-100 text-primary-700 font-semibold dark:bg-primary-900/30 dark:text-primary-400': isActiveLink(link.path)
                     }">
                     {{ link.title }}
                   </NuxtLink>
@@ -237,7 +237,7 @@ useHead({
       </aside>
 
       <main :class="['min-w-0 flex-1', hideNavigation ? 'w-full' : '']">
-        <article class="prose prose-slate max-w-none"
+        <article class="prose prose-slate dark:prose-invert max-w-none"
           :class="{ 'prose-lg text-right': isRtl, 'prose-code:font-mono': true }">
           <slot />
         </article>
