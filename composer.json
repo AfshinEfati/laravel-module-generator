@@ -1,17 +1,17 @@
 {
-  "name": "efati/laravel-module-generator",
-  "description": "Laravel Module Generator with Repository/Service/DTO/Provider/Test",
+  "name": "afshinefati/laravel-scaffolder",
+  "description": "Laravel Scaffolder - A powerful package for scaffolding complete feature stacks with Repository, Service, DTO, Policy, Tests, and more.",
   "type": "library",
   "license": "MIT",
   "require": {
     "php": "^8.1",
     "laravel/framework": ">=10.0"
   },
-  "keywords": ["laravel", "module-generator", "repository", "service", "crud", "tests"],
-  "homepage": "https://afshinefati.github.io/laravel-module-generator/",
+  "keywords": ["laravel", "scaffolder", "scaffold", "generator", "repository", "service", "dto", "policy", "crud"],
+  "homepage": "https://github.com/AfshinEfati/Laravel-Scaffolder",
   "support": {
-    "issues": "https://github.com/AfshinEfati/laravel-module-generator/issues",
-    "source": "https://github.com/AfshinEfati/laravel-module-generator"
+    "issues": "https://github.com/AfshinEfati/Laravel-Scaffolder/issues",
+    "source": "https://github.com/AfshinEfati/Laravel-Scaffolder"
   },
 
   "autoload": {

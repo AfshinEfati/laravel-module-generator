@@ -34,7 +34,7 @@ Generate complete, test-ready Laravel modules from a single Artisan command. The
 Require the package and let the generator mirror its base assets automatically during console boot:
 
 ```bash
-composer require efati/laravel-module-generator
+composer require afshinefati/laravel-scaffolder --dev
 ```
 
 The service provider copies the default repositories, services, helper, and configuration into your application whenever the package runs in the console, so there is no extra publish command required after installation.
@@ -519,20 +519,6 @@ Route::apiResource('test-products', ProductController::class);
 ```
 
 ## Resources
-
-- [Full documentation](https://afshinefati.github.io/laravel-module-generator/)
-- [Complete Features Guide](FEATURES.md) - All features explained in detail
-- [Usage Examples](EXAMPLES.md) - Real-world examples and scenarios
-- [API Reference](API_REFERENCE.md) - Complete command and class API documentation
-- [Upgrade Guide](UPGRADE.md) - Migrating between versions
-- [Changelog](CHABELOG.md) - Release notes and version history
-- [Contributing guidelines](CONTRIBUTING.md) - How to contribute
-
-## Quick Links
-
-- 🌐 **Website**: [https://afshinefati.github.io/laravel-module-generator/](https://afshinefati.github.io/laravel-module-generator/)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/AfshinEfati/laravel-module-generator/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/AfshinEfati/laravel-module-generator/discussions)
 
 ## License
 

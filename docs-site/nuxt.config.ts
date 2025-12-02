@@ -3,7 +3,7 @@ import { joinURL } from "ufo";
 
 const siteBaseURL =
   process.env.NUXT_PUBLIC_BASE_URL ??
-  (process.env.NODE_ENV === "production" ? "/laravel-module-generator/" : "/");
+  (process.env.NODE_ENV === "production" ? "/Laravel-Scaffolder/" : "/");
 const faviconHref =
   siteBaseURL === "/" ? "/favicon.svg" : `${siteBaseURL}favicon.svg`;
 const rootRedirect = joinURL(siteBaseURL, "en");
@@ -96,7 +96,7 @@ export default defineNuxtConfig({
   app: {
     baseURL: siteBaseURL,
     head: {
-      titleTemplate: "%s · Laravel Module Generator",
+      titleTemplate: "%s · Laravel Scaffolder",
       link: [{ rel: "icon", type: "image/svg+xml", href: faviconHref }],
       meta: [
         { charset: "utf-8" },
@@ -104,35 +104,35 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "A powerful Laravel package for generating modular application structures with clean architecture and best practices.",
+            "A powerful Laravel package for scaffolding complete feature stacks with Repository, Service, DTO, Policy, Tests, and more using clean architecture patterns.",
         },
         {
           name: "keywords",
           content:
-            "Laravel, Module Generator, PHP, Modular Architecture, Laravel Package",
+            "Laravel, Scaffolder, Scaffold, PHP, Repository Pattern, Service Layer, Clean Architecture, Laravel Package",
         },
 
         // Open Graph
         { property: "og:type", content: "website" },
-        { property: "og:site_name", content: "Laravel Module Generator" },
+        { property: "og:site_name", content: "Laravel Scaffolder" },
         {
           property: "og:title",
           content:
-            "Laravel Module Generator - Build Modular Laravel Applications",
+            "Laravel Scaffolder - Build Complete Feature Stacks",
         },
         {
           property: "og:description",
           content:
-            "A powerful Laravel package for generating modular application structures with clean architecture and best practices.",
+            "A powerful Laravel package for scaffolding complete feature stacks with Repository, Service, DTO, Policy, Tests, and more using clean architecture patterns.",
         },
         {
           property: "og:url",
-          content: "https://afshinefati.github.io/laravel-module-generator/",
+          content: "https://afshinefati.github.io/Laravel-Scaffolder/",
         },
         {
           property: "og:image",
           content:
-            "https://afshinefati.github.io/laravel-module-generator/og-image.png",
+            "https://afshinefati.github.io/Laravel-Scaffolder/og-image.png",
         },
         { property: "og:image:width", content: "1200" },
         { property: "og:image:height", content: "630" },
@@ -142,17 +142,17 @@ export default defineNuxtConfig({
         {
           name: "twitter:title",
           content:
-            "Laravel Module Generator - Build Modular Laravel Applications",
+            "Laravel Scaffolder - Build Complete Feature Stacks",
         },
         {
           name: "twitter:description",
           content:
-            "A powerful Laravel package for generating modular application structures with clean architecture and best practices.",
+            "A powerful Laravel package for scaffolding complete feature stacks with Repository, Service, DTO, Policy, Tests, and more using clean architecture patterns.",
         },
         {
           name: "twitter:image",
           content:
-            "https://afshinefati.github.io/laravel-module-generator/og-image.png",
+            "https://afshinefati.github.io/Laravel-Scaffolder/og-image.png",
         },
 
         // Additional
@@ -163,7 +163,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      siteName: "Laravel Module Generator",
+      siteName: "Laravel Scaffolder",
       basePath: siteBaseURL,
     },
   },

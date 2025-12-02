@@ -4,7 +4,7 @@
 
 [🇬🇧 English](../en/changelog.md){ .language-switcher }
 
-خلاصه‌ای از نسخه‌های مهم ژنراتور ماژول لاراول. برای تاریخچهٔ کامل به [`CHABELOG.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/CHABELOG.md) و [`version.md`](https://github.com/AfshinEfati/laravel-module-generator/blob/main/version.md) مراجعه کنید.
+خلاصه‌ای از نسخه‌های مهم Laravel Scaffolder. برای تاریخچهٔ کامل به [`CHANGELOG.md`](https://github.com/AfshinEfati/Laravel-Scaffolder/blob/main/CHANGELOG.md) مراجعه کنید.
 
 
 ## v8.0.0 - تحول بزرگ
