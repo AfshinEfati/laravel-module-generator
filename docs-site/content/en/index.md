@@ -3,7 +3,6 @@ title: Laravel Module Generator
 ---
 
 <a href="/fa/" class="language-switcher">🇮🇷 فارسی</a>
-
 <section class="hero" markdown="1">
   <div class="hero__content" markdown="1">
     <p class="hero__eyebrow">Laravel Module Generator</p>
