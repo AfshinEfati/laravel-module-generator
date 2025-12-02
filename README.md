@@ -129,12 +129,13 @@ This metadata feeds into DTOs, form requests, resources, and tests automatically
 
 Each module includes:
 
-- **Repository** – Interface + Eloquent implementation for data access with chainable query builder
+- **Repository** – Interface + Eloquent implementation with Criteria pattern support
 - **Service** – Business logic layer with interface for dependency injection and dynamic method forwarding
 - **DTO** – Data transfer object with type hints, validation, and request conversion helpers
 - **Controller** – API or web controller with dependency injection and resource formatting
 - **Resource** – API resource for consistent JSON responses with relationship eager loading
 - **Form Requests** – Store and Update request classes with auto-generated validation rules
+- **Policy** – Authorization policies with standard CRUD gates
 - **Feature Tests** – CRUD tests with success/failure scenarios using inferred field metadata
 - **Provider** – Auto-registered service provider for bindings and dependency injection setup
 - **Actions** (optional) – Invokable action classes for clean CRUD operation encapsulation
@@ -175,6 +176,7 @@ php artisan swagger:ui
 **Or integrate with your Laravel app:**
 
 In `routes/api.php`:
+
 ```php
 use Efati\ModuleGenerator\Traits\RegistersSwaggerRoutes;
 
@@ -187,6 +189,7 @@ Route::middleware(['api'])->group(function () {
 Visit: `http://localhost:8000/api/docs`
 
 **Features:**
+
 - ✅ No L5-Swagger or Swagger-PHP dependency
 - ✅ Beautiful, responsive UI
 - ✅ Automatic route scanning

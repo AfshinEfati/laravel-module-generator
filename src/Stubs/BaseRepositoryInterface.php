@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 interface BaseRepositoryInterface
 {
@@ -58,4 +59,14 @@ interface BaseRepositoryInterface
     public function update(int|string $id, array $data): bool;
 
     public function delete(int|string $id): bool;
+
+    public function getCriteria(): array;
+
+    public function pushCriteria(mixed $criteria): static;
+
+    public function popCriteria(mixed $criteria): static;
+
+    public function skipCriteria(bool $status = true): static;
+
+    public function applyCriteria(Builder $query): Builder;
 }

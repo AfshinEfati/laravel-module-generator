@@ -52,6 +52,25 @@ class {{ class }} extends TestCase
     private function buildValidPayload(bool $forCreate = true): array
     {
         $payload = [];
+        
+        if (method_exists(\{{ model_fqcn }}::class, 'factory')) {
+            try {
+                $model = \{{ model_fqcn }}::factory()->make();
+                $data = $model->toArray();
+                
+                // Filter to only fillable fields to simulate API request
+                $fillable = $this->fillable();
+                $payload = array_intersect_key($data, array_flip($fillable));
+                
+                // Override password or sensitive fields if necessary
+                // if (isset($payload['password'])) $payload['password'] = 'password';
+                
+                return [$payload, true];
+            } catch (\Throwable $e) {
+                // Fallback if factory fails
+            }
+        }
+
         $canCreate = true;
         $metadata = $this->fieldMetadata();
 

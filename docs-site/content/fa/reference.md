@@ -14,6 +14,7 @@
 | `--api` | کنترلر API همراه با مسیرهای REST تولید می‌کند. |
 | `--requests` | فرم‌ریکوئست برای اکشن‌های ذخیره و بروزرسانی بر اساس اسکیما می‌سازد. |
 | `--actions` | کلاس‌های اکشن (List/Show/Create/Update/Delete) را تولید کرده و کنترلر را برای استفاده از آن‌ها تنظیم می‌کند. |
+| `--policy` | کلاس Policy برای مجوزدهی CRUD ایجاد می‌کند. |
 | `--dto` | کلاس DTO مطابق فیلدهای تعریف‌شده ایجاد می‌کند. |
 | `--resource` | ریسورس لاراول برای فرمت یکدست پاسخ‌ها تولید می‌کند. |
 | `--tests` | مجموعه تست فیچری برای سناریوهای CRUD می‌سازد. |
@@ -48,7 +49,11 @@ app/Modules/{Module}/
 | کلاس | متد | توضیح |
 | --- | --- | --- |
 | `BaseRepository` | `find($id)` | جست‌وجوی رکورد بر اساس کلید اصلی. |
-|  | `findDynamic($where, $with, ...)` | با دریافت آرایه‌هایی از شرط‌ها (`where`، `orWhere`، `whereBetween`، `whereNull`، `whereRaw` و …) کوئری را می‌سازد و اولین نتیجه را برمی‌گرداند. |
+|  | `pushCriteria($criteria)` | افزودن Criteria برای فیلتر کردن نتایج. |
+|  | `popCriteria($criteria)` | حذف یک Criteria از لیست. |
+|  | `skipCriteria($status)` | نادیده گرفتن موقت تمام Criteria‌ها. |
+|  | `applyCriteria($query)` | اعمال تمام Criteria‌های فعال به کوئری. |
+|  | `findDynamic($where, $with, ...)` | با دریافت آرایه‌هایی از شرط‌ها (`where`، `orWhere`، `whereBetween`، `whereNull`، `whereRaw` و …) کوئری را می‌سازد و اولین نتیجه را برمی‌گرداند. اکنون Criteria‌ها را نیز اعمال می‌کند. |
 |  | `getByDynamic(...)` | همان امضای `findDynamic` را دارد اما مجموعه‌ای از نتایج را به صورت `Illuminate\Support\Collection` برمی‌گرداند. |
 | `BaseService` | `index()` / `show()` / `store()` / `update()` / `destroy()` | متدهای کمکی که با ریپازیتوری ارتباط برقرار کرده و DTO را به آرایه تبدیل می‌کنند. |
 |  | `findDynamic()` / `getByDynamic()` | همان متدها را در لایهٔ سرویس در دسترس قرار می‌دهد تا کنترلرها و کلاس‌های دیگر نیازی به کار مستقیم با Eloquent نداشته باشند. |

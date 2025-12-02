@@ -7,18 +7,19 @@
 Generate PHPDoc documentation for all routes in your application.
 
 **Signature:**
+
 ```bash
 php artisan make:swagger [options]
 ```
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--path=PATH` | Scan specific routes path (e.g., `api`, `web`) |
-| `--controller=NAME` | Generate only for specific controller |
-| `--output=PATH` | Custom output directory (default: `app/Docs`) |
-| `--force` | Overwrite existing files |
+| Option              | Description                                    |
+| ------------------- | ---------------------------------------------- |
+| `--path=PATH`       | Scan specific routes path (e.g., `api`, `web`) |
+| `--controller=NAME` | Generate only for specific controller          |
+| `--output=PATH`     | Custom output directory (default: `app/Docs`)  |
+| `--force`           | Overwrite existing files                       |
 
 **Examples:**
 
@@ -67,17 +68,18 @@ php artisan make:module Product -a --swagger --tests
 Interactive configuration for Swagger UI.
 
 **Signature:**
+
 ```bash
 php artisan swagger:config [options]
 ```
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--show` | Display current configuration |
-| `--reset` | Reset to defaults |
-| `--export-env` | Export to `.env` file |
+| Option         | Description                   |
+| -------------- | ----------------------------- |
+| `--show`       | Display current configuration |
+| `--reset`      | Reset to defaults             |
+| `--export-env` | Export to `.env` file         |
 
 **Usage:**
 
@@ -102,11 +104,13 @@ php artisan swagger:config --reset
 Initialize Swagger UI files based on configuration.
 
 **Signature:**
+
 ```bash
 php artisan swagger:init
 ```
 
 **Creates:**
+
 - `public/docs/` - Swagger UI files
 - `public/docs/theme/` - Theme-specific CSS/JS
 - Configuration based on `config/module-generator.php`
@@ -118,18 +122,20 @@ php artisan swagger:init
 Generate OpenAPI JSON specification from routes (for JSON UI).
 
 **Signature:**
+
 ```bash
 php artisan swagger:generate [options]
 ```
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
+| Option            | Description                |
+| ----------------- | -------------------------- |
 | `--format=FORMAT` | Output format (json, yaml) |
-| `--output=PATH` | Output file path |
+| `--output=PATH`   | Output file path           |
 
 **Creates:**
+
 - `storage/app/swagger.json` - OpenAPI specification
 - Used by UI to display endpoints
 
@@ -140,6 +146,7 @@ php artisan swagger:generate [options]
 Start development server for Swagger UI.
 
 **Signature:**
+
 ```bash
 php artisan swagger:ui [port]
 ```
@@ -163,6 +170,7 @@ php artisan swagger:ui 9000
 ### `php artisan make:module`
 
 **Full Signature:**
+
 ```bash
 php artisan make:module {name} {options}
 ```
@@ -194,23 +202,24 @@ php artisan make:module Product --fields="name:string, price:decimal(10,2)" -a
 
 **Options Reference:**
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--api` | `-a` | API module (controller, requests, resources) |
-| `--actions` | | Generate action classes |
-| `--requests` | `-r` | Generate form requests |
-| `--tests` | `-t` | Generate feature tests |
-| `--swagger` | `-sg` | Generate Swagger docs |
-| `--controller=` | `-c` | Custom controller path |
-| `--from-migration=` | | Infer from migration |
-| `--fields=` | | Inline schema |
-| `--no-controller` | `-nc` | Skip controller |
-| `--no-resource` | `-nr` | Skip API resource |
-| `--no-dto` | `-nd` | Skip DTO |
-| `--no-test` | `-nt` | Skip tests |
-| `--no-provider` | `-np` | Skip provider |
-| `--no-swagger` | | Skip Swagger docs |
-| `--force` | `-f` | Overwrite files |
+| Option              | Alias | Description                                  |
+| ------------------- | ----- | -------------------------------------------- |
+| `--api`             | `-a`  | API module (controller, requests, resources) |
+| `--actions`         |       | Generate action classes                      |
+| `--requests`        | `-r`  | Generate form requests                       |
+| `--policy`          |       | Generate Policy class                        |
+| `--tests`           | `-t`  | Generate feature tests                       |
+| `--swagger`         | `-sg` | Generate Swagger docs                        |
+| `--controller=`     | `-c`  | Custom controller path                       |
+| `--from-migration=` |       | Infer from migration                         |
+| `--fields=`         |       | Inline schema                                |
+| `--no-controller`   | `-nc` | Skip controller                              |
+| `--no-resource`     | `-nr` | Skip API resource                            |
+| `--no-dto`          | `-nd` | Skip DTO                                     |
+| `--no-test`         | `-nt` | Skip tests                                   |
+| `--no-provider`     | `-np` | Skip provider                                |
+| `--no-swagger`      |       | Skip Swagger docs                            |
+| `--force`           | `-f`  | Overwrite files                              |
 
 ---
 
@@ -390,6 +399,7 @@ composer require zircote/swagger-php
 ---
 
 **📖 Related Documentation:**
+
 - [Swagger No Dependencies](SWAGGER_NO_DEPENDENCIES.md)
 - [PHPDoc Generation](SWAGGER_PHPDOC_GENERATION.md)
 - [Swagger Configuration](SWAGGER_CONFIG.md)

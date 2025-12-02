@@ -6,6 +6,7 @@
 
 - Auto-generated repository interfaces and implementations
 - Eloquent query builder integration
+- **Criteria Pattern** support for reusable filters
 - Support for complex queries with relationships
 - Dynamic method forwarding to services
 
@@ -27,6 +28,7 @@ php artisan swagger:ui
 ```
 
 **Features:**
+
 - ✅ Automatic route scanning
 - ✅ Beautiful, responsive UI
 - ✅ OpenAPI 3.0 compliant
@@ -255,7 +257,7 @@ class ProductServiceProvider extends ServiceProvider
 - Example payloads
 - Error responses (401, 404, 422)
 
-```php
+````php
 // Generated Swagger Doc
 class ProductDoc
 {
@@ -270,7 +272,24 @@ class ProductDoc
      */
     public function index(): void { }
 }
-```
+
+### 11. **Policy Generation**
+
+- Standard CRUD authorization gates
+- Auto-generated Policy classes
+- Integrated with `--all` flag
+
+```php
+// Generated Policy
+class ProductPolicy
+{
+    public function viewAny(User $user): bool { return true; }
+    public function create(User $user): bool { return true; }
+    // ...
+}
+````
+
+````
 
 ## 🎯 Schema Inference Features
 
@@ -313,7 +332,7 @@ class ProductDoc
     'controller_middleware' => [],        // Default middleware
     'logging_channel' => null,            // Logging configuration
 ]
-```
+````
 
 ### Path Customization
 

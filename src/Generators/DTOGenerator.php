@@ -56,33 +56,21 @@ class DTOGenerator
     {
         $ns = "{$baseNamespace}\\DTOs";
 
-        $properties = [];
         $constructorSignature = [];
-        $constructorBody = [];
-
-        foreach ($fillable as $f) {
-            $properties[] = "    public mixed \${$f};";
-            $constructorSignature[] = "        mixed \${$f} = null";
-            $constructorBody[] = "        \$this->{$f} = \${$f};";
-        }
-
-        $fromRequestBody = [];
-        foreach ($fillable as $f) {
-            $fromRequestBody[] = "            \$dto->{$f} = \$request->input('{$f}');";
-        }
-
+        $fromRequestArguments = [];
         $toArrayBody = [];
+
         foreach ($fillable as $f) {
+            $constructorSignature[] = "        public readonly mixed \${$f} = null";
+            $fromRequestArguments[] = "            {$f}: \$request->input('{$f}'),";
             $toArrayBody[] = "        if (\$this->{$f} !== null) { \$out['{$f}'] = \$this->{$f}; }";
         }
 
         return Stub::render('DTO/dto', [
             'namespace'             => $ns,
             'class'                 => $className,
-            'properties'            => empty($properties) ? '' : implode("\n", $properties) . "\n",
             'constructor_signature' => implode(",\n", $constructorSignature),
-            'constructor_body'      => implode("\n", $constructorBody),
-            'from_request_body'     => implode("\n", $fromRequestBody),
+            'from_request_arguments' => implode("\n", $fromRequestArguments),
             'to_array_body'         => implode("\n", $toArrayBody),
         ]);
     }

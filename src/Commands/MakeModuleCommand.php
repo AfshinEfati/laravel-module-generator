@@ -14,6 +14,7 @@ use Efati\ModuleGenerator\Generators\ControllerGenerator;
 use Efati\ModuleGenerator\Generators\FormRequestGenerator;
 use Efati\ModuleGenerator\Generators\ResourceGenerator;
 use Efati\ModuleGenerator\Generators\ActionGenerator;
+use Efati\ModuleGenerator\Generators\PolicyGenerator;
 use Efati\ModuleGenerator\Generators\SwaggerDocGenerator;
 use Efati\ModuleGenerator\Support\MigrationFieldParser;
 use Efati\ModuleGenerator\Support\ModelInspector;
@@ -38,6 +39,8 @@ class MakeModuleCommand extends Command
                             {--np|no-provider : Do not generate provider}
                             {--actions : Generate Actions for the module}
                             {--no-actions : Skip generating Actions}
+                            {--policy : Generate Policy for the module}
+                            {--no-policy : Skip generating Policy}
                             {--sg|swagger : Generate Swagger/OpenAPI annotations}
                             {--no-swagger : Skip generating Swagger/OpenAPI annotations}
                             {--a|all : Generate the full module stack (controllers, requests, resources, tests, provider, DTOs, swagger, actions)}
@@ -117,6 +120,14 @@ class MakeModuleCommand extends Command
             $withActions = true;
         }
 
+        $withPolicy = (bool) ($defaults['with_policy'] ?? false);
+        if ($this->input->hasParameterOption(['--policy'])) {
+            $withPolicy = true;
+        }
+        if ($this->input->hasParameterOption(['--no-policy'])) {
+            $withPolicy = false;
+        }
+
         $withSwagger = (bool) ($defaults['with_swagger'] ?? false);
         $swaggerOnly = false;
         if ($this->input->hasParameterOption(['--swagger', '--sg'])) {
@@ -147,6 +158,7 @@ class MakeModuleCommand extends Command
                 $withDTO = false;
                 $withProvider = false;
                 $withActions = false;
+                $withPolicy = false;
                 $withUnitTest = false;
                 $withRequests = false;
             }
@@ -162,6 +174,7 @@ class MakeModuleCommand extends Command
             $withDTO = true;
             $withProvider = true;
             $withActions = true;
+            $withPolicy = true;
             $withSwagger = true;
             $swaggerOnly = false;
             $isApi = true;
@@ -313,6 +326,11 @@ class MakeModuleCommand extends Command
             );
 
             $this->reportResults('Action', $actionResults);
+        }
+
+        if ($withPolicy) {
+            $policyResults = PolicyGenerator::generate($name, $baseNamespace, $force);
+            $this->reportResults('Policy', $policyResults);
         }
 
         if ($withProvider) {
@@ -517,10 +535,35 @@ class MakeModuleCommand extends Command
     private function validateParsedFields(array $fields): void
     {
         $reserved = [
-            'function', 'class', 'interface', 'trait', 'const', 'public', 'private',
-            'protected', 'static', 'abstract', 'final', 'namespace', 'use', 'return',
-            'echo', 'print', 'array', 'string', 'int', 'float', 'bool', 'null',
-            'true', 'false', 'new', 'clone', 'instanceof', 'extends', 'implements'
+            'function',
+            'class',
+            'interface',
+            'trait',
+            'const',
+            'public',
+            'private',
+            'protected',
+            'static',
+            'abstract',
+            'final',
+            'namespace',
+            'use',
+            'return',
+            'echo',
+            'print',
+            'array',
+            'string',
+            'int',
+            'float',
+            'bool',
+            'null',
+            'true',
+            'false',
+            'new',
+            'clone',
+            'instanceof',
+            'extends',
+            'implements'
         ];
 
         $fieldNames = [];
