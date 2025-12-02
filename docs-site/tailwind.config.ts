@@ -9,7 +9,7 @@ export default {
     "./app.vue",
     "./content/**/*.{md,yml,json}",
   ],
-  darkMode: ["class", '[data-theme="dark"]'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
