@@ -1,5 +1,5 @@
 {
-  "name": "afshinefati/laravel-scaffolder",
+  "name": "efati/laravel-scaffolder",
   "description": "Laravel Scaffolder - A powerful package for scaffolding complete feature stacks with Repository, Service, DTO, Policy, Tests, and more.",
   "type": "library",
   "license": "MIT",
