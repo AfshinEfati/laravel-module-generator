@@ -34,7 +34,7 @@ Generate complete, test-ready Laravel modules from a single Artisan command. The
 Require the package and let the generator mirror its base assets automatically during console boot:
 
 ```bash
-composer require afshinefati/laravel-scaffolder --dev
+composer require efati/laravel-scaffolder --dev
 ```
 
 The service provider copies the default repositories, services, helper, and configuration into your application whenever the package runs in the console, so there is no extra publish command required after installation.
@@ -42,12 +42,13 @@ The service provider copies the default repositories, services, helper, and conf
 Need to refresh the assets after making manual edits or upgrading? Re-run the publish command and pick the `module-generator` tag to overwrite the files.
 
 ```bash
-php artisan vendor:publish --provider="Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider" --tag=module-generator
+php artisan vendor:publish --provider="Efati\ModuleGenerator\ModuleGeneratorServiceProvider" --tag=module-generator
 ```
 
 To customise the stub templates used for every generated file, publish the dedicated stubs when you need them:
 
 ```bash
+php artisan vendor:publish --provider="Efati\ModuleGenerator\ModuleGeneratorServiceProvider" --tag=module-generator-stubs
 php artisan vendor:publish --provider="Efati\\ModuleGenerator\\ModuleGeneratorServiceProvider" --tag=module-generator-stubs
 ```
 
