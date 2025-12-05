@@ -4,60 +4,9 @@ namespace {{ namespace }};
 
 {{ uses }}
 
+/**
+ * @extends {{ base_interface }}<{{ model }}>
+ */
 interface {{ interface }} extends {{ base_interface }}
 {
-    /**
-     * @return iterable<{{ model }}>
-     */
-    public function getAll(): iterable;
-
-    public function find(int|string $id): ?{{ model }};
-
-    public function findDynamic(
-        array $where = [],
-        array $with = [],
-        array $whereNot = [],
-        array $whereIn = [],
-        array $whereNotIn = [],
-        array $whereBetween = [],
-        array $whereNotBetween = [],
-        array $whereNull = [],
-        array $whereNotNull = [],
-        array $orWhere = [],
-        array $orWhereIn = [],
-        array $orWhereNotIn = [],
-        array $orWhereBetween = [],
-        array $orWhereNotBetween = [],
-        array $orWhereNull = [],
-        array $orWhereNotNull = [],
-        array $whereRaw = [],
-        array $orWhereRaw = []
-    ): ?{{ model }};
-
-    public function getByDynamic(
-        array $where = [],
-        array $with = [],
-        array $whereNot = [],
-        array $whereIn = [],
-        array $whereNotIn = [],
-        array $whereBetween = [],
-        array $whereNotBetween = [],
-        array $whereNull = [],
-        array $whereNotNull = [],
-        array $orWhere = [],
-        array $orWhereIn = [],
-        array $orWhereNotIn = [],
-        array $orWhereBetween = [],
-        array $orWhereNotBetween = [],
-        array $orWhereNull = [],
-        array $orWhereNotNull = [],
-        array $whereRaw = [],
-        array $orWhereRaw = []
-    ): \Illuminate\Database\Eloquent\Collection;
-
-    public function store(array $data): {{ model }};
-
-    public function update(int|string $id, array $data): bool;
-
-    public function delete(int|string $id): bool;
 }

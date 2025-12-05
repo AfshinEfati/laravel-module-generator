@@ -6,29 +6,48 @@ use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Services\Contracts\BaseServiceInterface;
 use BadMethodCallException;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @template TModel of Model
+ * @implements BaseServiceInterface<TModel>
+ */
 abstract class BaseService implements BaseServiceInterface
 {
     /**
-     * @param BaseRepositoryInterface $repository Concrete repository for the service.
+     * @param BaseRepositoryInterface<TModel> $repository Concrete repository for the service.
      */
     public function __construct(protected BaseRepositoryInterface $repository) {}
 
+    /**
+     * @return BaseRepositoryInterface<TModel>
+     */
     public function repository(): BaseRepositoryInterface
     {
         return $this->repository;
     }
 
+    /**
+     * @return iterable<TModel>
+     */
     public function index(): mixed
     {
         return $this->callRepository('getAll');
     }
 
+    /**
+     * @param int|string $id
+     * @return TModel|null
+     */
     public function show(int|string $id): mixed
     {
         return $this->callRepository('find', [$id]);
     }
 
+    /**
+     * @param mixed $payload
+     * @return TModel
+     */
     public function store(mixed $payload): mixed
     {
         $payload = $this->normalisePayload($payload);
@@ -48,6 +67,9 @@ abstract class BaseService implements BaseServiceInterface
         return (bool) $this->callRepository('delete', [$id]);
     }
 
+    /**
+     * @return TModel|null
+     */
     public function findDynamic(
         array $where = [],
         array $with = [],
@@ -90,6 +112,9 @@ abstract class BaseService implements BaseServiceInterface
         ]);
     }
 
+    /**
+     * @return Collection<int, TModel>
+     */
     public function getByDynamic(
         array $where = [],
         array $with = [],
@@ -110,7 +135,7 @@ abstract class BaseService implements BaseServiceInterface
         array $whereRaw = [],
         array $orWhereRaw = []
     ): Collection {
-        /** @var Collection */
+        /** @var Collection<int, TModel> */
         return $this->callRepository('getByDynamic', [
             $where,
             $with,

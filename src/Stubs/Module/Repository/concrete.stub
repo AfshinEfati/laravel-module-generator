@@ -4,117 +4,13 @@ namespace {{ namespace }};
 
 {{ uses }}
 
+/**
+ * @extends {{ base_class }}<{{ model }}>
+ */
 class {{ class }} extends {{ base_class }} implements {{ interface }}
 {
     public function __construct({{ model }} $model)
     {
         parent::__construct($model);
-    }
-
-    /**
-     * @return iterable<{{ model }}>
-     */
-    public function getAll(): iterable
-    {
-        /** @var iterable<{{ model }}> */
-        return parent::getAll();
-    }
-
-    public function find(int|string $id): ?{{ model }}
-    {
-        /** @var {{ model }}|null */
-        return parent::find($id);
-    }
-
-    public function findDynamic(
-        array $where = [],
-        array $with = [],
-        array $whereNot = [],
-        array $whereIn = [],
-        array $whereNotIn = [],
-        array $whereBetween = [],
-        array $whereNotBetween = [],
-        array $whereNull = [],
-        array $whereNotNull = [],
-        array $orWhere = [],
-        array $orWhereIn = [],
-        array $orWhereNotIn = [],
-        array $orWhereBetween = [],
-        array $orWhereNotBetween = [],
-        array $orWhereNull = [],
-        array $orWhereNotNull = [],
-        array $whereRaw = [],
-        array $orWhereRaw = []
-    ): ?{{ model }} {
-        /** @var {{ model }}|null */
-        return parent::findDynamic(
-            $where,
-            $with,
-            $whereNot,
-            $whereIn,
-            $whereNotIn,
-            $whereBetween,
-            $whereNotBetween,
-            $whereNull,
-            $whereNotNull,
-            $orWhere,
-            $orWhereIn,
-            $orWhereNotIn,
-            $orWhereBetween,
-            $orWhereNotBetween,
-            $orWhereNull,
-            $orWhereNotNull,
-            $whereRaw,
-            $orWhereRaw,
-        );
-    }
-
-    public function getByDynamic(
-        array $where = [],
-        array $with = [],
-        array $whereNot = [],
-        array $whereIn = [],
-        array $whereNotIn = [],
-        array $whereBetween = [],
-        array $whereNotBetween = [],
-        array $whereNull = [],
-        array $whereNotNull = [],
-        array $orWhere = [],
-        array $orWhereIn = [],
-        array $orWhereNotIn = [],
-        array $orWhereBetween = [],
-        array $orWhereNotBetween = [],
-        array $orWhereNull = [],
-        array $orWhereNotNull = [],
-        array $whereRaw = [],
-        array $orWhereRaw = []
-    ): \Illuminate\Database\Eloquent\Collection {
-        /** @var \Illuminate\Database\Eloquent\Collection */
-        return parent::getByDynamic(
-            $where,
-            $with,
-            $whereNot,
-            $whereIn,
-            $whereNotIn,
-            $whereBetween,
-            $whereNotBetween,
-            $whereNull,
-            $whereNotNull,
-            $orWhere,
-            $orWhereIn,
-            $orWhereNotIn,
-            $orWhereBetween,
-            $orWhereNotBetween,
-            $orWhereNull,
-            $orWhereNotNull,
-            $whereRaw,
-            $orWhereRaw,
-        );
-    }
-
-    public function store(array $data): {{ model }}
-    {
-        /** @var {{ model }} */
-        return parent::store($data);
     }
 }

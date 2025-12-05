@@ -8,12 +8,22 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Repositories\Contracts\BaseRepositoryInterface;
 use App\Repositories\Criteria\CriteriaInterface;
 
+/**
+ * @template TModel of Model
+ * @implements BaseRepositoryInterface<TModel>
+ */
 class BaseRepository implements BaseRepositoryInterface
 {
+    /**
+     * @var TModel
+     */
     protected Model $model;
     protected array $criteria = [];
     protected bool $skipCriteria = false;
 
+    /**
+     * @param TModel $model
+     */
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -79,6 +89,9 @@ class BaseRepository implements BaseRepositoryInterface
         return $query;
     }
 
+    /**
+     * @return iterable<TModel>
+     */
     public function getAll(): iterable
     {
         $query = $this->model->query();
@@ -87,6 +100,10 @@ class BaseRepository implements BaseRepositoryInterface
         return $query->latest()->get();
     }
 
+    /**
+     * @param int|string $id
+     * @return TModel|null
+     */
     public function find(int|string $id): ?Model
     {
         $query = $this->model->query();
@@ -95,6 +112,9 @@ class BaseRepository implements BaseRepositoryInterface
         return $query->find($id);
     }
 
+    /**
+     * @return TModel|null
+     */
     public function findDynamic(
         array $where = [],
         array $with = [],
@@ -141,6 +161,9 @@ class BaseRepository implements BaseRepositoryInterface
         return $query->first();
     }
 
+    /**
+     * @return Collection<int, TModel>
+     */
     public function getByDynamic(
         array $where = [],
         array $with = [],
@@ -187,6 +210,10 @@ class BaseRepository implements BaseRepositoryInterface
         return $query->get();
     }
 
+    /**
+     * @param array $data
+     * @return TModel
+     */
     public function store(array $data): Model
     {
         return $this->model->create($data);
